@@ -15,8 +15,8 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 ## 🔄 En cours
 
 - [ ] **P0-05** Créer le projet Supabase dev — _fait : dossier `supabase/` initialisé, projet `bcc73-dev` (ref `avqfxxepxieugwgiidqa`) créé et branché via `.env.local` (mobile + admin). Reste : `npx supabase@latest login` puis `link --project-ref avqfxxepxieugwgiidqa`_
-- [ ] **P0-11** CI — _fait : workflow `.github/workflows/ci.yml`. Reste : créer le dépôt GitHub et y pousser le code pour l'activer_
-- [ ] **P0-12** EAS — _fait : `eas.json`. Reste : `npx eas-cli@latest login` puis `init`, et choisir les identifiants de l'app (bundle iOS / package Android)_
+- [ ] **P0-11** CI — _fait : workflow `.github/workflows/ci.yml`, code poussé sur [github.com/alexqlt/bcc73-mobile-app](https://github.com/alexqlt/bcc73-mobile-app) (branche `main`). Reste : vérifier que le premier run est vert (onglet Actions)_
+- [ ] **P0-12** EAS — _fait : `eas.json`. Reste : `npx eas-cli@latest login` puis `init` (les identifiants stores sont reportés à P8-02)_
 
 ---
 
@@ -124,7 +124,7 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 ### Phase 8 — Publication
 
 - [ ] **P8-01** Comptes Apple Developer et Google Play Console
-- [ ] **P8-02** Icône, splash screen, nom et identifiants de l'app
+- [ ] **P8-02** Icône, splash screen, nom et identifiants de l'app (bundle iOS / package Android, ex. `com.bcc73.app` — définitifs après publication)
 - [ ] **P8-03** EAS Build iOS / Android
 - [ ] **P8-04** Distribution TestFlight
 - [ ] **P8-05** Distribution Google Internal Testing
