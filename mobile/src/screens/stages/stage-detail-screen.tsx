@@ -161,16 +161,6 @@ export function StageDetailScreen({ id }: { id: string }) {
                   disabled={!canPay}
                   onPress={() => checkout.mutate({ kind: 'stage', stageId: stage.data!.id, memberIds: people, priceId: priceId! })}
                 />
-                {price && people.length > 1 && (
-                  <Text variant="caption" color="textMuted">
-                    {people.length} participants × {formatEuros(price.amount_cents)}
-                  </Text>
-                )}
-                <Text variant="caption" color="textMuted">
-                  Les places sont réservées pendant le paiement (45 minutes au plus). L’inscription est confirmée dès que
-                  HelloAsso a validé le paiement.
-                </Text>
-
                 {isAdmin && (
                   <View style={[styles.test, { borderColor: colors.border }]}>
                     <Text variant="label" color="textMuted">
@@ -192,6 +182,15 @@ export function StageDetailScreen({ id }: { id: string }) {
                     </Text>
                   </View>
                 )}
+                {price && people.length > 1 && (
+                  <Text variant="caption" color="textMuted">
+                    {people.length} participants × {formatEuros(price.amount_cents)}
+                  </Text>
+                )}
+                <Text variant="caption" color="textMuted">
+                  Les places sont réservées pendant le paiement (45 minutes au plus). L’inscription est confirmée dès que
+                  HelloAsso a validé le paiement.
+                </Text>
               </Card>
             )}
           </>
