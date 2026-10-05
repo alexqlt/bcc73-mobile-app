@@ -167,4 +167,4 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 | P1-13 | Navigation protégée : connexion / licence / onglets | 2026-10-05 | `f99e78e` |
 | P1-14 | Profil (onglet Mon badminton) | 2026-10-05 | `f99e78e` |
 | P1-15 | Ajouter / retirer un enfant rattaché au compte | 2026-10-05 | `f99e78e` |
-| P1-09 | Validation manuelle des licences par SQL (procédure dans `supabase/README.md`) | 2026-10-05 | `0a07485` |
+| P1-09 | Validation manuelle des licences par SQL (procédure dans `supabase/README.md`) | 2026-10-05 | `427eff9` |
