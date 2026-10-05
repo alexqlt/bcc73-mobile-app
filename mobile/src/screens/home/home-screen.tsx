@@ -11,6 +11,8 @@ import { Button, Card, SectionTitle, Space, Text, useDesignSystem } from '@/desi
 import { selectAccountHolder, useMembers } from '@/features/members/api';
 import { useLatestNews } from '@/features/news/api';
 
+import { CancelledSlots } from './cancelled-slots';
+
 /** P3-02 : onglet Accueil — accueil personnalisé et dernières actualités du club. */
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -44,6 +46,8 @@ export function HomeScreen() {
         />
 
         <PendingValidationBanner />
+
+        <CancelledSlots />
 
         <View style={styles.section}>
           <Text variant="subtitle">Actualités</Text>

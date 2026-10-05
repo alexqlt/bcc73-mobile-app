@@ -171,3 +171,77 @@ export function formatCancellation(start: string | null, end: string | null, rea
         : ` du ${formatShortDay(parseISODate(start))} au ${formatShortDay(parseISODate(end))}`;
   return `Annulé${period}${reason ? ` : ${reason}` : ''}`;
 }
+
+/** Un créneau annulé à signaler sur l'accueil. */
+export type CancelledSlot = {
+  key: string;
+  title: string;
+  /** Ex. « mardi 20:00 » (créneau habituel) ou « sam. 14 nov. 10:00 » (créneau exceptionnel). */
+  when: string;
+  /** Ex. « jusqu'au 25 oct. », « le lundi 12 octobre », « du 20 oct. au 25 oct. ». */
+  period: string;
+  reason: string | null;
+};
+
+/** Période d'une annulation vue depuis aujourd'hui : en cours (« jusqu'au … ») ou à venir. */
+function cancellationPeriod(start: string, end: string, today: string) {
+  if (start === end) return `le ${formatDayLabel(parseISODate(start))}`;
+  if (start <= today) return `jusqu'au ${formatShortDay(parseISODate(end))}`;
+  return `du ${formatShortDay(parseISODate(start))} au ${formatShortDay(parseISODate(end))}`;
+}
+
+/**
+ * Accueil : créneaux annulés en ce moment ou dans les 7 prochains jours (annulations des créneaux
+ * habituels et créneaux exceptionnels annulés).
+ */
+export function useCurrentCancellations(today: Date) {
+  const iso = toISODate(today);
+  const horizon = toISODate(addDays(today, 7));
+
+  return useQuery({
+    queryKey: ['planning', 'current-cancellations', iso],
+    queryFn: async (): Promise<CancelledSlot[]> => {
+      const [recurring, exceptional] = await Promise.all([
+        supabase
+          .from('schedule_cancellations')
+          .select('id, start_date, end_date, reason, schedules (title, weekday, start_time)')
+          .gte('end_date', iso)
+          .lte('start_date', horizon)
+          .order('start_date'),
+        supabase
+          .from('schedules')
+          .select('id, title, date, start_time, cancellation_reason')
+          .eq('is_cancelled', true)
+          .gte('date', iso)
+          .lte('date', horizon)
+          .order('date'),
+      ]);
+      if (recurring.error) throw recurring.error;
+      if (exceptional.error) throw exceptional.error;
+
+      return [
+        ...recurring.data.flatMap((row) =>
+          row.schedules
+            ? [
+                {
+                  key: row.id,
+                  title: row.schedules.title,
+                  when: `${weekdayLabels[(row.schedules.weekday ?? 1) - 1].toLowerCase()} ${formatTime(row.schedules.start_time)}`,
+                  period: cancellationPeriod(row.start_date, row.end_date, iso),
+                  reason: row.reason,
+                },
+              ]
+            : []
+        ),
+        ...exceptional.data.map((row) => ({
+          key: row.id,
+          title: row.title,
+          when: `${formatShortDay(parseISODate(row.date!))} ${formatTime(row.start_time)}`,
+          period: '',
+          reason: row.cancellation_reason,
+        })),
+      ];
+    },
+  });
+}
+
