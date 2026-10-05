@@ -1,17 +1,97 @@
-<!-- Email de confirmation d'inscription. Le code {{ .Token }} est saisi dans l'application. -->
-<div style="font-family: Georgia, serif; color: #0d0d0d; max-width: 480px; margin: 0 auto; padding: 24px;">
-  <p style="font-family: Arial, sans-serif; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 22px; margin: 0;">
-    BCC<span style="background: #ffdb06; padding: 0 6px; margin-left: 4px;">73</span>
-  </p>
-  <h1 style="font-family: Arial, sans-serif; text-transform: uppercase; font-size: 20px; margin: 24px 0 8px;">
-    Bienvenue au club !
-  </h1>
-  <p>Pour confirmer votre adresse email, saisissez ce code dans l'application :</p>
-  <p style="font-family: Arial, sans-serif; font-size: 32px; font-weight: bold; letter-spacing: 8px; background: #f7f7f7; border-left: 6px solid #ffdb06; padding: 16px 24px;">
-    {{ .Token }}
-  </p>
-  <p style="color: #5c5c5c; font-size: 14px;">
-    Ce code est valable une heure. Si vous n'avez pas créé de compte sur l'application du
-    Badminton Club de Chambéry, ignorez cet email.
-  </p>
-</div>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- Email de confirmation d'inscription, habillage des emails Brevo du club.
+     Le code {{ .Token }} est saisi dans l'application. Même gabarit que recovery.html. -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Votre code de confirmation</title>
+  <style type="text/css">
+    body { width: 100% !important; margin: 0; padding: 0; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+    p, h1, h2 { margin: 0; }
+    @media (max-width: 600px) {
+      .container { width: 100% !important; }
+      .code { font-size: 30px !important; letter-spacing: 6px !important; }
+    }
+  </style>
+</head>
+<body bgcolor="#ffffff" style="background-color: #ffffff; margin: 0; padding: 0;">
+  <!-- Texte d'aperçu affiché par les messageries, invisible dans l'email -->
+  <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">Votre code pour confirmer votre compte BCC73 : {{ .Token }}</div>
+
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff;">
+    <!-- En-tête noir : logo -->
+    <tr>
+      <td align="center" style="background-color: #000000; padding: 35px 15px;">
+        <a href="https://bcc73.com/" target="_blank">
+          <img src="https://img.mailinblue.com/5202987/images/content_library/original/6540cc26ed81845819687579.png" width="142" alt="BCC73" title="BCC73" style="display: block; width: 142px; margin: 0 auto;" />
+        </a>
+      </td>
+    </tr>
+
+    <!-- Corps -->
+    <tr>
+      <td align="center">
+        <table role="presentation" class="container" width="600" cellspacing="0" cellpadding="0" border="0" style="width: 600px;">
+          <tr>
+            <td align="center" style="padding: 35px 15px 20px; font-family: 'trebuchet ms', helvetica, sans-serif, Arial; color: #000000;">
+              <h2 style="margin: 0; font-family: 'trebuchet ms', helvetica, sans-serif, Arial; font-size: 32px; font-weight: bold; color: #000000;">Bienvenue au club&nbsp;!</h2>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 15px 25px; font-family: verdana, geneva, sans-serif; font-size: 16px; line-height: 1.5; color: #4d5156; text-align: center;">
+              <p style="margin: 0;">Pour confirmer votre adresse email et finaliser la création de votre compte, saisissez ce code dans l'application du BCC73&nbsp;:</p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 20px 15px;">
+              <table role="presentation" width="290" cellspacing="0" cellpadding="0" border="0" style="width: 290px;">
+                <tr>
+                  <td class="code" align="center" style="background-color: #ffdb06; border-radius: 8px; padding: 16px 5px; font-family: verdana, geneva, sans-serif; font-size: 34px; font-weight: bold; letter-spacing: 8px; color: #000000;">{{ .Token }}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 15px 25px 35px; font-family: verdana, geneva, sans-serif; font-size: 14px; line-height: 1.5; color: #4d5156; text-align: center;">
+              <p style="margin: 0;">Ce code est valable une heure.<br />Si vous n'avez pas créé de compte, vous pouvez ignorer cet email.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- Bandeau jaune : réseaux sociaux -->
+    <tr>
+      <td align="center" style="background-color: #ffdb06; padding: 0 15px;">
+        <table role="presentation" class="container" width="600" cellspacing="0" cellpadding="0" border="0" style="width: 600px;">
+          <tr>
+            <td width="33%" align="center" valign="middle" style="padding: 15px 0;">
+              <a href="https://www.instagram.com/badminton_club_chambery/" target="_blank"><img src="https://img.mailinblue.com/5202987/images/content_library/original/6540cda9200fdc276b2e984e.png" width="40" alt="Instagram" title="Page Instagram du BCC73" style="display: block; width: 40px;" /></a>
+            </td>
+            <td width="34%" align="center" valign="middle" style="padding: 5px 0;">
+              <a href="https://chat.whatsapp.com/GIemBmjpM2tKkVCfk70ftz" target="_blank"><img src="https://img.mailinblue.com/5202987/images/content_library/original/6716d3fb69eea20d6ec3b801.png" width="62" alt="WhatsApp" title="Communauté WhatsApp du BCC73" style="display: block; width: 62px;" /></a>
+            </td>
+            <td width="33%" align="center" valign="middle" style="padding: 15px 0;">
+              <a href="https://www.facebook.com/BadmintonClubChambery" target="_blank"><img src="https://img.mailinblue.com/5202987/images/content_library/original/6540cda3b8847f786745396a.png" width="40" alt="Facebook" title="Page Facebook du BCC73" style="display: block; width: 40px;" /></a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- Pied de page noir -->
+    <tr>
+      <td align="center" style="background-color: #000000; padding: 35px 15px;">
+        <img src="https://img.mailinblue.com/5202987/images/content_library/original/6540cde8d8918c6a21113987.png" width="239" alt="Badminton Club de Chambéry" style="display: block; width: 239px; margin: 0 auto;" />
+        <p style="margin: 20px 0 0; font-family: verdana, geneva, sans-serif; font-size: 14px; line-height: 1.5; color: #ffffff;">
+          Vous recevez cet email suite à la création d'un compte<br />sur l'application du Badminton Club de Chambéry.
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
