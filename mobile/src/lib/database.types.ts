@@ -88,18 +88,24 @@ export type Database = {
           created_at: string
           id: string
           phone: string | null
+          status: Database["public"]["Enums"]["account_status"]
+          status_changed_at: string | null
         }
         Insert: {
           avatar_path?: string | null
           created_at?: string
           id: string
           phone?: string | null
+          status?: Database["public"]["Enums"]["account_status"]
+          status_changed_at?: string | null
         }
         Update: {
           avatar_path?: string | null
           created_at?: string
           id?: string
           phone?: string | null
+          status?: Database["public"]["Enums"]["account_status"]
+          status_changed_at?: string | null
         }
         Relationships: []
       }
@@ -792,6 +798,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      account_display_name: { Args: { account: string }; Returns: string }
       admin_cancel_test_order: {
         Args: { order_id: string }
         Returns: undefined
@@ -800,6 +807,7 @@ export type Database = {
         Args: never
         Returns: {
           account_id: string
+          account_status: Database["public"]["Enums"]["account_status"]
           avatar_path: string
           created_at: string
           email: string
@@ -816,8 +824,10 @@ export type Database = {
       admin_list_users: {
         Args: never
         Returns: {
+          account_status: Database["public"]["Enums"]["account_status"]
           avatar_path: string
           created_at: string
+          display_name: string
           email: string
           id: string
           last_sign_in_at: string
@@ -902,6 +912,13 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      set_account_status: {
+        Args: {
+          account: string
+          new_status: Database["public"]["Enums"]["account_status"]
+        }
+        Returns: undefined
+      }
       stage_day_places: {
         Args: { stage: string }
         Returns: {
@@ -913,6 +930,7 @@ export type Database = {
       stage_places_left: { Args: { stage: string }; Returns: number }
     }
     Enums: {
+      account_status: "active" | "archived" | "blocked"
       event_kind: "stage" | "meal"
       member_status: "pending" | "approved" | "rejected"
       order_status: "pending" | "paid" | "cancelled"
@@ -1050,6 +1068,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      account_status: ["active", "archived", "blocked"],
       event_kind: ["stage", "meal"],
       member_status: ["pending", "approved", "rejected"],
       order_status: ["pending", "paid", "cancelled"],

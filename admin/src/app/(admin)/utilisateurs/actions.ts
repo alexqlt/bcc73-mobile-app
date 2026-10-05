@@ -60,3 +60,34 @@ export async function createAccount(_state: CreateAccountState, formData: FormDa
   return { created: { email: data!.email, password: data!.password } };
 }
 
+
+/**
+ * Archive, bloque ou réactive un compte. Les droits sont vérifiés par set_account_status :
+ * administrateur, ou responsable des licences pour réactiver un compte archivé.
+ */
+export async function setAccountStatus(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const status = String(formData.get("status"));
+  if (status !== "active" && status !== "archived" && status !== "blocked") return { error: "Action inconnue." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_account_status", {
+    account: String(formData.get("accountId")),
+    new_status: status,
+  });
+  if (error) return toActionState(error);
+  refresh();
+  return null;
+}
+
+/** Suppression complète, par l'Edge Function admin-delete-account (administrateurs uniquement). */
+export async function deleteAccount(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.functions.invoke("admin-delete-account", {
+    body: { accountId: String(formData.get("accountId")) },
+  });
+  if (error) {
+    const body = "context" in error && error.context instanceof Response ? await error.context.json().catch(() => null) : null;
+    return { error: body?.error ?? "Le compte n'a pas pu être supprimé." };
+  }
+  refresh();
+  return null;
+}

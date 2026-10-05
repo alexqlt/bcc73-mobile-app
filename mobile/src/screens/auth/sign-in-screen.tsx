@@ -8,7 +8,8 @@ import { FormError } from '@/components/form/form-error';
 import { FormTextField } from '@/components/form/form-text-field';
 import { Button, Space } from '@/design-system';
 import { useResendSignUpCode, useSignIn } from '@/features/auth/api';
-import { isEmailNotConfirmed } from '@/features/auth/errors';
+import { useAuth } from '@/features/auth/auth-provider';
+import { ACCOUNT_DISABLED_MESSAGE, isEmailNotConfirmed, UserFacingError } from '@/features/auth/errors';
 import { signInSchema, type SignInForm } from '@/features/auth/schemas';
 
 import { AuthScreen, authStyles } from './auth-screen';
@@ -22,6 +23,7 @@ export function SignInScreen() {
     hasPlayedIntro = true;
   }, []);
   const signIn = useSignIn();
+  const { accountDisabled } = useAuth();
   const resendCode = useResendSignUpCode();
   const { control, handleSubmit } = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
@@ -61,7 +63,13 @@ export function SignInScreen() {
           textContentType="password"
           onSubmitEditing={onSubmit}
         />
-        <FormError error={isEmailNotConfirmed(signIn.error) ? null : signIn.error} />
+        <FormError
+          error={
+            isEmailNotConfirmed(signIn.error)
+              ? null
+              : (signIn.error ?? (accountDisabled ? new UserFacingError(ACCOUNT_DISABLED_MESSAGE) : null))
+          }
+        />
         <Button title="Se connecter" fullWidth disabled={signIn.isPending} onPress={onSubmit} />
         <Button
           title="Mot de passe oublié ?"

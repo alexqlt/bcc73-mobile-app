@@ -28,6 +28,20 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const isLoginPage = request.nextUrl.pathname.startsWith("/connexion");
 
+  // Compte archivé ou bloqué alors qu'il était connecté : déconnexion et message sur la page de connexion.
+  if (data?.claims && !isLoginPage) {
+    const { data: account } = await supabase.from("accounts").select("status").eq("id", data.claims.sub).maybeSingle();
+    if (account && account.status !== "active") {
+      await supabase.auth.signOut({ scope: "local" });
+      const url = request.nextUrl.clone();
+      url.pathname = "/connexion";
+      url.search = "?desactive=1";
+      const redirect = NextResponse.redirect(url);
+      response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+      return redirect;
+    }
+  }
+
   if (!data?.claims && !isLoginPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/connexion";

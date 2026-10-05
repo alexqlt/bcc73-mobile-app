@@ -1,5 +1,9 @@
 import { isAuthError } from '@supabase/supabase-js';
 
+/** Compte archivé ou bloqué par le club (connexion refusée, session coupée). */
+export const ACCOUNT_DISABLED_MESSAGE =
+  'Votre compte a été archivé ou bloqué. Rendez-vous au club pour régler la situation.';
+
 /** Messages en français pour les codes d'erreur Supabase Auth les plus courants. */
 const authMessages: Record<string, string> = {
   invalid_credentials: 'Email ou mot de passe incorrect.',
@@ -13,6 +17,7 @@ const authMessages: Record<string, string> = {
   over_request_rate_limit: 'Trop de tentatives. Patientez quelques minutes avant de réessayer.',
   email_address_invalid: 'Adresse email invalide.',
   signup_disabled: 'Les inscriptions sont momentanément fermées.',
+  user_banned: ACCOUNT_DISABLED_MESSAGE,
 };
 
 /** Codes PostgreSQL renvoyés par la base (via PostgREST). */

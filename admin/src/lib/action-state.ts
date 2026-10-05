@@ -1,3 +1,7 @@
+/** Compte archivé ou bloqué : la personne doit passer au club. */
+export const ACCOUNT_DISABLED_MESSAGE =
+  "Votre compte a été archivé ou bloqué. Rendez-vous au club pour régler la situation.";
+
 /** Résultat d'une Server Action affiché par <ActionForm>. */
 export type ActionState = { error?: string } | null;
 
@@ -17,6 +21,8 @@ export function toErrorMessage(error: ErrorLike): string {
       return error.message ?? "Action impossible.";
     case "invalid_credentials":
       return "Email ou mot de passe incorrect.";
+    case "user_banned":
+      return ACCOUNT_DISABLED_MESSAGE;
     case "email_not_confirmed":
       return "Adresse email non confirmée : terminez l'inscription depuis l'application.";
     default:

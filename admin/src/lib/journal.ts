@@ -34,6 +34,10 @@ export const eventCategories: {
     permissions: ["USER_MANAGE", "ROLE_MANAGE"],
     events: {
       "create_account:accounts": "a créé un compte",
+      "archive:accounts": "a archivé un compte",
+      "block:accounts": "a bloqué un compte",
+      "reactivate:accounts": "a réactivé un compte",
+      "delete_account:accounts": "a supprimé un compte",
       "insert:roles": "a créé un rôle",
       "update:roles": "a modifié un rôle",
       "delete:roles": "a supprimé un rôle",
@@ -290,6 +294,7 @@ export async function loadJournalContext(supabase: Supabase) {
           deleted?: number;
           member?: string;
           license_number?: string;
+          person?: string;
         }) ?? {};
       const data = row.new ?? row.old ?? {};
       // Tarif d'un événement : seulement le nom de l'événement (le détail est dans les changements).
@@ -304,8 +309,8 @@ export async function loadJournalContext(supabase: Supabase) {
         return `${title} · ${period}`;
       }
       const parts = [
-        // Compte créé depuis le back-office.
-        log.target_type === "accounts" && log.target_id && (nameById.get(log.target_id) ?? "un utilisateur"),
+        // Compte créé, archivé, bloqué, réactivé ou supprimé : la personne (nom gardé dans la ligne).
+        log.target_type === "accounts" && log.target_id && (row.person ?? nameById.get(log.target_id) ?? "un utilisateur"),
         // Licence validée ou refusée : le membre concerné.
         row.member,
         row.member && row.license_number,

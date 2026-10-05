@@ -1,10 +1,11 @@
 import { ActionForm } from "@/components/action-form";
+import { AccountStatusActions } from "@/components/account-status-actions";
 import { Avatar } from "@/components/avatar";
 import { Badge, Button, formatDate, PageHeader } from "@/components/ui";
 import { isAdmin, requirePermission } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
-import { grantRole, revokeRole } from "./actions";
+import { deleteAccount, grantRole, revokeRole, setAccountStatus } from "./actions";
 import { CreateAccountForm } from "./create-account-form";
 
 export const metadata = { title: "Utilisateurs — BCC73 Administration" };
@@ -22,15 +23,25 @@ export default async function UtilisateursPage() {
   if (rolesError) throw rolesError;
 
   const roleById = new Map(roles.map((role) => [role.id, role]));
+  const admin = await isAdmin();
+  const { data: claims } = await supabase.auth.getClaims();
+  const viewerId = claims?.claims.sub;
 
   return (
     <>
       <PageHeader eyebrow="Accès" title="Utilisateurs" />
-      <CreateAccountForm roles={roles} canGrantAdmin={await isAdmin()} />
+      <CreateAccountForm roles={roles} canGrantAdmin={admin} />
       <p className="mb-6 max-w-2xl text-muted">
         Chaque adhérent qui crée un compte dans l&apos;application apparaît ici. Attribuez un rôle aux bénévoles qui
         doivent accéder au back-office : ils se connectent avec le même email et le même mot de passe.
       </p>
+      {admin && (
+        <p className="mb-6 max-w-2xl text-sm text-muted">
+          Un compte <strong>archivé</strong> ne peut plus se connecter jusqu&apos;à sa réactivation (par un administrateur ou un
+          responsable des licences). Un compte <strong>bloqué</strong> n&apos;a plus accès à rien : seul un administrateur peut
+          le réactiver. Dans les deux cas, la personne est invitée à se rendre au club.
+        </p>
+      )}
       <ul className="flex flex-col gap-3">
         {users.map((user) => {
           const availableRoles = roles.filter((role) => !user.role_ids.includes(role.id));
@@ -38,7 +49,12 @@ export default async function UtilisateursPage() {
             <li key={user.id} className="flex flex-col gap-4 bg-surface p-5 lg:flex-row lg:items-center">
               <Avatar path={user.avatar_path} initials={user.email.charAt(0).toUpperCase()} />
               <div className="flex-1">
-                <p className="font-bold">{user.email}</p>
+                <p className="flex flex-wrap items-center gap-2 font-bold">
+                  {user.display_name ?? user.email}
+                  {user.account_status === "archived" && <Badge tone="warning">Archivé</Badge>}
+                  {user.account_status === "blocked" && <Badge tone="danger">Bloqué</Badge>}
+                </p>
+                {user.display_name && <p className="text-sm">{user.email}</p>}
                 <p className="text-sm text-muted">
                   Inscrit le {formatDate(user.created_at)} · dernière connexion {formatDate(user.last_sign_in_at)}
                 </p>
@@ -63,6 +79,14 @@ export default async function UtilisateursPage() {
                   })}
                 </div>
               </div>
+              {admin && user.id !== viewerId && (
+                <AccountStatusActions
+                  accountId={user.id}
+                  status={user.account_status}
+                  setStatus={setAccountStatus}
+                  remove={deleteAccount}
+                />
+              )}
               {availableRoles.length > 0 && (
                 <ActionForm action={grantRole} className="flex flex-wrap gap-2 lg:w-[24rem]">
                   <input type="hidden" name="accountId" value={user.id} />

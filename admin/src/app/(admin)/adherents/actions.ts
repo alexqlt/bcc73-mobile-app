@@ -7,6 +7,18 @@ import { createClient } from "@/lib/supabase/server";
 
 // La permission MEMBER_MANAGE est vérifiée par la base (approve_member / reject_member).
 
+/** Réactive un compte archivé (MEMBER_MANAGE, vérifié par set_account_status). */
+export async function reactivateAccount(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_account_status", {
+    account: String(formData.get("accountId")),
+    new_status: "active",
+  });
+  if (error) return toActionState(error);
+  refresh();
+  return null;
+}
+
 export async function approveMember(_state: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
   const memberId = String(formData.get("memberId"));

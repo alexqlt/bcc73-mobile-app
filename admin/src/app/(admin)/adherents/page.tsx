@@ -7,7 +7,9 @@ import { requirePermission } from "@/lib/auth";
 import type { Database } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/server";
 
-import { approveMember, rejectMember } from "./actions";
+import { AccountStatusActions } from "@/components/account-status-actions";
+
+import { approveMember, reactivateAccount, rejectMember } from "./actions";
 
 type MemberStatus = Database["public"]["Enums"]["member_status"];
 
@@ -126,11 +128,21 @@ export default async function AdherentsPage({ searchParams }: PageProps<"/adhere
                   <Badge tone={statusBadge[member.status].tone}>{statusBadge[member.status].label}</Badge>
                   {member.reviewed_at && <span className="text-xs text-muted">le {formatDate(member.reviewed_at)}</span>}
                   {member.rejection_reason && <span className="text-sm text-red-700 dark:text-red-400">{member.rejection_reason}</span>}
+                  {member.account_status === "archived" && <Badge tone="warning">Compte archivé</Badge>}
+                  {member.account_status === "blocked" && <Badge tone="danger">Compte bloqué</Badge>}
                 </div>
               </div>
 
               {canManage && (
                 <div className="flex flex-col gap-2 lg:w-[28rem]">
+                  {member.account_status === "archived" && (
+                    <AccountStatusActions
+                      accountId={member.account_id}
+                      status={member.account_status}
+                      setStatus={reactivateAccount}
+                      canRestrict={false}
+                    />
+                  )}
                   {member.status !== "approved" && (
                     <ActionForm action={approveMember}>
                       <input type="hidden" name="memberId" value={member.id} />
