@@ -18,18 +18,7 @@ export type StageValues = {
 };
 
 /** P6-10 : informations d'un stage (les tarifs se gèrent sur la page du stage). */
-export function StageForm({
-  action,
-  stage,
-  readOnly,
-  pushEnabled,
-}: {
-  action: Action;
-  stage?: StageValues;
-  readOnly?: boolean;
-  /** Notifications activées dans les paramètres généraux. */
-  pushEnabled?: boolean;
-}) {
+export function StageForm({ action, stage, readOnly }: { action: Action; stage?: StageValues; readOnly?: boolean }) {
   return (
     <ActionForm action={action} className="flex flex-col gap-4">
       {stage && <input type="hidden" name="stageId" value={stage.id} />}
@@ -64,12 +53,6 @@ export function StageForm({
           <input type="checkbox" name="isPublished" defaultChecked={stage?.is_published ?? false} className="accent-[var(--accent)]" />
           Publié : visible dans l&apos;app et ouvert aux inscriptions (ajoutez d&apos;abord au moins un tarif)
         </label>
-        {pushEnabled && !readOnly && (
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="notify" defaultChecked className="accent-[var(--accent)]" />
-            Prévenir les adhérents par notification quand le stage est publié (une seule fois)
-          </label>
-        )}
         {!readOnly && (
           <div>
             <Button type="submit" variant="accent">

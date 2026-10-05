@@ -14,7 +14,7 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ## 🔄 En cours
 
-- [ ] **P7-11** Tester les notifications : build de développement EAS avec les identifiants push (APNs, FCM v1), clé `BREVO_API_KEY` ; actualité, stage, créneau annulé, paiement, préférences, emails (procédures dans `supabase/README.md`)
+- [ ] **P7-11** Tester les emails : clé `BREVO_API_KEY` (procédure dans `supabase/README.md`) ; bienvenue, licence validée, paiement reçu, inscription au stage
 - [ ] **P6-01** Compte et accès API HelloAsso : créer l'association de test sur helloasso-sandbox.com, récupérer le client API, enregistrer les secrets et l'URL de notification (procédure dans `supabase/README.md`), puis la même chose en production
 - [ ] **P6-17** Tester les paiements en sandbox : achat de volants, inscription à un stage (place réservée, complet), paiement abandonné, remise des articles, liste des inscrits et des paiements
 
@@ -47,7 +47,7 @@ _Reste P6-01 et le test P6-17, en cours._
 
 ### Phase 7 — Notifications
 
-- [ ] **P7-07** Push : rappel de stage la veille (optionnel, nécessite une tâche planifiée côté serveur)
+_Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test des emails (P7-11)._
 
 ### Phase 8 — Publication
 
@@ -77,6 +77,7 @@ _Reste P6-01 et le test P6-17, en cours._
 - [ ] Planning : reconnaissance automatique de l'image (OCR / IA) → créneaux détectés → validation humaine
 - [ ] Classements FFBaD (ancienne phase 5, abandonnée le 2026-10-05) : classements simple / double / mixte, évolution, classements des enfants, synchronisation via les webservices FFBaD (identifiants à demander à la fédération) ; puis derniers matchs, adversaires, points gagnés / perdus
 - [ ] Boutique : gestion du stock
+- [ ] Notifications push (retirées le 2026-10-06 : `expo-notifications` fait planter Expo Go, il faut une build EAS) : nouvelle actualité (case à la publication), stage ouvert, créneau annulé, paiement confirmé, rappel de stage, préférences par catégorie, activation par l'administrateur dans Paramètres. Code dans l'historique git (commits `6cf29d9`, `9cfff9c`)
 - [ ] Backend NestJS dédié si les intégrations FFBaD / HelloAsso deviennent trop complexes
 
 ---
@@ -161,15 +162,6 @@ _Reste P6-01 et le test P6-17, en cours._
 | P6-16 | Back-office : liste des paiements | 2026-10-06 | `47a0af6` |
 | P1-18 | Ajout d'un enfant testé (parcours mobile complet validé) | 2026-10-06 | — |
 | P2-13 | Back-office testé : connexion, validation de licence, création de rôle, attribution, journal | 2026-10-06 | — |
-| P3-06 | Case « Envoyer une notification push » à la publication d'une actualité | 2026-10-06 | `6cf29d9` |
-| P7-01 | `expo-notifications` + enregistrement de l'appareil (jeton Expo), retiré à la déconnexion | 2026-10-06 | `6cf29d9` |
-| P7-02 | Edge Function `send-push` (Expo Push Service), un envoi par élément, appareils désinscrits retirés | 2026-10-06 | `6cf29d9` |
-| P7-03 | Push : nouvelle actualité | 2026-10-06 | `6cf29d9` |
-| P7-04 | Push : stage ouvert aux inscriptions | 2026-10-06 | `6cf29d9` |
-| P7-05 | Push : paiement / inscription confirmés | 2026-10-06 | `6cf29d9` |
-| P7-06 | Push : créneau annulé (période ou créneau daté) | 2026-10-06 | `6cf29d9` |
-| P7-08 | Mobile : écran Paramètres des notifications (4 catégories, autorisation de l'appareil) | 2026-10-06 | `6cf29d9` |
 | P7-09 | Emails transactionnels par l'API Brevo (`send-email`, `email_log`) | 2026-10-06 | `35fd114` |
 | P7-10 | Emails : bienvenue, licence validée, paiement reçu, inscription au stage | 2026-10-06 | `35fd114` |
-| P7-12 | Paramètres généraux (back-office, administrateur) : notifications push activables, coupées par défaut | 2026-10-06 | `9cfff9c` |
 | P2-14 | Back-office : créer un compte (mot de passe provisoire) et lui attribuer des rôles | 2026-10-06 | `87a8e93` |

@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import { toActionState, type ActionState } from "@/lib/action-state";
 import { IMAGE_TYPES, readImage, validateImage } from "@/lib/images";
 import { NEWS_BUCKET, NEWS_TITLE_MAX_LENGTH } from "@/lib/news";
-import { notifyMembers } from "@/lib/push";
 import { createClient } from "@/lib/supabase/server";
 
 // Les permissions NEWS_CREATE / NEWS_UPDATE / NEWS_DELETE sont vérifiées par la RLS (table et photos).
@@ -67,10 +66,6 @@ export async function createNews(_state: ActionState, formData: FormData): Promi
     await removePhoto(supabase, imagePath);
     return toActionState(error);
   }
-  // P3-06 : publication avec la case « Envoyer une notification » cochée.
-  if (formData.get("intent") === "publish" && formData.get("notify") === "on") {
-    await notifyMembers(supabase, "news", id);
-  }
   redirect("/actualites");
 }
 
@@ -112,10 +107,6 @@ export async function updateNews(_state: ActionState, formData: FormData): Promi
     return error ? toActionState(error) : { error: "Vous n'avez pas le droit de modifier cette actualité." };
   }
   if (imagePath !== current.image_path) await removePhoto(supabase, current.image_path);
-  // P3-06 : première publication avec la case « Envoyer une notification » cochée.
-  if (intent === "publish" && !current.published_at && formData.get("notify") === "on") {
-    await notifyMembers(supabase, "news", newsId);
-  }
   redirect("/actualites");
 }
 

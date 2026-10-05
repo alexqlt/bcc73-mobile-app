@@ -5,7 +5,6 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { Button, Card, EmptyState, Input, PageHeader } from "@/components/ui";
 import { requireAnyPermission, SCHEDULE_PERMISSIONS } from "@/lib/auth";
 import { formatDateRange, formatDay, todayInParis, weekdays } from "@/lib/planning";
-import { getAppSettings } from "@/lib/settings";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -32,7 +31,6 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
   const { id } = await params;
   const today = todayInParis();
   const supabase = await createClient();
-  const { pushEnabled } = await getAppSettings();
 
   const { data: period, error } = await supabase
     .from("schedule_periods")
@@ -143,7 +141,7 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
                             </summary>
                             <div className="mt-3 flex flex-col gap-4">
                               <SlotForm action={updateSlot} periodId={period.id} slot={slot} submitLabel="Enregistrer" />
-                              <CancelPeriodForm action={cancelSlotForPeriod} scheduleId={slot.id} pushEnabled={pushEnabled} />
+                              <CancelPeriodForm action={cancelSlotForPeriod} scheduleId={slot.id} />
                             </div>
                           </details>
                         )}
@@ -175,12 +173,6 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
                       <input type="hidden" name="cancelled" value={String(!slot.is_cancelled)} />
                       {!slot.is_cancelled && (
                         <Input name="reason" placeholder="Motif (facultatif)" aria-label="Motif de l'annulation" maxLength={200} />
-                      )}
-                      {pushEnabled && !slot.is_cancelled && (
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" name="notify" defaultChecked className="accent-[var(--accent)]" />
-                          Prévenir
-                        </label>
                       )}
                       <Button type="submit" variant={slot.is_cancelled ? "secondary" : "danger"}>
                         {slot.is_cancelled ? "Rétablir" : "Annuler"}

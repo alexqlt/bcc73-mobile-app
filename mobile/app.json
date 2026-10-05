@@ -37,14 +37,7 @@
           }
         }
       ],
-      "expo-sqlite",
-      [
-        "expo-notifications",
-        {
-          "color": "#FFDB06",
-          "defaultChannel": "default"
-        }
-      ]
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

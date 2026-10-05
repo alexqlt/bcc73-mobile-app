@@ -1,6 +1,5 @@
 import { Card, PageHeader } from "@/components/ui";
 import { requirePermission } from "@/lib/auth";
-import { getAppSettings } from "@/lib/settings";
 
 import { createNews } from "../actions";
 import { BackLink, NewsForm } from "../news-form";
@@ -9,7 +8,6 @@ export const metadata = { title: "Nouvelle actualité — BCC73 Administration" 
 
 export default async function NouvelleActualitePage() {
   await requirePermission("NEWS_CREATE");
-  const { pushEnabled } = await getAppSettings();
 
   return (
     <>
@@ -17,7 +15,7 @@ export default async function NouvelleActualitePage() {
         <BackLink />
       </PageHeader>
       <Card className="max-w-3xl">
-        <NewsForm action={createNews} pushEnabled={pushEnabled} />
+        <NewsForm action={createNews} />
       </Card>
     </>
   );

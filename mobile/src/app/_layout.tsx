@@ -10,7 +10,6 @@ import { useColorScheme } from 'react-native';
 import { DesignSystemProvider } from '@/design-system';
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
 import { hasClubAccess, useMembers } from '@/features/members/api';
-import { useNotificationNavigation, usePushRegistration } from '@/features/notifications/api';
 import { queryClient } from '@/lib/query-client';
 
 SplashScreen.preventAutoHideAsync();
@@ -57,10 +56,6 @@ function RootNavigator() {
   const isSignedIn = !!session;
   const ready = !isLoading && (!isSignedIn || !members.isPending);
 
-  // P7-01 : notifications push une fois l'adhérent dans l'application.
-  usePushRegistration(ready && isSignedIn && hasLicence);
-  useNotificationNavigation(ready && isSignedIn && hasLicence);
-
   useEffect(() => {
     if (ready) {
       SplashScreen.hideAsync();
@@ -86,7 +81,6 @@ function RootNavigator() {
         <Stack.Screen name="boutique" />
         <Stack.Screen name="achats" />
         <Stack.Screen name="paiement" />
-        <Stack.Screen name="parametres" />
       </Stack.Protected>
     </Stack>
   );

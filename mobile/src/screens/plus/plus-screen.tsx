@@ -9,10 +9,9 @@ import { Card, SectionTitle, Space, Text, useDesignSystem } from '@/design-syste
 const entries: { title: string; description: string; href: Href }[] = [
   { title: 'Boutique', description: 'Tubes de volants, à payer en ligne et récupérer au club', href: '/boutique' },
   { title: 'Mes achats', description: 'Commandes payées et articles à récupérer', href: '/achats' },
-  { title: 'Paramètres', description: 'Notifications : actualités, stages, planning, paiements', href: '/parametres' },
 ];
 
-/** Onglet « Plus » (APP.md) : boutique, achats et paramètres des notifications. */
+/** Onglet « Plus » (APP.md) : boutique et achats. */
 export function PlusScreen() {
   const insets = useSafeAreaInsets();
   const { tokens, mode } = useDesignSystem();

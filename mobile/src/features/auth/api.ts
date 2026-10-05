@@ -1,6 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { unregisterPushToken } from '@/features/notifications/api';
 import { supabase } from '@/lib/supabase';
 
 import type { ForgotPasswordForm, ResetPasswordForm, SignInForm, SignUpForm } from './schemas';
@@ -64,10 +63,6 @@ export function useResetPassword() {
 
 export function useSignOut() {
   return useMutation({
-    mutationFn: async () => {
-      // L'appareil ne doit plus recevoir les notifications de ce compte.
-      await unregisterPushToken().catch(() => undefined);
-      return throwOnError(supabase.auth.signOut());
-    },
+    mutationFn: async () => throwOnError(supabase.auth.signOut()),
   });
 }

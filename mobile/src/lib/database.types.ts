@@ -100,35 +100,6 @@ export type Database = {
         }
         Relationships: []
       }
-      app_settings: {
-        Row: {
-          id: boolean
-          push_notifications_enabled: boolean
-          updated_at: string
-          updated_by: string | null
-        }
-        Insert: {
-          id?: boolean
-          push_notifications_enabled?: boolean
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Update: {
-          id?: boolean
-          push_notifications_enabled?: boolean
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "app_settings_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       audit_logs: {
         Row: {
           action: string
@@ -291,85 +262,6 @@ export type Database = {
           },
         ]
       }
-      notification_log: {
-        Row: {
-          body: string
-          category: Database["public"]["Enums"]["notification_category"]
-          created_at: string
-          id: number
-          recipients: number
-          ref_id: string
-          sent_by: string | null
-          title: string
-          url: string | null
-        }
-        Insert: {
-          body: string
-          category: Database["public"]["Enums"]["notification_category"]
-          created_at?: string
-          id?: never
-          recipients?: number
-          ref_id: string
-          sent_by?: string | null
-          title: string
-          url?: string | null
-        }
-        Update: {
-          body?: string
-          category?: Database["public"]["Enums"]["notification_category"]
-          created_at?: string
-          id?: never
-          recipients?: number
-          ref_id?: string
-          sent_by?: string | null
-          title?: string
-          url?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notification_log_sent_by_fkey"
-            columns: ["sent_by"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notification_preferences: {
-        Row: {
-          account_id: string
-          news: boolean
-          payments: boolean
-          schedule: boolean
-          stages: boolean
-          updated_at: string
-        }
-        Insert: {
-          account_id: string
-          news?: boolean
-          payments?: boolean
-          schedule?: boolean
-          stages?: boolean
-          updated_at?: string
-        }
-        Update: {
-          account_id?: string
-          news?: boolean
-          payments?: boolean
-          schedule?: boolean
-          stages?: boolean
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notification_preferences_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: true
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       order_items: {
         Row: {
           id: string
@@ -515,41 +407,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      push_tokens: {
-        Row: {
-          account_id: string
-          created_at: string
-          id: string
-          last_seen_at: string
-          platform: string | null
-          token: string
-        }
-        Insert: {
-          account_id: string
-          created_at?: string
-          id?: string
-          last_seen_at?: string
-          platform?: string | null
-          token: string
-        }
-        Update: {
-          account_id?: string
-          created_at?: string
-          id?: string
-          last_seen_at?: string
-          platform?: string | null
-          token?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "push_tokens_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       role_permissions: {
         Row: {
@@ -945,10 +802,6 @@ export type Database = {
           type: Database["public"]["Enums"]["schedule_type"]
         }[]
       }
-      register_push_token: {
-        Args: { device_platform: string; push_token: string }
-        Returns: undefined
-      }
       reject_member: {
         Args: { member_id: string; reason: string }
         Returns: undefined
@@ -977,7 +830,6 @@ export type Database = {
     }
     Enums: {
       member_status: "pending" | "approved" | "rejected"
-      notification_category: "news" | "stages" | "schedule" | "payments"
       order_status: "pending" | "paid" | "cancelled"
       order_type: "shop" | "stage"
       registration_status: "pending" | "confirmed" | "cancelled"
@@ -1114,7 +966,6 @@ export const Constants = {
   public: {
     Enums: {
       member_status: ["pending", "approved", "rejected"],
-      notification_category: ["news", "stages", "schedule", "payments"],
       order_status: ["pending", "paid", "cancelled"],
       order_type: ["shop", "stage"],
       registration_status: ["pending", "confirmed", "cancelled"],

@@ -24,18 +24,7 @@ export type NewsFormValues = {
  * P3-05 : formulaire d'une actualité (titre, photo, contenu), comme dans APP.md §13.
  * Sans `news`, c'est une création ; le bouton cliqué indique s'il faut publier tout de suite.
  */
-export function NewsForm({
-  action,
-  news,
-  readOnly,
-  pushEnabled,
-}: {
-  action: Action;
-  news?: NewsFormValues;
-  readOnly?: boolean;
-  /** Notifications activées dans les paramètres généraux : propose « Envoyer une notification ». */
-  pushEnabled?: boolean;
-}) {
+export function NewsForm({ action, news, readOnly }: { action: Action; news?: NewsFormValues; readOnly?: boolean }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [removePhoto, setRemovePhoto] = useState(false);
   const photoUrl = preview ?? (removePhoto ? null : news?.photoUrl ?? null);
@@ -94,13 +83,6 @@ export function NewsForm({
           <Textarea id="content" name="content" defaultValue={news?.content} rows={12} required />
           <p className="text-xs text-muted">Texte simple : laissez une ligne vide entre deux paragraphes.</p>
         </div>
-
-        {pushEnabled && !readOnly && !news?.isPublished && (
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="notify" defaultChecked className="accent-[var(--accent)]" />
-            Envoyer une notification push aux adhérents à la publication
-          </label>
-        )}
 
         {!readOnly && (
           <div className="flex flex-wrap gap-2">

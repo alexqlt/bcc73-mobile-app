@@ -134,19 +134,6 @@ est aussitôt annulée (la place de stage est libérée).
 Le retour dans l'app passe par le lien `bcc73://paiement` : il faut une build de développement ou
 de production (dans Expo Go, le lien `exp://…` fonctionne aussi pendant le développement).
 
-## Notifications push (phase 7)
-
-Les push partent de l'Edge Function `send-push` (Expo Push Service). Le back-office l'appelle à la
-publication d'une actualité ou d'un stage et à l'annulation d'un créneau (case « Envoyer une
-notification ») ; la confirmation d'un paiement prévient l'adhérent automatiquement. Chaque
-notification n'est envoyée qu'une fois par élément (`notification_log`) et respecte les préférences
-de l'adhérent (`notification_preferences`, écran Plus > Paramètres de l'app).
-
-Pour recevoir les push, il faut une **build** (pas Expo Go sur Android) et les identifiants d'envoi
-sur EAS : clé APNs pour iOS, compte de service FCM v1 pour Android
-(`npx eas-cli@latest credentials`, voir <https://docs.expo.dev/push-notifications/push-notifications-setup/>).
-Secret facultatif : `EXPO_ACCESS_TOKEN`, si la sécurité renforcée des push est activée sur expo.dev.
-
 ## Emails transactionnels (phase 7)
 
 Bienvenue, licence validée, paiement reçu et inscription au stage partent par l'**API** Brevo

@@ -4,7 +4,6 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { toActionState, type ActionState } from "@/lib/action-state";
-import { notifyMembers } from "@/lib/push";
 import { parisLocalToISO, parseEuros } from "@/lib/shop";
 import { createClient } from "@/lib/supabase/server";
 
@@ -42,7 +41,6 @@ export async function createStage(_state: ActionState, formData: FormData): Prom
   const supabase = await createClient();
   const { data, error } = await supabase.from("stages").insert(stage.values).select("id").single();
   if (error) return toActionState(error);
-  if (stage.values.is_published && formData.get("notify") === "on") await notifyMembers(supabase, "stage", data.id);
   redirect(`/stages/${data.id}`);
 }
 
@@ -57,8 +55,6 @@ export async function updateStage(_state: ActionState, formData: FormData): Prom
     .select("id");
   if (error) return toActionState(error);
   if (data.length === 0) return noRightError;
-  // P7-04 : une seule notification par stage, même s'il est enregistré plusieurs fois.
-  if (stage.values.is_published && formData.get("notify") === "on") await notifyMembers(supabase, "stage", data[0].id);
   refresh();
   return null;
 }

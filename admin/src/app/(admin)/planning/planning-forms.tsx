@@ -148,15 +148,7 @@ export function SlotForm({
 }
 
 /** Annule un créneau récurrent pendant une période (gymnase fermé, compétition…). Sans date de fin : un seul jour. */
-export function CancelPeriodForm({
-  action,
-  scheduleId,
-  pushEnabled,
-}: {
-  action: Action;
-  scheduleId: string;
-  pushEnabled?: boolean;
-}) {
+export function CancelPeriodForm({ action, scheduleId }: { action: Action; scheduleId: string }) {
   return (
     <ActionForm action={action} className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <input type="hidden" name="scheduleId" value={scheduleId} />
@@ -169,12 +161,6 @@ export function CancelPeriodForm({
       <Field label="Motif" htmlFor={`cancel-reason-${scheduleId}`}>
         <Input id={`cancel-reason-${scheduleId}`} name="reason" placeholder="Ex. Gymnase fermé" maxLength={200} />
       </Field>
-      {pushEnabled && (
-        <label className="flex items-center gap-2 text-sm sm:col-span-2 lg:col-span-4">
-          <input type="checkbox" name="notify" defaultChecked className="accent-[var(--accent)]" />
-          Prévenir les adhérents par notification
-        </label>
-      )}
       <div>
         <Button type="submit" variant="danger">
           Annuler le créneau
