@@ -43,6 +43,26 @@ npx supabase@latest gen types typescript --linked > mobile/src/lib/database.type
 
 Le `<ref>` d'un projet est l'identifiant visible dans son URL : `https://<ref>.supabase.co`.
 
+## Rôles et permissions
+
+Les droits sont vérifiés dans la base (RLS et fonctions), jamais par l'application :
+un compte reçoit des **rôles** (Administrateur, Secrétariat, Communication…), qui regroupent des
+**permissions** (`MEMBER_MANAGE`, `NEWS_CREATE`…). Le rôle Administrateur a toutes les permissions ;
+quand une migration ajoute une permission, elle doit aussi l'ajouter à ce rôle.
+
+Garde-fous : seul un administrateur peut donner ou retirer le rôle Administrateur, et le dernier
+administrateur ne peut pas être retiré. Les changements de rôles et les validations de licences sont
+inscrits dans `audit_logs`.
+
+Premier administrateur d'un nouveau projet (par exemple la prod), depuis le SQL Editor :
+
+```sql
+insert into public.account_roles (account_id, role_id, granted_by)
+select u.id, r.id, null
+from auth.users u, public.roles r
+where u.email = 'adresse@exemple.fr' and r.is_system;
+```
+
 ## Valider les licences (en attendant le back-office)
 
 Chaque nouvel adhérent saisit son numéro de licence dans l'app : sa fiche est créée avec le statut
