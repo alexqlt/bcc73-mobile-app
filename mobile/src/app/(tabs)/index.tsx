@@ -1,5 +1,5 @@
-import { DesignShowcase } from '@/screens/design-showcase/design-showcase';
+import { HomeScreen } from '@/screens/home/home-screen';
 
-export default function HomeScreen() {
-  return <DesignShowcase />;
+export default function AccueilScreen() {
+  return <HomeScreen />;
 }

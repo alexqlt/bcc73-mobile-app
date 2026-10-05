@@ -191,6 +191,47 @@ export type Database = {
           },
         ]
       }
+      news: {
+        Row: {
+          author_id: string | null
+          content: string
+          created_at: string
+          id: string
+          image_path: string | null
+          published_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          published_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          published_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           code: string
@@ -292,6 +333,7 @@ export type Database = {
         }[]
       }
       approve_member: { Args: { member_id: string }; Returns: undefined }
+      can_edit_news: { Args: never; Returns: boolean }
       has_permission: { Args: { permission: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_system_role: { Args: { role: string }; Returns: boolean }

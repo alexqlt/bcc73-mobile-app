@@ -56,3 +56,14 @@ export async function requirePermission(permission: Permission) {
   }
   return viewer;
 }
+
+/** Interrompt la page si l'utilisateur n'a aucune des permissions. */
+export async function requireAnyPermission(permissions: Permission[]) {
+  const viewer = await getViewer();
+  if (!permissions.some((permission) => viewer.permissions.has(permission))) {
+    redirect("/");
+  }
+  return viewer;
+}
+
+export const NEWS_PERMISSIONS: Permission[] = ["NEWS_CREATE", "NEWS_UPDATE", "NEWS_DELETE"];
