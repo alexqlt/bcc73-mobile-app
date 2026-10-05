@@ -21,6 +21,8 @@ export function useMembers() {
       const { data, error } = await supabase
         .from('members')
         .select('*')
+        // Les responsables (MEMBER_VIEW) peuvent lire tous les adhérents : on ne garde que ce compte.
+        .eq('account_id', accountId!)
         .order('is_account_holder', { ascending: false })
         .order('created_at');
       if (error) throw error;
