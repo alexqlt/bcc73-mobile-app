@@ -175,3 +175,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P6-19 | Stages sur plusieurs jours : tarifs par jour et tous les jours, places par jour, plusieurs participants par inscription | 2026-10-06 | `7446dad` |
 | P6-20 | Mode test des stages (administrateurs) : inscription sans paiement, marquée « Test », annulable, exclue des ventes | 2026-10-06 | `9f17931` |
 | P6-21 | Mode développeur (administrateurs, Mon profil) : paiements des stages et des volants sans HelloAsso, bouton explicite | 2026-10-06 | `de8b681` |
+| P6-22 | Vocabulaire : « stage » devient « événement » (app, back-office, emails, rôles, permissions) | 2026-10-06 | `0b2cbe7` |
