@@ -4,17 +4,21 @@ import type { createClient } from "@/lib/supabase/server";
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 export type AuditLog = Tables<"audit_logs">;
 
-/** Types d'événements du journal (`action:table`), regroupés par domaine pour le filtre. */
-export const eventGroups: { label: string; events: Record<string, string> }[] = [
+/** Catégories d'événements du journal (filtre), avec les tables concernées et le libellé de chaque action. */
+export const eventCategories: { value: string; label: string; targetTypes: string[]; events: Record<string, string> }[] = [
   {
+    value: "licences",
     label: "Licences",
+    targetTypes: ["members"],
     events: {
       "approve:members": "a validé une licence",
       "reject:members": "a refusé une licence",
     },
   },
   {
+    value: "roles",
     label: "Rôles et accès",
+    targetTypes: ["roles", "role_permissions", "account_roles"],
     events: {
       "insert:roles": "a créé un rôle",
       "update:roles": "a modifié un rôle",
@@ -26,7 +30,9 @@ export const eventGroups: { label: string; events: Record<string, string> }[] = 
     },
   },
   {
+    value: "actualites",
     label: "Actualités",
+    targetTypes: ["news"],
     events: {
       "insert:news": "a créé une actualité",
       "update:news": "a modifié une actualité",
@@ -34,7 +40,9 @@ export const eventGroups: { label: string; events: Record<string, string> }[] = 
     },
   },
   {
+    value: "planning",
     label: "Planning",
+    targetTypes: ["schedule_periods", "schedules", "schedule_cancellations"],
     events: {
       "insert:schedule_periods": "a créé une période du planning",
       "update:schedule_periods": "a modifié une période du planning",
@@ -47,20 +55,20 @@ export const eventGroups: { label: string; events: Record<string, string> }[] = 
     },
   },
   {
+    value: "journal",
     label: "Journal",
+    targetTypes: ["audit_logs"],
     events: {
       "clear:audit_logs": "a vidé le journal",
     },
   },
 ];
 
-export const eventLabels: Record<string, string> = Object.assign({}, ...eventGroups.map((group) => group.events));
+const eventLabels: Record<string, string> = Object.assign({}, ...eventCategories.map((category) => category.events));
 
-/** Filtre `?type=action:table` → conditions de la requête, ou null si absent ou inconnu. */
-export function parseEventType(value: unknown) {
-  if (typeof value !== "string" || !(value in eventLabels)) return null;
-  const [action, targetType] = value.split(":");
-  return { value, action, targetType };
+/** Filtre `?categorie=…` → la catégorie choisie, ou null si absente ou inconnue. */
+export function parseCategory(value: unknown) {
+  return eventCategories.find((category) => category.value === value) ?? null;
 }
 
 /**

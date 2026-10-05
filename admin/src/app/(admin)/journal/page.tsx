@@ -4,7 +4,7 @@ import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Button, EmptyState, formatDate, PageHeader, Select } from "@/components/ui";
 import { isAdmin, JOURNAL_PERMISSIONS, requireAnyPermission } from "@/lib/auth";
-import { eventGroups, loadJournalContext, parseEventType } from "@/lib/journal";
+import { eventCategories, loadJournalContext, parseCategory } from "@/lib/journal";
 import { createClient } from "@/lib/supabase/server";
 
 import { clearJournal } from "./actions";
@@ -13,15 +13,15 @@ export const metadata = { title: "Journal — BCC73 Administration" };
 
 const PAGE_SIZE = 100;
 
-/** P2-11 : journal des actions administratives (100 dernières), filtre par type, export et effacement. */
+/** P2-11 : journal des actions administratives (100 dernières), filtre par catégorie, export et effacement. */
 export default async function JournalPage({ searchParams }: PageProps<"/journal">) {
   const viewer = await requireAnyPermission(JOURNAL_PERMISSIONS);
   const params = await searchParams;
-  const eventType = parseEventType(params.type);
+  const category = parseCategory(params.categorie);
   const supabase = await createClient();
 
   let query = supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(PAGE_SIZE);
-  if (eventType) query = query.eq("action", eventType.action).eq("target_type", eventType.targetType);
+  if (category) query = query.in("target_type", category.targetTypes);
 
   const [{ data: logs, error }, journal, admin] = await Promise.all([
     query,
@@ -30,7 +30,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
   ]);
   if (error) throw error;
 
-  const exportHref = eventType ? `/journal/export?type=${encodeURIComponent(eventType.value)}` : "/journal/export";
+  const exportHref = category ? `/journal/export?categorie=${category.value}` : "/journal/export";
 
   return (
     <>
@@ -57,20 +57,16 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
       </PageHeader>
 
       <form action="/journal" className="mb-6 flex flex-wrap items-center gap-2">
-        <Select name="type" defaultValue={eventType?.value ?? ""} aria-label="Type d'événement" className="min-w-0 sm:w-80">
-          <option value="">Tous les événements</option>
-          {eventGroups.map((group) => (
-            <optgroup key={group.label} label={group.label}>
-              {Object.entries(group.events).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label.replace(/^a /, "").replace(/^./, (letter) => letter.toUpperCase())}
-                </option>
-              ))}
-            </optgroup>
+        <Select name="categorie" defaultValue={category?.value ?? ""} aria-label="Catégorie" className="min-w-0 sm:w-64">
+          <option value="">Toutes les catégories</option>
+          {eventCategories.map((item) => (
+            <option key={item.value} value={item.value}>
+              {item.label}
+            </option>
           ))}
         </Select>
         <Button type="submit">Filtrer</Button>
-        {eventType && (
+        {category && (
           <Link href="/journal" className="text-sm underline decoration-accent decoration-2 underline-offset-4">
             Effacer le filtre
           </Link>
@@ -79,7 +75,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
 
       {logs.length === 0 ? (
         <EmptyState>
-          {eventType ? "Aucun événement de ce type." : "Aucune action enregistrée pour l'instant."}
+          {category ? "Aucun événement dans cette catégorie." : "Aucune action enregistrée pour l'instant."}
         </EmptyState>
       ) : (
         <>

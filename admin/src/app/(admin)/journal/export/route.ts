@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 
 import { formatDate } from "@/components/ui";
 import { JOURNAL_PERMISSIONS, requireAnyPermission } from "@/lib/auth";
-import { loadJournalContext, parseEventType, type AuditLog } from "@/lib/journal";
+import { loadJournalContext, parseCategory, type AuditLog } from "@/lib/journal";
 import { todayInParis } from "@/lib/planning";
 import { createClient } from "@/lib/supabase/server";
 
@@ -19,7 +19,7 @@ function cell(value: unknown) {
  */
 export async function GET(request: NextRequest) {
   const viewer = await requireAnyPermission(JOURNAL_PERMISSIONS);
-  const eventType = parseEventType(request.nextUrl.searchParams.get("type"));
+  const category = parseCategory(request.nextUrl.searchParams.get("categorie"));
   const supabase = await createClient();
   const journal = await loadJournalContext(supabase, viewer.permissions.has("USER_MANAGE"));
 
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .range(from, from + BATCH - 1);
-    if (eventType) query = query.eq("action", eventType.action).eq("target_type", eventType.targetType);
+    if (category) query = query.in("target_type", category.targetTypes);
     const { data, error } = await query;
     if (error) return new Response("Le journal n'a pas pu être lu.", { status: 500 });
     logs.push(...data);
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     JSON.stringify(log.details),
   ]);
   const csv = "﻿" + [header, ...rows].map((row) => row.map(cell).join(";")).join("\r\n");
-  const suffix = eventType ? `-${eventType.value.replace(":", "-")}` : "";
+  const suffix = category ? `-${category.value}` : "";
 
   return new Response(csv, {
     headers: {
