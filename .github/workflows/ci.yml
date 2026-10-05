@@ -34,6 +34,10 @@ jobs:
     defaults:
       run:
         working-directory: admin
+    env:
+      # Valeurs factices : le build n'appelle pas Supabase (pages rendues à la demande).
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
