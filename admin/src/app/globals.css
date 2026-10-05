@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* Tokens du design system « Club » — mêmes valeurs que mobile/src/design-system/tokens.ts. */
+:root {
+  --background: #ffffff;
+  --surface: #f7f7f7;
+  --border: #e0e0e0;
+  --foreground: #0d0d0d;
+  --muted: #5c5c5c;
+  --accent: #ffdb06;
+  --on-accent: #0d0d0d;
+  --primary: #0d0d0d;
+  --on-primary: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0d0d0d;
+    --surface: #1a1a1a;
+    --border: #2e2e2e;
+    --foreground: #ffffff;
+    --muted: #a3a3a3;
+    --primary: #ffffff;
+    --on-primary: #0d0d0d;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --font-heading: var(--font-barlow);
+  --font-body: var(--font-gelasio);
+  --radius: 0;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-gelasio), Georgia, serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-barlow), sans-serif;
+  text-transform: uppercase;
+}
