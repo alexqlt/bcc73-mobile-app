@@ -19,7 +19,7 @@ export function NewsDetailScreen({ id }: { id: string }) {
       contentContainerStyle={{ paddingBottom: insets.bottom + Space.xxl }}>
       {imageUrl && (
         <View style={styles.photo}>
-          <NewsPhoto uri={imageUrl} height={240} />
+          <NewsPhoto uri={imageUrl} height={260} />
         </View>
       )}
       <View style={styles.inner}>

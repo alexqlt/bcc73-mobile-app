@@ -51,7 +51,7 @@ export function NewsPhoto({ uri, height = 150 }: { uri: string; height?: number 
       recyclingKey={uri}
       contentFit="cover"
       transition={200}
-      style={{ height, backgroundColor: colors.surfaceAlt }}
+      style={{ width: '100%', height, backgroundColor: colors.surfaceAlt }}
       accessibilityIgnoresInvertColors
     />
   );
