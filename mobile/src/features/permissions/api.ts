@@ -3,31 +3,28 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth/auth-provider';
 import { supabase } from '@/lib/supabase';
 
-export type Permission = { code: string; description: string };
+export type Role = { id: string; name: string; is_system: boolean };
 
 /**
- * Permissions de l'utilisateur connecté, calculées par la base (my_permissions), avec leur libellé.
- * L'app ne s'en sert que pour adapter l'affichage : chaque action reste vérifiée côté serveur.
+ * Rôles de l'utilisateur connecté (Administrateur, Secrétariat…), lus dans la base.
+ * L'app ne s'en sert que pour l'affichage : chaque action reste vérifiée côté serveur.
  */
-export function usePermissions() {
+export function useMyRoles() {
   const { session } = useAuth();
   const accountId = session?.user.id;
 
   return useQuery({
-    queryKey: ['permissions', accountId],
+    queryKey: ['roles', accountId],
     enabled: !!accountId,
-    queryFn: async (): Promise<Permission[]> => {
-      const { data: codes, error } = await supabase.rpc('my_permissions');
+    queryFn: async (): Promise<Role[]> => {
+      const { data, error } = await supabase
+        .from('account_roles')
+        .select('roles (id, name, is_system)')
+        .eq('account_id', accountId!);
       if (error) throw error;
-      if (codes.length === 0) return [];
-
-      const { data, error: descriptionsError } = await supabase
-        .from('permissions')
-        .select('code, description')
-        .in('code', codes)
-        .order('code');
-      if (descriptionsError) throw descriptionsError;
-      return data;
+      return data
+        .flatMap((row) => (row.roles ? [row.roles] : []))
+        .sort((a, b) => Number(b.is_system) - Number(a.is_system) || a.name.localeCompare(b.name, 'fr'));
     },
   });
 }

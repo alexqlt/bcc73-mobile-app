@@ -26,7 +26,7 @@ import {
   type Member,
 } from '@/features/members/api';
 import { memberStatusLabel, memberStatusTone } from '@/features/members/status';
-import { usePermissions, type Permission } from '@/features/permissions/api';
+import { useMyRoles, type Role } from '@/features/permissions/api';
 import { env } from '@/lib/env';
 
 /** Profil (APP.md : Mon badminton > Profil) : compte, membres rattachés et déconnexion. */
@@ -36,7 +36,7 @@ export function ProfileScreen() {
   const { session } = useAuth();
   const members = useMembers();
   const signOut = useSignOut();
-  const permissions = usePermissions();
+  const roles = useMyRoles();
 
   return (
     <ScrollView
@@ -52,6 +52,7 @@ export function ProfileScreen() {
       <View style={styles.inner}>
         <SectionTitle eyebrow="Mon badminton" title="Mon profil" />
         <Text color="textMuted">{session?.user.email}</Text>
+        {!!roles.data?.length && <RolesSection roles={roles.data} />}
 
         <PendingValidationBanner />
 
@@ -63,7 +64,6 @@ export function ProfileScreen() {
           {!selectAccountHolder(members.data) && <AddMemberSection kind="self" />}
         </View>
 
-        {!!permissions.data?.length && <BackOfficeSection permissions={permissions.data} />}
 
         <View style={styles.section}>
           <Text variant="subtitle">Bientôt</Text>
@@ -82,23 +82,19 @@ export function ProfileScreen() {
   );
 }
 
-/** Bénévoles : ce que leurs rôles leur permettent, et l'accès au back-office. */
-function BackOfficeSection({ permissions }: { permissions: Permission[] }) {
+/** Bénévoles : leurs rôles (comme dans la liste des utilisateurs du back-office) et l'accès au back-office. */
+function RolesSection({ roles }: { roles: Role[] }) {
   return (
-    <View style={styles.section}>
-      <Text variant="subtitle">Back-office du club</Text>
-      <Card highlighted>
-        <Text variant="small" color="textMuted">
-          Vos rôles vous permettent de :
-        </Text>
-        {permissions.map((permission) => (
-          <Text key={permission.code}>— {permission.description}</Text>
+    <View style={styles.roles}>
+      <View style={styles.badges}>
+        {roles.map((role) => (
+          <Badge key={role.id} label={role.name} tone={role.is_system ? 'accent' : 'neutral'} />
         ))}
-      </Card>
+      </View>
       {env.adminUrl && (
         <Button
           title="Ouvrir le back-office"
-          fullWidth
+          variant="secondary"
           onPress={() => WebBrowser.openBrowserAsync(env.adminUrl!)}
         />
       )}
@@ -191,5 +187,13 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: Space.md,
+  },
+  roles: {
+    gap: Space.md,
+  },
+  badges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Space.sm,
   },
 });
