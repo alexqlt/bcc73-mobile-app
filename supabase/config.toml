@@ -251,7 +251,7 @@ subject = "BCC73 — Votre code de confirmation"
 content_path = "./supabase/templates/confirmation.html"
 
 [auth.email.template.recovery]
-subject = "BCC73 — Réinitialisation de votre mot de passe"
+subject = "BCC73 — Votre code pour un nouveau mot de passe"
 content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize email template
