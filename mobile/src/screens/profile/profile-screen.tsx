@@ -128,13 +128,9 @@ function DevModeSetting() {
   return (
     <Card highlighted={devMode.enabled}>
       <View style={styles.setting}>
-        <View style={styles.settingText}>
-          <Text variant="bodyStrong">Mode développeur</Text>
-          <Text variant="small" color="textMuted">
-            Les paiements des stages et des volants sont validés sans HelloAsso : commandes marquées « Test », exclues des
-            ventes et annulables depuis l’historique. Aucun email n’est envoyé.
-          </Text>
-        </View>
+        <Text variant="bodyStrong" style={styles.settingText}>
+          Mode développeur
+        </Text>
         <Switch
           accessibilityLabel="Mode développeur"
           value={devMode.enabled}
@@ -264,7 +260,6 @@ const styles = StyleSheet.create({
   },
   settingText: {
     flex: 1,
-    gap: Space.xs,
   },
   photo: {
     flexDirection: 'row',
