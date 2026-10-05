@@ -1,8 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
 
 import { useMembers } from '@/features/members/api';
-import { useMyRoles } from '@/features/permissions/api';
 import type { Database } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
@@ -135,37 +133,6 @@ export function priceAvailability(stage: Stage, price: StagePrice, people: numbe
 export function formatStageDay(isoDate: string) {
   const [year, month, day] = isoDate.split('-').map(Number);
   return new Date(year, month - 1, day).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-}
-
-/** Rôle Administrateur : donne accès au mode test des stages (la base le vérifie aussi). */
-export function useIsAdmin() {
-  const roles = useMyRoles();
-  return roles.data?.some((role) => role.is_system) ?? false;
-}
-
-/**
- * Mode test (administrateurs) : inscription par le parcours réel, confirmée sans paiement HelloAsso.
- * La commande est marquée « test », exclue des statistiques de ventes.
- */
-export function useTestRegistration() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ stageId, memberIds, priceId }: { stageId: string; memberIds: string[]; priceId: string }) => {
-      const { data, error } = await supabase.rpc('admin_test_stage_registration', {
-        stage: stageId,
-        member_ids: memberIds,
-        price: priceId,
-      });
-      if (error) throw error;
-      return data;
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['stages'] });
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    },
-    onSuccess: (orderId) => router.navigate({ pathname: '/paiement', params: { order: orderId } }),
-  });
 }
 
 /** Annule une inscription de test et libère ses places. */

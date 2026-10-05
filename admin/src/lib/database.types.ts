@@ -777,6 +777,7 @@ export type Database = {
           role_ids: string[]
         }[]
       }
+      admin_test_shop_order: { Args: { items: Json }; Returns: string }
       admin_test_stage_registration: {
         Args: { member_ids: string[]; price: string; stage: string }
         Returns: string

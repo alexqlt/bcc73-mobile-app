@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FormError } from '@/components/form/form-error';
@@ -17,9 +17,11 @@ import {
   Space,
   Text,
   useDesignSystem,
+  useDS,
 } from '@/design-system';
 import { avatarUrl, useAccount, useChangeAvatar, useRemoveAvatar } from '@/features/account/api';
 import { useSignOut } from '@/features/auth/api';
+import { useDevMode } from '@/features/dev-mode';
 import { useAuth } from '@/features/auth/auth-provider';
 import {
   selectAccountHolder,
@@ -56,6 +58,7 @@ export function ProfileScreen() {
         <SectionTitle title="Mon profil" />
         <ProfilePhoto email={session?.user.email ?? ''} holder={selectAccountHolder(members.data)} />
         {!!roles.data?.length && <RolesSection roles={roles.data} />}
+        <DevModeSetting />
 
         <PendingValidationBanner />
 
@@ -110,6 +113,38 @@ function ProfilePhoto({ email, holder }: { email: string; holder: Member | undef
         <FormError error={changeAvatar.error ?? removeAvatar.error} />
       </View>
     </View>
+  );
+}
+
+/**
+ * Mode développeur (administrateurs) : les boutons de paiement des stages et de la boutique valident
+ * la commande sans HelloAsso. Gardé sur cet appareil ; la base refuse ces commandes aux autres comptes.
+ */
+function DevModeSetting() {
+  const { colors } = useDS();
+  const devMode = useDevMode();
+  if (!devMode.available) return null;
+
+  return (
+    <Card highlighted={devMode.enabled}>
+      <View style={styles.setting}>
+        <View style={styles.settingText}>
+          <Text variant="bodyStrong">Mode développeur</Text>
+          <Text variant="small" color="textMuted">
+            Les paiements des stages et des volants sont validés sans HelloAsso : commandes marquées « Test », exclues des
+            ventes et annulables depuis l’historique. Aucun email n’est envoyé.
+          </Text>
+        </View>
+        <Switch
+          accessibilityLabel="Mode développeur"
+          value={devMode.enabled}
+          onValueChange={devMode.setEnabled}
+          trackColor={{ true: colors.accent, false: colors.surfaceAlt }}
+          thumbColor={colors.background}
+          ios_backgroundColor={colors.surfaceAlt}
+        />
+      </View>
+    </Card>
   );
 }
 
@@ -221,6 +256,15 @@ const styles = StyleSheet.create({
   },
   roles: {
     gap: Space.md,
+  },
+  setting: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Space.md,
+  },
+  settingText: {
+    flex: 1,
+    gap: Space.xs,
   },
   photo: {
     flexDirection: 'row',

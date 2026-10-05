@@ -7,17 +7,16 @@ import { ErrorState, LoadingState } from '@/components/query-status';
 import { MaxContentWidth } from '@/constants/theme';
 import { AlertBanner, Badge, Button, Card, Chip, SectionTitle, Space, Text, useDS } from '@/design-system';
 import { useMembers } from '@/features/members/api';
-import { formatEuros, useCheckout } from '@/features/payments/api';
+import { useDevMode } from '@/features/dev-mode';
+import { formatEuros, payButtonLabel, useCheckout } from '@/features/payments/api';
 import { toISODate } from '@/features/schedule/api';
 import {
   formatStageDates,
   formatStageDay,
   priceAvailability,
   priceDays,
-  useIsAdmin,
   useMyRegistrations,
   useStage,
-  useTestRegistration,
 } from '@/features/stages/api';
 
 /**
@@ -31,8 +30,7 @@ export function StageDetailScreen({ id }: { id: string }) {
   const members = useMembers();
   const registrations = useMyRegistrations();
   const checkout = useCheckout();
-  const isAdmin = useIsAdmin();
-  const testRegistration = useTestRegistration();
+  const devMode = useDevMode();
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [priceId, setPriceId] = useState<string>();
   const today = toISODate(new Date());
@@ -154,34 +152,13 @@ export function StageDetailScreen({ id }: { id: string }) {
                 <Button
                   title={
                     price && people.length > 0
-                      ? `Payer ${formatEuros(price.amount_cents * people.length)} avec HelloAsso`
+                      ? payButtonLabel(price.amount_cents * people.length, devMode.enabled)
                       : 'Choisissez les participants et le tarif'
                   }
                   fullWidth
                   disabled={!canPay}
                   onPress={() => checkout.mutate({ kind: 'stage', stageId: stage.data!.id, memberIds: people, priceId: priceId! })}
                 />
-                {isAdmin && (
-                  <View style={[styles.test, { borderColor: colors.border }]}>
-                    <Text variant="label" color="textMuted">
-                      Mode test · administrateurs
-                    </Text>
-                    <FormError error={testRegistration.error} />
-                    <Button
-                      title="Inscrire sans payer (test)"
-                      variant="secondary"
-                      fullWidth
-                      disabled={!canPay || testRegistration.isPending}
-                      onPress={() =>
-                        testRegistration.mutate({ stageId: stage.data!.id, memberIds: people, priceId: priceId! })
-                      }
-                    />
-                    <Text variant="caption" color="textMuted">
-                      Mêmes contrôles qu’une vraie inscription (places, tarif, doublons), sans HelloAsso ni email. Marquée
-                      « Test », exclue des ventes ; annulable depuis l’historique.
-                    </Text>
-                  </View>
-                )}
                 {price && people.length > 1 && (
                   <Text variant="caption" color="textMuted">
                     {people.length} participants × {formatEuros(price.amount_cents)}
@@ -226,11 +203,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: Space.sm,
-  },
-  test: {
-    gap: Space.sm,
-    borderTopWidth: 1,
-    paddingTop: Space.md,
   },
   dayRow: {
     flexDirection: 'row',

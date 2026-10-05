@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 
 import { useAuth } from '@/features/auth/auth-provider';
 import { UserFacingError } from '@/features/auth/errors';
+import { useDevMode } from '@/features/dev-mode';
 import type { Database } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
@@ -27,6 +28,26 @@ export type CheckoutRequest =
   | { kind: 'shop'; items: { product_id: string; quantity: number }[] }
   | { kind: 'stage'; stageId: string; memberIds: string[]; priceId: string };
 
+/** Commande de test (rôle Administrateur vérifié par la base), marquée « Test » et exclue des ventes. */
+async function testCheckout(request: CheckoutRequest) {
+  const { data, error } =
+    request.kind === 'shop'
+      ? await supabase.rpc('admin_test_shop_order', { items: request.items })
+      : await supabase.rpc('admin_test_stage_registration', {
+          stage: request.stageId,
+          member_ids: request.memberIds,
+          price: request.priceId,
+        });
+  if (error) throw error;
+  return data;
+}
+
+/** Libellé du bouton de paiement : le mode développeur l'annonce clairement. */
+export function payButtonLabel(amountCents: number | null, devMode: boolean) {
+  const amount = amountCents ? ` ${formatEuros(amountCents)}` : '';
+  return devMode ? `Payer${amount} · mode développeur (sans HelloAsso)` : `Payer${amount} avec HelloAsso`;
+}
+
 /**
  * P6-06 / P6-12 : crée la commande et le paiement HelloAsso (Edge Function helloasso-checkout),
  * ouvre la page de paiement, puis affiche l'écran de suivi du paiement.
@@ -34,9 +55,13 @@ export type CheckoutRequest =
  */
 export function useCheckout() {
   const queryClient = useQueryClient();
+  const devMode = useDevMode();
 
   return useMutation({
     mutationFn: async (request: CheckoutRequest) => {
+      // Mode développeur (administrateurs) : même parcours, commande validée sans HelloAsso.
+      if (devMode.enabled) return testCheckout(request);
+
       const returnTo = Linking.createURL('paiement');
       const { data, error } = await supabase.functions.invoke<{ orderId: string; redirectUrl: string }>(
         'helloasso-checkout',

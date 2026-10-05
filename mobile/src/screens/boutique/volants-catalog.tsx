@@ -5,7 +5,8 @@ import { FormError } from '@/components/form/form-error';
 import { ErrorState, LoadingState } from '@/components/query-status';
 import { AlertBanner, Button, Card, Space, Text, useDS } from '@/design-system';
 import { useMembers } from '@/features/members/api';
-import { formatEuros, useCheckout } from '@/features/payments/api';
+import { useDevMode } from '@/features/dev-mode';
+import { formatEuros, payButtonLabel, useCheckout } from '@/features/payments/api';
 import { useProducts } from '@/features/shop/api';
 
 const MAX_QUANTITY = 50;
@@ -15,6 +16,7 @@ export function VolantsCatalog() {
   const products = useProducts();
   const members = useMembers();
   const checkout = useCheckout();
+  const devMode = useDevMode();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   const canBuy = (members.data ?? []).some((member) => member.status === 'approved');
@@ -78,7 +80,7 @@ export function VolantsCatalog() {
           </View>
           <FormError error={checkout.error} />
           <Button
-            title="Payer avec HelloAsso"
+            title={payButtonLabel(total || null, devMode.enabled)}
             fullWidth
             disabled={total === 0 || checkout.isPending}
             onPress={() =>

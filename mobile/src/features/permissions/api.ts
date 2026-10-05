@@ -28,3 +28,10 @@ export function useMyRoles() {
     },
   });
 }
+
+/** Rôle Administrateur (affichage seulement : la base vérifie de son côté). */
+export function useIsAdmin() {
+  const roles = useMyRoles();
+  return roles.data?.some((role) => role.is_system) ?? false;
+}
+

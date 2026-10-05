@@ -4,7 +4,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ErrorState, LoadingState } from '@/components/query-status';
 import { Badge, Button, Card, Space, Text, type BadgeTone } from '@/design-system';
 import { formatEuros, formatOrderDate, useMyOrders, type HistoryOrder } from '@/features/payments/api';
-import { formatStageDates, formatStageDay, useCancelTestOrder, useIsAdmin } from '@/features/stages/api';
+import { useIsAdmin } from '@/features/permissions/api';
+import { formatStageDates, formatStageDay, useCancelTestOrder } from '@/features/stages/api';
 
 /** Statut affiché à l'adhérent, pour un achat de volants ou une inscription à un stage. */
 function statusOf(order: HistoryOrder): { label: string; tone: BadgeTone } {
