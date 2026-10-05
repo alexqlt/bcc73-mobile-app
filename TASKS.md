@@ -16,7 +16,6 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 - [ ] **P7-11** Tester les emails : clé `BREVO_API_KEY` (procédure dans `supabase/README.md`) ; bienvenue, licence validée, paiement reçu, inscription au stage
 - [ ] **P6-01** Compte et accès API HelloAsso : créer l'association de test sur helloasso-sandbox.com, récupérer le client API, enregistrer les secrets et l'URL de notification (procédure dans `supabase/README.md`), puis la même chose en production
-- [ ] **P6-17** Tester les paiements en sandbox : achat de volants, inscription à un stage (place réservée, complet), paiement abandonné, remise des articles, liste des inscrits et des paiements
 
 ---
 
@@ -28,7 +27,7 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ### Phase 1 — Authentification et comptes
 
-- [ ] **P1-16** Sélecteur du membre actif (parent → enfants) — utile à partir des stages et de la boutique
+_Toutes les cartes sont terminées._
 
 ### Phase 2 — Rôles, permissions et back-office utilisateurs
 
@@ -43,7 +42,7 @@ _Toutes les cartes sont terminées (test en cours : P4-09)._
 
 ### Phase 6 — Paiements HelloAsso
 
-_Reste P6-01 et le test P6-17, en cours._
+_Reste P6-01, en cours._
 
 ### Phase 7 — Notifications
 
@@ -183,3 +182,5 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P6-25 | Archivage des événements et des actualités : masqués dans l'app et les listes du back-office, « Voir les archives », désarchivage | 2026-10-07 | — |
 | P2-22 | Comptes : suppression complète, archivage (réactivable par un administrateur ou un responsable des licences) et blocage (administrateur), message « rendez-vous au club » | 2026-10-07 | — |
 | P6-26 | Stages : plusieurs jours uniques par participant (« tous les jours » et jours uniques s'excluent) | 2026-10-07 | — |
+| P1-16 | Sélecteur du membre actif (parent → enfants) : validé | 2026-10-07 | — |
+| P6-17 | Paiements testés en sandbox (volants, stages, complet, abandon, remise, inscrits et paiements) | 2026-10-07 | — |
