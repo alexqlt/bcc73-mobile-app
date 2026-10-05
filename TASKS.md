@@ -167,3 +167,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P2-14 | Back-office : créer un compte (mot de passe provisoire) et lui attribuer des rôles | 2026-10-06 | `87a8e93` |
 | P6-18 | App : stages et volants réunis dans l'onglet Boutique, historique commun des inscriptions et des achats ; onglet Plus retiré | 2026-10-06 | `ab70cab` |
 | P1-20 | Photo de profil facultative dans Mon profil (galerie, recadrée et réduite, initiales à défaut) | 2026-10-06 | `22d7850` |
+| P2-15 | Journal : chaque rôle voit les événements de son domaine (filtré par la base, export compris) | 2026-10-06 | `c69ba1c` |
