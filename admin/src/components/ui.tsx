@@ -1,4 +1,10 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
+import type {
+  ButtonHTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from "react";
 
 /** Composants d'interface du back-office, dans le style « Club » de l'app mobile. */
 
@@ -49,6 +55,15 @@ export function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInpu
 export function Textarea({ className = "", ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
+      className={`border-[1.5px] border-border bg-background px-3 py-2 text-foreground outline-none focus:border-foreground focus:border-b-accent focus:border-b-[3px] ${className}`}
+      {...props}
+    />
+  );
+}
+
+export function Select({ className = "", ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
       className={`border-[1.5px] border-border bg-background px-3 py-2 text-foreground outline-none focus:border-foreground focus:border-b-accent focus:border-b-[3px] ${className}`}
       {...props}
     />

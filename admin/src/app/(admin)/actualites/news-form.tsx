@@ -7,6 +7,7 @@ import { useState } from "react";
 import { ActionForm } from "@/components/action-form";
 import { Button, Input, Label, Textarea } from "@/components/ui";
 import type { ActionState } from "@/lib/action-state";
+import { IMAGE_ACCEPT } from "@/lib/images";
 import { NEWS_TITLE_MAX_LENGTH } from "@/lib/news";
 
 type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
@@ -55,7 +56,7 @@ export function NewsForm({ action, news, readOnly }: { action: Action; news?: Ne
             id="photo"
             name="photo"
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept={IMAGE_ACCEPT}
             className="text-sm file:mr-3 file:cursor-pointer file:border-2 file:border-foreground file:bg-transparent file:px-3 file:py-1 file:font-heading file:text-xs file:uppercase file:tracking-wider"
             onChange={(event) => {
               const file = event.target.files?.[0];

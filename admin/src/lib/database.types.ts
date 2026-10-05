@@ -301,6 +301,127 @@ export type Database = {
         }
         Relationships: []
       }
+      schedule_cancellations: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          reason: string | null
+          schedule_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          reason?: string | null
+          schedule_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          reason?: string | null
+          schedule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_cancellations_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_periods: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          image_path: string | null
+          kind: Database["public"]["Enums"]["schedule_period_kind"]
+          name: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          image_path?: string | null
+          kind?: Database["public"]["Enums"]["schedule_period_kind"]
+          name: string
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          image_path?: string | null
+          kind?: Database["public"]["Enums"]["schedule_period_kind"]
+          name?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      schedules: {
+        Row: {
+          cancellation_reason: string | null
+          created_at: string
+          date: string | null
+          end_time: string
+          id: string
+          is_cancelled: boolean
+          location: string | null
+          period_id: string | null
+          start_time: string
+          title: string
+          type: Database["public"]["Enums"]["schedule_type"]
+          updated_at: string
+          weekday: number | null
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          created_at?: string
+          date?: string | null
+          end_time: string
+          id?: string
+          is_cancelled?: boolean
+          location?: string | null
+          period_id?: string | null
+          start_time: string
+          title: string
+          type: Database["public"]["Enums"]["schedule_type"]
+          updated_at?: string
+          weekday?: number | null
+        }
+        Update: {
+          cancellation_reason?: string | null
+          created_at?: string
+          date?: string | null
+          end_time?: string
+          id?: string
+          is_cancelled?: boolean
+          location?: string | null
+          period_id?: string | null
+          start_time?: string
+          title?: string
+          type?: Database["public"]["Enums"]["schedule_type"]
+          updated_at?: string
+          weekday?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -338,14 +459,53 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_system_role: { Args: { role: string }; Returns: boolean }
       my_permissions: { Args: never; Returns: string[] }
+      planning: {
+        Args: { from_date: string; to_date: string }
+        Returns: {
+          cancellation_reason: string
+          day: string
+          end_time: string
+          is_cancelled: boolean
+          is_exceptional: boolean
+          location: string
+          period_id: string
+          period_kind: Database["public"]["Enums"]["schedule_period_kind"]
+          period_name: string
+          schedule_id: string
+          start_time: string
+          title: string
+          type: Database["public"]["Enums"]["schedule_type"]
+        }[]
+      }
       reject_member: {
         Args: { member_id: string; reason: string }
         Returns: undefined
       }
       require_permission: { Args: { permission: string }; Returns: undefined }
+      schedule_period_on: {
+        Args: { day: string }
+        Returns: {
+          created_at: string
+          end_date: string
+          id: string
+          image_path: string | null
+          kind: Database["public"]["Enums"]["schedule_period_kind"]
+          name: string
+          start_date: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "schedule_periods"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       member_status: "pending" | "approved" | "rejected"
+      schedule_period_kind: "normal" | "holidays"
+      schedule_type: "free_play" | "training" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -477,6 +637,8 @@ export const Constants = {
   public: {
     Enums: {
       member_status: ["pending", "approved", "rejected"],
+      schedule_period_kind: ["normal", "holidays"],
+      schedule_type: ["free_play", "training", "other"],
     },
   },
 } as const

@@ -1,11 +1,5 @@
-import { ComingSoon } from '@/screens/coming-soon';
+import { PlanningScreen } from '@/screens/planning/planning-screen';
 
-export default function PlanningScreen() {
-  return (
-    <ComingSoon
-      title="Planning"
-      features={['Jeu libre', 'Entraînements', 'Vacances et créneaux exceptionnels']}
-      phase="phase 4"
-    />
-  );
+export default function PlanningTab() {
+  return <PlanningScreen />;
 }

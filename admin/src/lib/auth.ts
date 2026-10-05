@@ -67,3 +67,5 @@ export async function requireAnyPermission(permissions: Permission[]) {
 }
 
 export const NEWS_PERMISSIONS: Permission[] = ["NEWS_CREATE", "NEWS_UPDATE", "NEWS_DELETE"];
+
+export const SCHEDULE_PERMISSIONS: Permission[] = ["SCHEDULE_CREATE", "SCHEDULE_UPDATE", "SCHEDULE_DELETE"];

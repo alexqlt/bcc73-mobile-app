@@ -16,6 +16,17 @@ const actionLabels: Record<string, string> = {
   "delete:role_permissions": "a retiré une permission d'un rôle",
   "insert:account_roles": "a attribué un rôle",
   "delete:account_roles": "a retiré un rôle",
+  "insert:news": "a créé une actualité",
+  "update:news": "a modifié une actualité",
+  "delete:news": "a supprimé une actualité",
+  "insert:schedule_periods": "a créé une période du planning",
+  "update:schedule_periods": "a modifié une période du planning",
+  "delete:schedule_periods": "a supprimé une période du planning",
+  "insert:schedules": "a ajouté un créneau",
+  "update:schedules": "a modifié un créneau",
+  "delete:schedules": "a supprimé un créneau",
+  "insert:schedule_cancellations": "a annulé un créneau",
+  "delete:schedule_cancellations": "a rétabli un créneau",
 };
 
 /** P2-11 : journal des actions administratives (100 dernières). */
@@ -44,6 +55,8 @@ export default async function JournalPage() {
     const data = row.new ?? row.old ?? {};
     const parts = [
       data.name,
+      data.title,
+      data.date,
       data.role_id && roleNameById.get(data.role_id),
       data.permission_code && (permissionById.get(data.permission_code) ?? data.permission_code),
       data.account_id && (emailById.get(data.account_id) ?? "un utilisateur"),

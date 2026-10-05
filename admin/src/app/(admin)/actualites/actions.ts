@@ -4,7 +4,8 @@ import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 
 import { toActionState, type ActionState } from "@/lib/action-state";
-import { NEWS_BUCKET, NEWS_PHOTO_MAX_BYTES, NEWS_PHOTO_TYPES, NEWS_TITLE_MAX_LENGTH } from "@/lib/news";
+import { IMAGE_TYPES, readImage, validateImage } from "@/lib/images";
+import { NEWS_BUCKET, NEWS_TITLE_MAX_LENGTH } from "@/lib/news";
 import { createClient } from "@/lib/supabase/server";
 
 // Les permissions NEWS_CREATE / NEWS_UPDATE / NEWS_DELETE sont vérifiées par la RLS (table et photos).
@@ -16,23 +17,22 @@ type NewsFields = { title: string; content: string; photo: File | null; removePh
 function readNewsForm(formData: FormData): NewsFields | { error: string } {
   const title = String(formData.get("title") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
-  const file = formData.get("photo");
-  const photo = file instanceof File && file.size > 0 ? file : null;
+  const photo = readImage(formData, "photo");
 
   if (!title) return { error: "Donnez un titre à l'actualité." };
   if (title.length > NEWS_TITLE_MAX_LENGTH) {
     return { error: `Le titre ne doit pas dépasser ${NEWS_TITLE_MAX_LENGTH} caractères.` };
   }
   if (!content) return { error: "Rédigez le contenu de l'actualité." };
-  if (photo && !NEWS_PHOTO_TYPES[photo.type]) return { error: "La photo doit être au format JPEG, PNG ou WebP." };
-  if (photo && photo.size > NEWS_PHOTO_MAX_BYTES) return { error: "La photo ne doit pas dépasser 5 Mo." };
+  const photoError = validateImage(photo);
+  if (photoError) return { error: photoError };
 
   return { title, content, photo, removePhoto: formData.get("removePhoto") === "on" };
 }
 
 /** Envoie la photo dans le bucket, sous un nom unique (le cache de l'app ne garde jamais l'ancienne). */
 async function uploadPhoto(supabase: Supabase, newsId: string, photo: File) {
-  const path = `${newsId}/${randomUUID()}.${NEWS_PHOTO_TYPES[photo.type]}`;
+  const path = `${newsId}/${randomUUID()}.${IMAGE_TYPES[photo.type]}`;
   const { error } = await supabase.storage.from(NEWS_BUCKET).upload(path, photo, { contentType: photo.type });
   return { path, error };
 }
