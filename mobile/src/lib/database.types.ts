@@ -743,6 +743,7 @@ export type Database = {
         Args: never
         Returns: {
           account_id: string
+          avatar_path: string
           created_at: string
           email: string
           first_name: string
@@ -758,6 +759,7 @@ export type Database = {
       admin_list_users: {
         Args: never
         Returns: {
+          avatar_path: string
           created_at: string
           email: string
           id: string

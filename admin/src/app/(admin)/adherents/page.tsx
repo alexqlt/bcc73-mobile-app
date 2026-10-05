@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ActionForm } from "@/components/action-form";
+import { Avatar } from "@/components/avatar";
 import { Badge, Button, EmptyState, formatDate, Input, PageHeader } from "@/components/ui";
 import { requirePermission } from "@/lib/auth";
 import type { Database } from "@/lib/database.types";
@@ -107,6 +108,11 @@ export default async function AdherentsPage({ searchParams }: PageProps<"/adhere
         <ul className="flex flex-col gap-3">
           {visible.map((member) => (
             <li key={member.id} className="flex flex-col gap-4 bg-surface p-5 lg:flex-row lg:items-center">
+              {/* La photo est celle du compte : seul le titulaire la porte, les membres rattachés gardent leurs initiales. */}
+              <Avatar
+                path={member.is_account_holder ? member.avatar_path : null}
+                initials={`${member.first_name.charAt(0)}${member.last_name.charAt(0)}`.toUpperCase()}
+              />
               <div className="flex-1">
                 <p className="font-bold">
                   {member.first_name} {member.last_name.toUpperCase()}

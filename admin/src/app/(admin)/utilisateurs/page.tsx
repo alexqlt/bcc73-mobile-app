@@ -1,4 +1,5 @@
 import { ActionForm } from "@/components/action-form";
+import { Avatar } from "@/components/avatar";
 import { Badge, Button, formatDate, PageHeader } from "@/components/ui";
 import { isAdmin, requirePermission } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -35,6 +36,7 @@ export default async function UtilisateursPage() {
           const availableRoles = roles.filter((role) => !user.role_ids.includes(role.id));
           return (
             <li key={user.id} className="flex flex-col gap-4 bg-surface p-5 lg:flex-row lg:items-center">
+              <Avatar path={user.avatar_path} initials={user.email.charAt(0).toUpperCase()} />
               <div className="flex-1">
                 <p className="font-bold">{user.email}</p>
                 <p className="text-sm text-muted">
