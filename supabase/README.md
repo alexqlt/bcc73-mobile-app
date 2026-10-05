@@ -18,6 +18,17 @@ Base de données PostgreSQL, authentification, stockage et Edge Functions.
 Docker n'étant pas installé, on ne lance pas Supabase en local : on travaille directement
 sur le projet **dev** hébergé.
 
+## Secrets
+
+Les secrets utilisés par `config.toml` (`env(...)`) sont lus dans `supabase/.env`, non versionné :
+
+```bash
+BREVO_SMTP_KEY=xsmtpsib-...   # Brevo > SMTP & API > clés SMTP
+```
+
+Les emails d'authentification partent par Brevo (`smtp-relay.brevo.com`, expéditeur `info@bcc73.com`).
+Après une modification de la configuration : `npx supabase@latest config diff`, puis `config push`.
+
 ## Commandes
 
 Toutes les commandes se lancent depuis la racine du dépôt (le dossier qui contient `supabase/`).

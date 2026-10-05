@@ -14,8 +14,7 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ## 🔄 En cours
 
-- [ ] **P1-17** Brancher le SMTP Brevo sur Supabase puis activer les modèles d'email (`supabase/templates/`, à décommenter dans `config.toml`) — _bloquant pour recevoir les codes : sans SMTP personnalisé, Supabase n'envoie qu'aux membres de l'équipe et refuse les modèles en français_
-- [ ] **P1-18** Tester le parcours complet sur téléphone : inscription → code → licence → validation SQL → profil
+- [ ] **P1-18** Tester le parcours complet sur téléphone : inscription → code reçu par email (Brevo) → licence → validation SQL → profil
 
 ---
 
@@ -168,3 +167,4 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 | P1-14 | Profil (onglet Mon badminton) | 2026-10-05 | `f99e78e` |
 | P1-15 | Ajouter / retirer un enfant rattaché au compte | 2026-10-05 | `f99e78e` |
 | P1-09 | Validation manuelle des licences par SQL (procédure dans `supabase/README.md`) | 2026-10-05 | `427eff9` |
+| P1-17 | Emails envoyés par Brevo (`info@bcc73.com`), modèles en français avec code à 6 chiffres | 2026-10-05 | `d9e9e1e` |
