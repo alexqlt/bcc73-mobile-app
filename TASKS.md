@@ -14,6 +14,8 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ## 🔄 En cours
 
+- [ ] **P6-01** Compte et accès API HelloAsso : créer l'association de test sur helloasso-sandbox.com, récupérer le client API, enregistrer les secrets et l'URL de notification (procédure dans `supabase/README.md`), puis la même chose en production
+- [ ] **P6-17** Tester les paiements en sandbox : achat de volants, inscription à un stage (place réservée, complet), paiement abandonné, remise des articles, liste des inscrits et des paiements
 - [ ] **P1-18** Tester l'ajout d'un enfant (le reste du parcours mobile est validé)
 - [ ] **P2-13** Tester le back-office : connexion, validation de licence, création de rôle, attribution, journal
 
@@ -43,22 +45,7 @@ _Toutes les cartes sont terminées (test en cours : P4-09)._
 
 ### Phase 6 — Paiements HelloAsso
 
-- [ ] **P6-01** Compte et accès API HelloAsso (sandbox puis prod)
-- [ ] **P6-02** Tables `orders` (type, provider, provider_order_id, paid_at…) et `order_items`
-- [ ] **P6-03** Edge Function : création d'un Checkout HelloAsso
-- [ ] **P6-04** Edge Function : réception du webhook HelloAsso → statut `PAID` (jamais le retour `success=true`)
-- [ ] **P6-05** Table `products` + back-office produits
-- [ ] **P6-06** Mobile : boutique volants (quantité, total, payer)
-- [ ] **P6-07** Mobile : « Mes achats » (statut, à récupérer)
-- [ ] **P6-08** Back-office : ventes de volants
-- [ ] **P6-09** Tables `stages`, `stage_prices`, `stage_registrations`
-- [ ] **P6-10** Back-office : créer / modifier un stage et ses tarifs
-- [ ] **P6-11** Mobile : stages à venir + détail d'un stage
-- [ ] **P6-12** Mobile : inscription d'un membre à un stage + paiement
-- [ ] **P6-13** Gestion de la capacité (places restantes)
-- [ ] **P6-14** Mobile : « Mes inscriptions »
-- [ ] **P6-15** Back-office : liste des inscrits d'un stage
-- [ ] **P6-16** Back-office : liste des paiements
+_Reste P6-01 et le test P6-17, en cours._
 
 ### Phase 7 — Notifications
 
@@ -168,3 +155,18 @@ _Toutes les cartes sont terminées (test en cours : P4-09)._
 | P3-07 | Actualités testées (publication avec photo, accueil / liste / détail) | 2026-10-05 | — |
 | P4-09 | Planning testé (saison, vacances, créneaux, annulations, import) | 2026-10-05 | — |
 | P4-11 | Bucket `planning-images` supprimé dans le tableau de bord Supabase | 2026-10-05 | — |
+| P6-02 | Tables `orders` (type, statut, provider, provider_order_id, paid_at…) et `order_items`, montants calculés par la base | 2026-10-06 | `2a76675` |
+| P6-03 | Edge Function `helloasso-checkout` : commande + intention de paiement HelloAsso | 2026-10-06 | `2a76675` |
+| P6-04 | Edge Functions `helloasso-webhook` et `helloasso-return` : payé uniquement après relecture auprès de l'API HelloAsso | 2026-10-06 | `2a76675` |
+| P6-05 | Table `products` + back-office des articles | 2026-10-06 | `47a0af6` |
+| P6-06 | Mobile : boutique (quantités, total, paiement) | 2026-10-06 | `66977a9` |
+| P6-07 | Mobile : « Mes achats » (paiement en cours, à récupérer, récupéré) | 2026-10-06 | `66977a9` |
+| P6-08 | Back-office : ventes à remettre, marquer comme remis | 2026-10-06 | `47a0af6` |
+| P6-09 | Tables `stages`, `stage_prices`, `stage_registrations` | 2026-10-06 | `2a76675` |
+| P6-10 | Back-office : créer / modifier / publier un stage et ses tarifs | 2026-10-06 | `47a0af6` |
+| P6-11 | Mobile : stages à venir + détail | 2026-10-06 | `66977a9` |
+| P6-12 | Mobile : inscription d'un membre (licence validée) + paiement | 2026-10-06 | `66977a9` |
+| P6-13 | Capacité : places restantes, place réservée 45 min pendant le paiement, contrôle sous verrou | 2026-10-06 | `2a76675` |
+| P6-14 | Mobile : « Mes inscriptions » | 2026-10-06 | `66977a9` |
+| P6-15 | Back-office : inscrits d'un stage | 2026-10-06 | `47a0af6` |
+| P6-16 | Back-office : liste des paiements | 2026-10-06 | `47a0af6` |
