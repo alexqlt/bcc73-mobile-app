@@ -190,14 +190,16 @@ export type FieldChange = { field: string; before: string; after: string };
  * concernés, l'email seulement pour un compte sans membre), noms des rôles et des permissions.
  */
 export async function loadJournalContext(supabase: Supabase) {
-  const [{ data: roles }, { data: permissions }, { data: people }] = await Promise.all([
+  const [{ data: roles }, { data: permissions }, { data: people }, { data: stages }] = await Promise.all([
     supabase.from("roles").select("id, name"),
     supabase.from("permissions").select("code, description"),
     supabase.rpc("journal_people"),
+    supabase.from("stages").select("id, title"),
   ]);
   const nameById = new Map((people ?? []).map((person) => [person.id, person.display_name]));
   const roleNameById = new Map((roles ?? []).map((role) => [role.id, role.name]));
   const permissionById = new Map((permissions ?? []).map((p) => [p.code, p.description]));
+  const stageTitleById = new Map((stages ?? []).map((stage) => [stage.id, stage.title]));
 
   /** Valeur lisible d'un champ : euros, oui / non, dates, noms des rôles et des comptes… */
   const formatValue = (field: string, value: unknown): string => {
@@ -256,6 +258,15 @@ export async function loadJournalContext(supabase: Supabase) {
     },
     /** Libellé de l'action. */
     action(log: AuditLog) {
+      // Archivage / désarchivage d'une actualité ou d'un événement : une modification de archived_at.
+      if (log.action === "update" && (log.target_type === "news" || log.target_type === "stages")) {
+        const row = (log.details as { new?: Record<string, unknown>; old?: Record<string, unknown> }) ?? {};
+        const before = row.old?.archived_at ?? null;
+        const after = row.new?.archived_at ?? null;
+        const what = log.target_type === "news" ? "une actualité" : "un événement";
+        if (!before && after) return `a archivé ${what}`;
+        if (before && !after) return `a désarchivé ${what}`;
+      }
       return eventLabels[`${log.action}:${log.target_type}`] ?? `${log.action} ${log.target_type}`;
     },
     /** Détail lisible de l'élément concerné, à partir de la ligne enregistrée. */
@@ -270,6 +281,8 @@ export async function loadJournalContext(supabase: Supabase) {
           license_number?: string;
         }) ?? {};
       const data = row.new ?? row.old ?? {};
+      // Tarif d'un événement : seulement le nom de l'événement (le détail est dans les changements).
+      if (log.target_type === "stage_prices") return (data.stage_id && stageTitleById.get(data.stage_id)) || "Événement supprimé";
       const parts = [
         // Compte créé depuis le back-office.
         log.target_type === "accounts" && log.target_id && (nameById.get(log.target_id) ?? "un utilisateur"),
