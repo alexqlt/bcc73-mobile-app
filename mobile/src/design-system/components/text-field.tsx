@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type Ref } from 'react';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { useDS } from '../theme-context';
@@ -6,6 +6,7 @@ import { Space } from '../tokens';
 import { Text } from './text';
 
 export type TextFieldProps = TextInputProps & {
+  ref?: Ref<TextInput>;
   label: string;
   hint?: string;
   error?: string;

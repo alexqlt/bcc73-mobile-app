@@ -1,8 +1,11 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { StatusBar } from 'expo-status-bar';
 import { useState, type ReactNode } from 'react';
+import { useForm } from 'react-hook-form';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { FormTextField } from '@/components/form/form-text-field';
 import { BottomTabInset, MaxContentWidth } from '@/constants/theme';
 import {
   AlertBanner,
@@ -17,11 +20,11 @@ import {
   StageCard,
   TabBarPreview,
   Text,
-  TextField,
   useDesignSystem,
   type ColorTokens,
   type TextVariant,
 } from '@/design-system';
+import { licenceFormSchema, type LicenceForm } from '@/features/auth/schemas';
 
 const scheduleFilters = ['Jeu libre', 'Entraînement', 'Vacances'];
 
@@ -45,8 +48,6 @@ export function DesignShowcase() {
   const { tokens, mode } = useDesignSystem();
   const { colors } = tokens;
   const [filter, setFilter] = useState(scheduleFilters[0]);
-  const [licence, setLicence] = useState('');
-  const licenceError = licence.length > 0 && !/^\d{8}$/.test(licence) ? 'Le numéro de licence comporte 8 chiffres.' : undefined;
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top }]}>
@@ -126,17 +127,7 @@ export function DesignShowcase() {
           </Section>
 
           <Section eyebrow="Inscription" title="Formulaire">
-            <TextField
-              label="Numéro de licence"
-              placeholder="08XXXXXX"
-              keyboardType="number-pad"
-              maxLength={8}
-              value={licence}
-              onChangeText={setLicence}
-              hint="Il figure sur votre licence FFBaD."
-              error={licenceError}
-            />
-            <Button title="Vérifier" fullWidth disabled={licence.length !== 8 || !!licenceError} />
+            <LicenceFormDemo />
           </Section>
 
           <Section eyebrow="Navigation" title="Barre d'onglets">
@@ -177,6 +168,34 @@ export function DesignShowcase() {
         </View>
       </ScrollView>
     </View>
+  );
+}
+
+/** Exemple de formulaire : React Hook Form + schéma Zod partagé. */
+function LicenceFormDemo() {
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<LicenceForm>({
+    resolver: zodResolver(licenceFormSchema),
+    defaultValues: { licenceNumber: '' },
+    mode: 'onChange',
+  });
+
+  return (
+    <>
+      <FormTextField
+        control={control}
+        name="licenceNumber"
+        label="Numéro de licence"
+        placeholder="08XXXXXX"
+        keyboardType="number-pad"
+        maxLength={8}
+        hint="Il figure sur votre licence FFBaD."
+      />
+      <Button title="Vérifier" fullWidth disabled={!isValid} onPress={handleSubmit(() => {})} />
+    </>
   );
 }
 
