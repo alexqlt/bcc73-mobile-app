@@ -16,6 +16,7 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 - [ ] **P1-18** Tester l'ajout d'un enfant (le reste du parcours mobile est validé)
 - [ ] **P2-13** Tester le back-office : connexion, validation de licence, création de rôle, attribution, journal
+- [ ] **P3-07** Tester les actualités : publication avec photo depuis le back-office, affichage accueil / liste / détail sur téléphone
 
 ---
 
@@ -35,11 +36,6 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ### Phase 3 — Actualités
 
-- [ ] **P3-01** Table `news` + stockage des photos (Supabase Storage) + RLS
-- [ ] **P3-02** Mobile : écran d'accueil
-- [ ] **P3-03** Mobile : liste des actualités
-- [ ] **P3-04** Mobile : détail d'une actualité
-- [ ] **P3-05** Back-office : créer / modifier / publier / supprimer une actualité (titre, photo, contenu)
 - [ ] **P3-06** Case « Envoyer une notification push » à la publication (dépend de P7-01)
 
 ### Phase 4 — Planning
@@ -173,3 +169,8 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 | P1-19 | Licence du parent facultative : accès dès qu'une licence du compte (parent ou enfant) est en attente ou validée | 2026-10-05 | `4ccface` |
 | DS-02 | Logo du club (clair / sombre) dans l'app, le splash et le back-office ; écrans de connexion centrés | 2026-10-05 | `da04539` |
 | DS-03 | Animation d'introduction : logo plein écran (splash jaune) qui rejoint le bandeau de connexion | 2026-10-05 | `5a7727d` |
+| P3-01 | Table `news` (brouillon / publiée) + RLS par permissions `NEWS_*` + bucket public `news-photos` (5 Mo) | 2026-10-05 | `b44f018` |
+| P3-02 | Accueil : salutation, bandeau de validation, 3 dernières actualités | 2026-10-05 | `b44f018` |
+| P3-03 | Liste des actualités paginée, tirer pour rafraîchir | 2026-10-05 | `b44f018` |
+| P3-04 | Détail d'une actualité (photo, date, paragraphes) | 2026-10-05 | `b44f018` |
+| P3-05 | Back-office : créer, modifier, publier / dépublier, supprimer une actualité avec photo | 2026-10-05 | `b44f018` |
