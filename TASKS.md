@@ -172,3 +172,4 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 | P2-05 | `my_permissions()` + hook `usePermissions` dans l'app | 2026-10-05 | `a61727f` |
 | P1-19 | Licence du parent facultative : accès dès qu'une licence du compte (parent ou enfant) est en attente ou validée | 2026-10-05 | `4ccface` |
 | DS-02 | Logo du club (clair / sombre) dans l'app, le splash et le back-office ; écrans de connexion centrés | 2026-10-05 | `da04539` |
+| DS-03 | Animation d'introduction : logo plein écran (splash jaune) qui rejoint le bandeau de connexion | 2026-10-05 | `5a7727d` |
