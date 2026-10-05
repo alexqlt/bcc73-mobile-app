@@ -14,7 +14,8 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ## 🔄 En cours
 
-- [ ] **P1-18** Tester le parcours complet sur téléphone : inscription → code reçu par email (Brevo) → licence → validation SQL → profil
+- [ ] **P1-18** Tester l'ajout d'un enfant (le reste du parcours mobile est validé)
+- [ ] **P2-13** Tester le back-office : connexion, validation de licence, création de rôle, attribution, journal
 
 ---
 
@@ -30,17 +31,8 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ### Phase 2 — Rôles, permissions et back-office utilisateurs
 
-- [ ] **P2-01** Tables `roles`, `permissions`, `role_permissions`, `account_roles`
-- [ ] **P2-02** Seed des permissions (`NEWS_*`, `SCHEDULE_*`, `STAGE_*`, `VOLANT_*`, `MEMBER_*`, `PAYMENT_VIEW`, `USER_MANAGE`, `ROLE_MANAGE`)
-- [ ] **P2-03** Seed des rôles de base (Administrateur, Communication, Responsable stages, Responsable boutique)
-- [ ] **P2-04** Vérification des permissions côté serveur (fonction SQL + RLS)
-- [ ] **P2-05** Endpoint « mes permissions » consommé par l'app (l'app n'en décide jamais seule)
-- [ ] **P2-06** Back-office : authentification et layout (menu latéral, tableau de bord)
-- [ ] **P2-07** Back-office : liste et fiche des adhérents, **validation / refus des licences en attente** (remplace la procédure SQL de `supabase/README.md`)
-- [ ] **P2-08** Back-office : liste des utilisateurs
-- [ ] **P2-09** Back-office : créer un rôle / ajouter des permissions
-- [ ] **P2-10** Back-office : attribuer un rôle à un utilisateur
-- [ ] **P2-11** Journalisation des actions administratives (`audit_logs`)
+- [ ] **P2-12** Hébergement du back-office (ex. Vercel) sur `admin.bcc73.com` — à faire avant d'ouvrir l'accès aux bénévoles
+
 
 ### Phase 3 — Actualités
 
@@ -168,3 +160,14 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 | P1-15 | Ajouter / retirer un enfant rattaché au compte | 2026-10-05 | `f99e78e` |
 | P1-09 | Validation manuelle des licences par SQL (procédure dans `supabase/README.md`) | 2026-10-05 | `427eff9` |
 | P1-17 | Emails envoyés par Brevo (`info@bcc73.com`), modèles en français avec code à 6 chiffres | 2026-10-05 | `d9e9e1e` |
+| P2-01 | Tables `roles`, `permissions`, `role_permissions`, `account_roles` + RLS | 2026-10-05 | `76184bf` |
+| P2-02 | 20 permissions d'APP.md | 2026-10-05 | `76184bf` |
+| P2-03 | Rôles Administrateur, Secrétariat, Communication, Responsable stages, Responsable boutique | 2026-10-05 | `76184bf` |
+| P2-04 | Vérification côté serveur (`has_permission`), pas d'escalade, toujours un administrateur | 2026-10-05 | `76184bf` |
+| P2-11 | Journal `audit_logs` (rôles, permissions, validations de licences) | 2026-10-05 | `76184bf` |
+| P2-06 | Back-office : connexion, proxy de session, menu selon les permissions | 2026-10-05 | `8e66d20` |
+| P2-07 | Back-office : adhérents, validation / refus des licences | 2026-10-05 | `8e66d20` |
+| P2-08 | Back-office : utilisateurs | 2026-10-05 | `8e66d20` |
+| P2-09 | Back-office : rôles et permissions | 2026-10-05 | `8e66d20` |
+| P2-10 | Back-office : attribution des rôles | 2026-10-05 | `8e66d20` |
+| P2-05 | `my_permissions()` + hook `usePermissions` dans l'app | 2026-10-05 | `a61727f` |
