@@ -165,3 +165,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P7-09 | Emails transactionnels par l'API Brevo (`send-email`, `email_log`) | 2026-10-06 | `35fd114` |
 | P7-10 | Emails : bienvenue, licence validée, paiement reçu, inscription au stage | 2026-10-06 | `35fd114` |
 | P2-14 | Back-office : créer un compte (mot de passe provisoire) et lui attribuer des rôles | 2026-10-06 | `87a8e93` |
+| P6-18 | App : stages et volants réunis dans l'onglet Boutique, historique commun des inscriptions et des achats ; onglet Plus retiré | 2026-10-06 | `ab70cab` |
