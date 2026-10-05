@@ -16,8 +16,6 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 - [ ] **P6-01** Compte et accès API HelloAsso : créer l'association de test sur helloasso-sandbox.com, récupérer le client API, enregistrer les secrets et l'URL de notification (procédure dans `supabase/README.md`), puis la même chose en production
 - [ ] **P6-17** Tester les paiements en sandbox : achat de volants, inscription à un stage (place réservée, complet), paiement abandonné, remise des articles, liste des inscrits et des paiements
-- [ ] **P1-18** Tester l'ajout d'un enfant (le reste du parcours mobile est validé)
-- [ ] **P2-13** Tester le back-office : connexion, validation de licence, création de rôle, attribution, journal
 
 ---
 
@@ -170,3 +168,5 @@ _Reste P6-01 et le test P6-17, en cours._
 | P6-14 | Mobile : « Mes inscriptions » | 2026-10-06 | `66977a9` |
 | P6-15 | Back-office : inscrits d'un stage | 2026-10-06 | `47a0af6` |
 | P6-16 | Back-office : liste des paiements | 2026-10-06 | `47a0af6` |
+| P1-18 | Ajout d'un enfant testé (parcours mobile complet validé) | 2026-10-06 | — |
+| P2-13 | Back-office testé : connexion, validation de licence, création de rôle, attribution, journal | 2026-10-06 | — |
