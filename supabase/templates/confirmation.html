@@ -1,0 +1,17 @@
+<!-- Email de confirmation d'inscription. Le code {{ .Token }} est saisi dans l'application. -->
+<div style="font-family: Georgia, serif; color: #0d0d0d; max-width: 480px; margin: 0 auto; padding: 24px;">
+  <p style="font-family: Arial, sans-serif; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 22px; margin: 0;">
+    BCC<span style="background: #ffdb06; padding: 0 6px; margin-left: 4px;">73</span>
+  </p>
+  <h1 style="font-family: Arial, sans-serif; text-transform: uppercase; font-size: 20px; margin: 24px 0 8px;">
+    Bienvenue au club !
+  </h1>
+  <p>Pour confirmer votre adresse email, saisissez ce code dans l'application :</p>
+  <p style="font-family: Arial, sans-serif; font-size: 32px; font-weight: bold; letter-spacing: 8px; background: #f7f7f7; border-left: 6px solid #ffdb06; padding: 16px 24px;">
+    {{ .Token }}
+  </p>
+  <p style="color: #5c5c5c; font-size: 14px;">
+    Ce code est valable une heure. Si vous n'avez pas créé de compte sur l'application du
+    Badminton Club de Chambéry, ignorez cet email.
+  </p>
+</div>
