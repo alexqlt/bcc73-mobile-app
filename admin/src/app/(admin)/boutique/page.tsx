@@ -3,11 +3,11 @@ import Link from "next/link";
 import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Badge, Button, Card, EmptyState, formatDate, Input, Label, PageHeader } from "@/components/ui";
-import { requireAnyPermission, SHOP_PERMISSIONS } from "@/lib/auth";
+import { isAdmin, requireAnyPermission, SHOP_PERMISSIONS } from "@/lib/auth";
 import { eurosInputValue, formatEuros } from "@/lib/shop";
 import { createClient } from "@/lib/supabase/server";
 
-import { createProduct, deleteProduct, setPickedUp, updateProduct } from "./actions";
+import { cancelTestOrder, createProduct, deleteProduct, setPickedUp, updateProduct } from "./actions";
 
 export const metadata = { title: "Boutique — BCC73 Administration" };
 
@@ -25,7 +25,7 @@ export default async function BoutiquePage({ searchParams }: PageProps<"/boutiqu
 
   let salesQuery = supabase
     .from("orders")
-    .select("id, payer_name, payer_email, total_cents, paid_at, picked_up_at, order_items (label, quantity)")
+    .select("id, provider, payer_name, payer_email, total_cents, paid_at, picked_up_at, order_items (label, quantity)")
     .eq("type", "shop")
     .eq("status", "paid")
     .order("paid_at", { ascending: false })
@@ -39,7 +39,9 @@ export default async function BoutiquePage({ searchParams }: PageProps<"/boutiqu
   if (products.error) throw products.error;
   if (sales.error) throw sales.error;
 
-  const total = sales.data.reduce((sum, order) => sum + order.total_cents, 0);
+  const admin = await isAdmin();
+  // Les commandes du mode développeur ne sont pas des ventes.
+  const total = sales.data.filter((order) => order.provider !== "test").reduce((sum, order) => sum + order.total_cents, 0);
 
   return (
     <>
@@ -115,9 +117,10 @@ export default async function BoutiquePage({ searchParams }: PageProps<"/boutiqu
             {sales.data.map((order) => (
               <li key={order.id} className="flex flex-col gap-2 p-4 md:flex-row md:items-center md:gap-4">
                 <div className="flex-1">
-                  <p>
-                    <strong>{order.payer_name ?? "Adhérent"}</strong>{" "}
+                  <p className="flex flex-wrap items-center gap-2">
+                    <strong>{order.payer_name ?? "Adhérent"}</strong>
                     <span className="text-sm text-muted">{order.payer_email}</span>
+                    {order.provider === "test" && <Badge tone="accent">Test</Badge>}
                   </p>
                   <p className="text-sm">
                     {order.order_items.map((item) => `${item.quantity} × ${item.label}`).join(", ")} ·{" "}
@@ -128,13 +131,23 @@ export default async function BoutiquePage({ searchParams }: PageProps<"/boutiqu
                     {order.picked_up_at && ` · remis le ${formatDate(order.picked_up_at)}`}
                   </p>
                 </div>
-                <ActionForm action={setPickedUp}>
-                  <input type="hidden" name="orderId" value={order.id} />
-                  <input type="hidden" name="pickedUp" value={String(!order.picked_up_at)} />
-                  <Button type="submit" variant={order.picked_up_at ? "secondary" : "accent"}>
-                    {order.picked_up_at ? "Annuler la remise" : "Marquer comme remis"}
-                  </Button>
-                </ActionForm>
+                <div className="flex flex-wrap gap-2">
+                  <ActionForm action={setPickedUp}>
+                    <input type="hidden" name="orderId" value={order.id} />
+                    <input type="hidden" name="pickedUp" value={String(!order.picked_up_at)} />
+                    <Button type="submit" variant={order.picked_up_at ? "secondary" : "accent"}>
+                      {order.picked_up_at ? "Annuler la remise" : "Marquer comme remis"}
+                    </Button>
+                  </ActionForm>
+                  {admin && order.provider === "test" && (
+                    <ActionForm action={cancelTestOrder}>
+                      <input type="hidden" name="orderId" value={order.id} />
+                      <Button type="submit" variant="secondary">
+                        Annuler le test
+                      </Button>
+                    </ActionForm>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

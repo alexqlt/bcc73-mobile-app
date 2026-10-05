@@ -73,3 +73,13 @@ export async function setPickedUp(_state: ActionState, formData: FormData): Prom
   refresh();
   return null;
 }
+
+/** Annule une commande du mode développeur (administrateurs, vérifié par la base). */
+export async function cancelTestOrder(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_cancel_test_order", { order_id: String(formData.get("orderId")) });
+  if (error) return toActionState(error);
+  refresh();
+  return null;
+}
+
