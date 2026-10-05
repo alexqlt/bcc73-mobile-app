@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
 
@@ -12,7 +13,14 @@ import { signInSchema, type SignInForm } from '@/features/auth/schemas';
 
 import { AuthScreen, authStyles } from './auth-screen';
 
+/** L'introduction ne se joue qu'une fois par lancement de l'app (pas après une déconnexion). */
+let hasPlayedIntro = false;
+
 export function SignInScreen() {
+  const [intro] = useState(() => !hasPlayedIntro);
+  useEffect(() => {
+    hasPlayedIntro = true;
+  }, []);
   const signIn = useSignIn();
   const resendCode = useResendSignUpCode();
   const { control, handleSubmit } = useForm<SignInForm>({
@@ -33,7 +41,7 @@ export function SignInScreen() {
   );
 
   return (
-    <AuthScreen title="Connexion" description="Retrouvez l'actualité, le planning et les stages du club.">
+    <AuthScreen intro={intro} title="Connexion" description="Retrouvez l'actualité, le planning et les stages du club.">
       <View style={styles.form}>
         <FormTextField
           control={control}

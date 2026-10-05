@@ -5,13 +5,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Logo, SectionTitle, Space, Text, useDS } from '@/design-system';
 
-/** Hauteur du biseau qui termine le bandeau jaune. */
-const DIAGONAL_HEIGHT = 56;
+import {
+  DIAGONAL_HEIGHT,
+  HERO_LOGO_HEIGHT,
+  HERO_PADDING_BOTTOM,
+  HERO_PADDING_TOP,
+  SplashIntro,
+} from './splash-intro';
 
 export type AuthScreenProps = {
   title: string;
   description?: string;
   children: ReactNode;
+  /** Joue l'animation d'introduction (logo plein écran qui rejoint le bandeau). */
+  intro?: boolean;
 };
 
 /**
@@ -19,7 +26,7 @@ export type AuthScreenProps = {
  * page d'accueil de bcc73.com : bandeau jaune terminé en diagonale, logo au volant blanc,
  * contenu sur fond gris clair.
  */
-export function AuthScreen({ title, description, children }: AuthScreenProps) {
+export function AuthScreen({ title, description, children, intro = false }: AuthScreenProps) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { colors } = useDS();
@@ -33,8 +40,8 @@ export function AuthScreen({ title, description, children }: AuthScreenProps) {
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Space.xxl }]}>
-        <View style={[styles.hero, { backgroundColor: colors.accent, paddingTop: insets.top + Space.xl }]}>
-          <Logo height={140} background="accent" />
+        <View style={[styles.hero, { backgroundColor: colors.accent, paddingTop: insets.top + HERO_PADDING_TOP }]}>
+          <Logo height={HERO_LOGO_HEIGHT} background="accent" />
         </View>
         <View
           style={[
@@ -55,6 +62,7 @@ export function AuthScreen({ title, description, children }: AuthScreenProps) {
           {children}
         </View>
       </ScrollView>
+      {intro && <SplashIntro />}
     </KeyboardAvoidingView>
   );
 }
@@ -68,7 +76,7 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: 'center',
-    paddingBottom: Space.sm,
+    paddingBottom: HERO_PADDING_BOTTOM,
   },
   // Triangle jaune : haut sur toute la largeur, descend à gauche (comme le panneau du site).
   diagonal: {
