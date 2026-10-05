@@ -14,7 +14,7 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ## 🔄 En cours
 
-- [ ] **P0-05** Créer le projet Supabase dev — _fait : dossier `supabase/` initialisé. Reste : créer `bcc73-dev` sur supabase.com, renseigner `mobile/.env.local` et `admin/.env.local`, puis `npx supabase@latest link`_
+- [ ] **P0-05** Créer le projet Supabase dev — _fait : dossier `supabase/` initialisé, projet `bcc73-dev` (ref `avqfxxepxieugwgiidqa`) créé et branché via `.env.local` (mobile + admin). Reste : `npx supabase@latest login` puis `link --project-ref avqfxxepxieugwgiidqa`_
 - [ ] **P0-11** CI — _fait : workflow `.github/workflows/ci.yml`. Reste : créer le dépôt GitHub et y pousser le code pour l'activer_
 - [ ] **P0-12** EAS — _fait : `eas.json`. Reste : `npx eas-cli@latest login` puis `init`, et choisir les identifiants de l'app (bundle iOS / package Android)_
 
