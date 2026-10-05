@@ -29,10 +29,17 @@ export function useMembers() {
   });
 }
 
-/** Le titulaire du compte, en ignorant les demandes refusées remplacées depuis. */
+/**
+ * Le compte accède au contenu du club dès qu'au moins une licence (celle du parent ou d'un
+ * enfant rattaché) est validée ou en cours de validation. La licence du parent est facultative.
+ */
+export function hasClubAccess(members: Member[] | undefined) {
+  return members?.some((member) => member.status !== 'rejected') ?? false;
+}
+
+/** Le titulaire du compte, s'il a indiqué sa propre licence (et qu'elle n'est pas refusée). */
 export function selectAccountHolder(members: Member[] | undefined) {
-  const holders = members?.filter((member) => member.is_account_holder) ?? [];
-  return holders.find((member) => member.status !== 'rejected') ?? holders.at(-1);
+  return members?.find((member) => member.is_account_holder && member.status !== 'rejected');
 }
 
 /** Rattache un membre au compte. Il reste « en attente » jusqu'à la validation par le club. */

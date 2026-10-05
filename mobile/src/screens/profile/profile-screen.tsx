@@ -17,7 +17,13 @@ import {
 } from '@/design-system';
 import { useSignOut } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/auth-provider';
-import { useAddMember, useMembers, useRemoveMember, type Member } from '@/features/members/api';
+import {
+  selectAccountHolder,
+  useAddMember,
+  useMembers,
+  useRemoveMember,
+  type Member,
+} from '@/features/members/api';
 import { memberStatusLabel, memberStatusTone } from '@/features/members/status';
 import { usePermissions } from '@/features/permissions/api';
 
@@ -55,7 +61,9 @@ export function ProfileScreen() {
         <View style={styles.section}>
           <Text variant="subtitle">Membres du compte</Text>
           {members.data?.map((member) => <MemberCard key={member.id} member={member} />)}
-          <AddMemberSection />
+          <AddMemberSection kind="child" />
+          {/* La licence du parent est facultative : il peut l'ajouter plus tard. */}
+          {!selectAccountHolder(members.data) && <AddMemberSection kind="self" />}
         </View>
 
         <View style={styles.section}>
@@ -77,7 +85,8 @@ export function ProfileScreen() {
 
 function MemberCard({ member }: { member: Member }) {
   const removeMember = useRemoveMember();
-  const canRemove = !member.is_account_holder && member.status !== 'approved';
+  // Une licence validée ne se retire plus depuis l'app (le club doit intervenir).
+  const canRemove = member.status !== 'approved';
 
   return (
     <Card highlighted={member.is_account_holder}>
@@ -85,8 +94,7 @@ function MemberCard({ member }: { member: Member }) {
         {member.first_name} {member.last_name}
       </Text>
       <Text variant="small" color="textMuted">
-        Licence {member.license_number}
-        {member.is_account_holder ? ' · Titulaire du compte' : ''}
+        Licence {member.license_number} · {member.is_account_holder ? 'Votre licence' : 'Enfant rattaché'}
       </Text>
       <Badge label={memberStatusLabel[member.status]} tone={memberStatusTone[member.status]} />
       {member.status === 'rejected' && member.rejection_reason && (
@@ -106,27 +114,41 @@ function MemberCard({ member }: { member: Member }) {
   );
 }
 
-/** Ajout d'un membre rattaché au compte, par exemple un enfant (P1-15). */
-function AddMemberSection() {
+const addMemberTexts = {
+  child: {
+    button: 'Ajouter un enfant',
+    title: 'Ajouter un enfant',
+    hint: 'Sa licence sera vérifiée par le club.',
+  },
+  self: {
+    button: 'Ajouter ma licence (facultatif)',
+    title: 'Ajouter ma licence',
+    hint: 'Facultatif si vous ne jouez pas : vos enfants licenciés suffisent pour accéder à l’application.',
+  },
+};
+
+/** Ajout d'un enfant (P1-15) ou de la licence du parent, rattachés au compte. */
+function AddMemberSection({ kind }: { kind: 'child' | 'self' }) {
   const [isOpen, setIsOpen] = useState(false);
   const addMember = useAddMember();
+  const texts = addMemberTexts[kind];
 
   if (!isOpen) {
-    return <Button title="Ajouter un enfant" variant="secondary" fullWidth onPress={() => setIsOpen(true)} />;
+    return <Button title={texts.button} variant="secondary" fullWidth onPress={() => setIsOpen(true)} />;
   }
 
   return (
     <Card>
-      <Text variant="subtitle">Ajouter un enfant</Text>
+      <Text variant="subtitle">{texts.title}</Text>
       <Text variant="small" color="textMuted">
-        Sa licence sera vérifiée par le club, comme la vôtre.
+        {texts.hint}
       </Text>
       <MemberFormFields
         submitLabel="Ajouter"
         isSubmitting={addMember.isPending}
         error={addMember.error}
         onSubmit={(values) =>
-          addMember.mutate({ ...values, isAccountHolder: false }, { onSuccess: () => setIsOpen(false) })
+          addMember.mutate({ ...values, isAccountHolder: kind === 'self' }, { onSuccess: () => setIsOpen(false) })
         }
       />
       <Button title="Annuler" variant="ghost" onPress={() => setIsOpen(false)} />

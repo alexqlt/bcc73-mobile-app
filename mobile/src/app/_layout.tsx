@@ -9,7 +9,7 @@ import { useColorScheme } from 'react-native';
 
 import { DesignSystemProvider } from '@/design-system';
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
-import { selectAccountHolder, useMembers } from '@/features/members/api';
+import { hasClubAccess, useMembers } from '@/features/members/api';
 import { queryClient } from '@/lib/query-client';
 
 SplashScreen.preventAutoHideAsync();
@@ -43,16 +43,16 @@ export default function RootLayout() {
 /**
  * Aiguillage selon l'état de l'utilisateur :
  * - non connecté → connexion / inscription ;
- * - connecté sans licence (ou licence refusée) → saisie de la licence ;
- * - connecté avec une licence (en attente ou validée) → l'application.
+ * - connecté sans aucune licence sur le compte (ou seulement des licences refusées)
+ *   → saisie de sa licence ou de celle d'un enfant ;
+ * - au moins une licence en attente ou validée (parent ou enfant) → l'application.
  *
  * Ce n'est qu'un confort d'affichage : les droits réels sont vérifiés par la base (RLS).
  */
 function RootNavigator() {
   const { session, isLoading } = useAuth();
   const members = useMembers();
-  const holder = selectAccountHolder(members.data);
-  const hasLicence = !!holder && holder.status !== 'rejected';
+  const hasLicence = hasClubAccess(members.data);
   const isSignedIn = !!session;
   const ready = !isLoading && (!isSignedIn || !members.isPending);
 
