@@ -1,11 +1,9 @@
-// Fournit le `localStorage` (adossé à SQLite) dans lequel Supabase conserve la session sur le téléphone.
-import 'expo-sqlite/localStorage/install';
-
 import { createClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
 import type { Database } from './database.types';
 import { env } from './env';
+import { sessionStorage } from './session-storage';
 
 /**
  * Client Supabase de l'application. À n'utiliser que depuis `src/features/` :
@@ -13,8 +11,7 @@ import { env } from './env';
  */
 export const supabase = createClient<Database>(env.supabaseUrl, env.supabasePublishableKey, {
   auth: {
-    // Absent pendant le rendu statique web (côté serveur) : la session n'est alors pas persistée.
-    storage: typeof localStorage === 'undefined' ? undefined : localStorage,
+    storage: sessionStorage,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
