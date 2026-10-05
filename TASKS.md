@@ -176,3 +176,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P6-20 | Mode test des stages (administrateurs) : inscription sans paiement, marquée « Test », annulable, exclue des ventes | 2026-10-06 | `9f17931` |
 | P6-21 | Mode développeur (administrateurs, Mon profil) : paiements des stages et des volants sans HelloAsso, bouton explicite | 2026-10-06 | `de8b681` |
 | P6-22 | Vocabulaire : « stage » devient « événement » (app, back-office, emails, rôles, permissions) | 2026-10-06 | `0b2cbe7` |
+| P6-23 | Types d'événements : stage (jours, tarifs par jour) et repas du club (soirée, tarifs Adulte / Enfant par participant) | 2026-10-07 | `74fa39b` |
