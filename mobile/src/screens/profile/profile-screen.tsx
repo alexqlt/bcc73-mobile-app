@@ -4,9 +4,9 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MemberFormFields } from '@/components/form/member-form';
+import { PendingValidationBanner } from '@/components/pending-validation-banner';
 import { BottomTabInset, MaxContentWidth, WebTopInset } from '@/constants/theme';
 import {
-  AlertBanner,
   Badge,
   Button,
   Card,
@@ -27,7 +27,6 @@ export function ProfileScreen() {
   const { session } = useAuth();
   const members = useMembers();
   const signOut = useSignOut();
-  const hasPending = members.data?.some((member) => member.status === 'pending');
 
   return (
     <ScrollView
@@ -44,12 +43,7 @@ export function ProfileScreen() {
         <SectionTitle eyebrow="Mon badminton" title="Mon profil" />
         <Text color="textMuted">{session?.user.email}</Text>
 
-        {hasPending && (
-          <AlertBanner
-            title="Validation en cours"
-            message="Un responsable du club va vérifier vos licences. Certaines fonctionnalités (stages, boutique) seront disponibles une fois la validation faite."
-          />
-        )}
+        <PendingValidationBanner />
 
         <View style={styles.section}>
           <Text variant="subtitle">Membres du compte</Text>

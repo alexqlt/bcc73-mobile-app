@@ -6,6 +6,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FormTextField } from '@/components/form/form-text-field';
+import { PendingValidationBanner } from '@/components/pending-validation-banner';
 import { BottomTabInset, MaxContentWidth, WebTopInset } from '@/constants/theme';
 import {
   AlertBanner,
@@ -56,6 +57,8 @@ export function DesignShowcase() {
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + BottomTabInset + Space.xxl }}>
         <View style={styles.content}>
           <Header />
+
+          <PendingValidationBanner />
 
           <AlertBanner
             title="Info club"
