@@ -124,7 +124,8 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
 
 /** Détail d'une ligne : ancienne et nouvelle valeur de chaque champ modifié (ou valeurs créées / supprimées). */
 function ChangesTable({ action, changes }: { action: string; changes: FieldChange[] }) {
-  const created = action === "insert";
+  // Création, validation / refus de licence : une seule valeur par champ (pas d'avant / après).
+  const created = action !== "update" && action !== "delete";
   const deleted = action === "delete";
   return (
     <div className="overflow-x-auto px-4 pb-4 sm:pl-44">

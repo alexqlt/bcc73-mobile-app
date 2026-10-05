@@ -230,18 +230,12 @@ export async function loadJournalContext(supabase: Supabase) {
      */
     changes(log: AuditLog): FieldChange[] {
       const row = (log.details as { new?: Record<string, unknown>; old?: Record<string, unknown> }) ?? {};
-      // Validation / refus d'une licence : le membre concerné et le changement de statut.
+      // Validation / refus d'une licence : seulement le membre concerné et sa licence.
       if (log.target_type === "members" && (log.action === "approve" || log.action === "reject")) {
-        const licence = log.details as { member?: string; license_number?: string; previous_status?: string; reason?: string };
+        const licence = log.details as { member?: string; license_number?: string };
         return [
           licence.member && { field: "Membre", before: "", after: licence.member },
           licence.license_number && { field: "Licence", before: "", after: licence.license_number },
-          {
-            field: "Statut",
-            before: licence.previous_status ? formatValue("status", licence.previous_status) : "—",
-            after: formatValue("status", log.action === "approve" ? "approved" : "rejected"),
-          },
-          licence.reason && { field: "Motif du refus", before: "", after: licence.reason },
         ].filter((change): change is FieldChange => !!change);
       }
       if (!row.new && !row.old) return [];

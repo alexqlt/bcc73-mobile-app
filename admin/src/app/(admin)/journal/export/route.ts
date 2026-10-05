@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     journal
       .changes(log)
       .map((change) =>
-        log.action === "insert"
+        log.action !== "update" && log.action !== "delete"
           ? `${change.field} : ${change.after}`
           : log.action === "delete"
             ? `${change.field} : ${change.before}`
