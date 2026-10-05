@@ -11,14 +11,12 @@ export const metadata = { title: "Connexion — BCC73 Administration" };
 export default async function ConnexionPage({ searchParams }: PageProps<"/connexion">) {
   const disabled = (await searchParams).desactive === "1";
   return (
-    <main className="flex flex-1 items-center justify-center p-6">
-      <Card highlighted className="w-full max-w-md">
-        <Logo height={110} />
-        <h1 className="mt-4 text-3xl">Administration</h1>
-        <div className="mt-2 h-1.5 w-12 -skew-x-[20deg] bg-accent" />
-        <p className="mt-4 text-sm text-muted">
-          Connectez-vous avec le compte que vous utilisez dans l&apos;application du club.
-        </p>
+    // Fond jaune du club (comme l'accueil de l'app), carte nette avec une ombre noire décalée.
+    <main className="flex flex-1 items-center justify-center bg-accent p-6">
+      <Card className="w-full max-w-md shadow-[8px_8px_0_0_#0d0d0d]">
+        <Logo height={110} className="flex justify-center" />
+        <h1 className="mt-4 text-center text-3xl">Administration</h1>
+        <div className="mx-auto mt-2 h-1.5 w-12 -skew-x-[20deg] bg-accent" />
         {disabled && (
           <p role="alert" className="mt-4 border-l-4 border-red-700 bg-red-700/10 p-3 text-sm">
             {ACCOUNT_DISABLED_MESSAGE}
