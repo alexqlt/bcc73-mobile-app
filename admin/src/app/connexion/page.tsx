@@ -2,6 +2,7 @@ import { ActionForm } from "@/components/action-form";
 import { Logo } from "@/components/logo";
 import { Button, Card, Input, Label } from "@/components/ui";
 import { ACCOUNT_DISABLED_MESSAGE } from "@/lib/action-state";
+import { createClient } from "@/lib/supabase/server";
 
 import { signIn } from "./actions";
 
@@ -10,6 +11,9 @@ export const metadata = { title: "Connexion — BCC73 Administration" };
 /** Même compte que dans l'application mobile. L'accès dépend ensuite des rôles attribués. */
 export default async function ConnexionPage({ searchParams }: PageProps<"/connexion">) {
   const disabled = (await searchParams).desactive === "1";
+  // Administrateurs à contacter (prénom et nom seulement, lisibles sans être connecté).
+  const supabase = await createClient();
+  const { data: admins } = await supabase.rpc("admin_contact_names");
   return (
     // Fond jaune du club (comme l'accueil de l'app), carte arrondie bordée de noir, légère ombre décalée.
     <main className="flex flex-1 items-center justify-center bg-accent p-6">
@@ -33,6 +37,17 @@ export default async function ConnexionPage({ searchParams }: PageProps<"/connex
           </div>
           <Button type="submit">Se connecter</Button>
         </ActionForm>
+        <p className="mt-6 text-center text-sm text-muted">
+          Un problème pour vous connecter ? Contactez un administrateur du club
+          {admins && admins.length > 0 ? (
+            <>
+              {" : "}
+              <span className="font-bold text-foreground">{new Intl.ListFormat("fr", { type: "conjunction" }).format(admins)}</span>.
+            </>
+          ) : (
+            "."
+          )}
+        </p>
       </Card>
     </main>
   );

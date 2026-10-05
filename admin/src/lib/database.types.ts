@@ -137,15 +137,25 @@ export type Database = {
           target_id?: string | null
           target_type?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "audit_logs_actor_id_fkey"
-            columns: ["actor_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      deleted_accounts: {
+        Row: {
+          deleted_at: string
+          display_name: string
+          id: string
+        }
+        Insert: {
+          deleted_at?: string
+          display_name: string
+          id: string
+        }
+        Update: {
+          deleted_at?: string
+          display_name?: string
+          id?: string
+        }
+        Relationships: []
       }
       email_log: {
         Row: {
@@ -803,6 +813,7 @@ export type Database = {
         Args: { order_id: string }
         Returns: undefined
       }
+      admin_contact_names: { Args: never; Returns: string[] }
       admin_list_members: {
         Args: never
         Returns: {
