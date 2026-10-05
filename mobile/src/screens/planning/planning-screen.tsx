@@ -6,8 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ErrorState, LoadingState } from '@/components/query-status';
 import { BottomTabInset, MaxContentWidth, WebTopInset } from '@/constants/theme';
 import {
-  Badge,
-  Button,
+  CalendarLegend,
   Card,
   Chip,
   ScheduleSlot,
@@ -15,51 +14,100 @@ import {
   Space,
   Text,
   useDesignSystem,
+  WeekCalendar,
+  type CalendarItem,
 } from '@/design-system';
 import {
-  addDays,
-  formatDayLabel,
   formatShortDay,
   formatTime,
   parseISODate,
+  scheduleTypeLabels,
   startOfWeek,
   toISODate,
   useHolidayPeriods,
   usePeriodOn,
   usePlanningWeek,
   weekdayLabels,
-  type PlanningSlot,
-  type SchedulePeriod,
 } from '@/features/schedule/api';
 
-type Filter = 'all' | 'free_play' | 'training' | 'holidays';
-type ViewMode = 'day' | 'week';
+type Source = 'week' | 'holidays';
+type Display = 'calendar' | 'list';
+type TypeFilter = 'all' | 'free_play' | 'training';
 
-const filters: { value: Filter; label: string }[] = [
+/** Un créneau de la semaine, rattaché à son jour (sans date). */
+type WeekSlot = CalendarItem & { location: string | null; note: string | null };
+
+const typeFilters: { value: TypeFilter; label: string }[] = [
   { value: 'all', label: 'Tout' },
   { value: 'free_play', label: 'Jeu libre' },
   { value: 'training', label: 'Entraînements' },
-  { value: 'holidays', label: 'Vacances' },
 ];
 
-/** P4-03 et P4-04 : planning du jour ou de la semaine, filtres, vacances et créneaux exceptionnels. */
+/** Jour ISO (1 = lundi … 7 = dimanche) d'une date. */
+function isoWeekday(date: Date) {
+  return ((date.getDay() + 6) % 7) + 1;
+}
+
+/**
+ * P4-03 et P4-04 : le planning est le même chaque semaine ; il est présenté par jour de la semaine,
+ * en calendrier ou en liste. Les changements de la semaine en cours (annulations, créneaux
+ * exceptionnels) y apparaissent ; pendant les vacances, le planning des vacances remplace l'habituel.
+ */
 export function PlanningScreen() {
   const insets = useSafeAreaInsets();
   const { tokens, mode } = useDesignSystem();
   const today = parseISODate(toISODate(new Date()));
-  const [filter, setFilter] = useState<Filter>('all');
-  const [view, setView] = useState<ViewMode>('day');
-  const [selected, setSelected] = useState(today);
+  const todayWeekday = isoWeekday(today);
 
-  const weekStart = startOfWeek(selected);
-  const week = usePlanningWeek(weekStart);
+  const [source, setSource] = useState<Source>('week');
+  const [display, setDisplay] = useState<Display>('calendar');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [selectedKey, setSelectedKey] = useState<string>();
+  const [listWeekday, setListWeekday] = useState(todayWeekday);
+
+  const week = usePlanningWeek(startOfWeek(today));
   const currentPeriod = usePeriodOn(today);
   const holidays = useHolidayPeriods(today);
+  // Prochaines vacances (pas celles en cours : elles sont déjà le planning de la semaine).
+  const nextHolidays = holidays.data?.find((period) => period.start_date > toISODate(today));
 
-  const refreshing = week.isRefetching || currentPeriod.isRefetching || holidays.isRefetching;
-  const isToday = toISODate(selected) === toISODate(today);
-  const step = view === 'day' ? 1 : 7;
-  const visibleSlots = (week.data ?? []).filter((slot) => filter === 'all' || slot.type === filter);
+  const query = source === 'week' ? week : holidays;
+  const allSlots: WeekSlot[] =
+    source === 'week'
+      ? (week.data ?? []).map((slot) => ({
+          key: `${slot.schedule_id}-${slot.day}`,
+          weekday: isoWeekday(parseISODate(slot.day)),
+          start: formatTime(slot.start_time),
+          end: formatTime(slot.end_time),
+          title: slot.title,
+          tone: slot.type,
+          cancelled: slot.is_cancelled,
+          exceptional: slot.is_exceptional,
+          location: slot.location,
+          note: slot.cancellation_reason,
+        }))
+      : (nextHolidays?.schedules ?? []).flatMap((slot) =>
+          slot.weekday
+            ? [
+                {
+                  key: slot.id,
+                  weekday: slot.weekday,
+                  start: formatTime(slot.start_time),
+                  end: formatTime(slot.end_time),
+                  title: slot.title,
+                  tone: slot.type,
+                  location: slot.location,
+                  note: null,
+                },
+              ]
+            : []
+        );
+  const slots = allSlots.filter((slot) => typeFilter === 'all' || slot.tone === typeFilter);
+  const selected = slots.find((slot) => slot.key === selectedKey);
+  const changes = source === 'week' ? allSlots.filter((slot) => slot.cancelled || slot.exceptional) : [];
+
+  const period = source === 'holidays' ? nextHolidays : currentPeriod.data;
+  const isHolidays = period?.kind === 'holidays' || source === 'holidays';
 
   return (
     <ScrollView
@@ -73,106 +121,132 @@ export function PlanningScreen() {
       ]}
       refreshControl={
         <RefreshControl
-          refreshing={refreshing}
+          refreshing={week.isRefetching || currentPeriod.isRefetching || holidays.isRefetching}
           onRefresh={() => Promise.all([week.refetch(), currentPeriod.refetch(), holidays.refetch()])}
           tintColor={tokens.colors.text}
         />
       }>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <View style={styles.inner}>
-        <SectionTitle eyebrow={`Aujourd'hui — ${formatDayLabel(today)}`} title="Planning" />
+        <SectionTitle eyebrow={isHolidays && period ? period.name : 'Chaque semaine'} title="Planning" />
 
-        {currentPeriod.data && <CurrentPeriod period={currentPeriod.data} />}
+        {isHolidays && period && (
+          <Card highlighted>
+            <Text variant="subtitle">Planning des vacances</Text>
+            <Text color="textMuted">
+              Du {formatShortDay(parseISODate(period.start_date))} au {formatShortDay(parseISODate(period.end_date))}, il
+              remplace le planning habituel.
+            </Text>
+          </Card>
+        )}
 
-        <View style={styles.chips}>
-          {filters.map((item) => (
-            <Chip
-              key={item.value}
-              label={item.label}
-              selected={item.value === filter}
-              onPress={() => setFilter(item.value)}
-            />
-          ))}
+        {nextHolidays && (
+          <View style={styles.chips}>
+            <Chip label="Cette semaine" selected={source === 'week'} onPress={() => setSource('week')} />
+            <Chip label={nextHolidays.name} selected={source === 'holidays'} onPress={() => setSource('holidays')} />
+          </View>
+        )}
+
+        <View style={styles.toolbar}>
+          <View style={styles.chips}>
+            {typeFilters.map((item) => (
+              <Chip
+                key={item.value}
+                label={item.label}
+                selected={item.value === typeFilter}
+                onPress={() => setTypeFilter(item.value)}
+              />
+            ))}
+          </View>
+          <View style={styles.chips}>
+            <Chip label="Calendrier" selected={display === 'calendar'} onPress={() => setDisplay('calendar')} />
+            <Chip label="Liste" selected={display === 'list'} onPress={() => setDisplay('list')} />
+          </View>
         </View>
 
-        {filter === 'holidays' ? (
-          <HolidaysView query={holidays} />
+        {query.isPending ? (
+          <LoadingState />
+        ) : query.isError ? (
+          <ErrorState onRetry={() => query.refetch()} />
+        ) : allSlots.length === 0 ? (
+          <Card>
+            <Text color="textMuted">Aucun créneau pour le moment.</Text>
+          </Card>
+        ) : display === 'calendar' ? (
+          <>
+            <WeekCalendar
+              items={slots}
+              highlightedWeekday={source === 'week' ? todayWeekday : undefined}
+              selectedKey={selected?.key}
+              onSelect={(item) => setSelectedKey(item.key === selectedKey ? undefined : item.key)}
+            />
+            <CalendarLegend labels={scheduleTypeLabels} />
+            {selected ? (
+              <View style={styles.slots}>
+                <Text variant="label" color="textMuted">
+                  {weekdayLabels[selected.weekday - 1]}
+                </Text>
+                <Slot slot={selected} />
+              </View>
+            ) : (
+              <Text variant="small" color="textMuted">
+                Touchez un créneau pour voir l’horaire et le lieu.
+              </Text>
+            )}
+          </>
         ) : (
           <>
             <View style={styles.chips}>
-              <Chip label="Jour" selected={view === 'day'} onPress={() => setView('day')} />
-              <Chip label="Semaine" selected={view === 'week'} onPress={() => setView('week')} />
-              {!isToday && <Chip label="Revenir à aujourd'hui" onPress={() => setSelected(today)} />}
+              {weekdayLabels.map((label, index) => (
+                <Chip
+                  key={label}
+                  label={label.slice(0, 3)}
+                  selected={listWeekday === index + 1}
+                  onPress={() => setListWeekday(index + 1)}
+                />
+              ))}
             </View>
-
-            <View style={styles.navigation}>
-              <Button
-                title="‹ Préc."
-                variant="ghost"
-                accessibilityLabel={view === 'day' ? 'Jour précédent' : 'Semaine précédente'}
-                onPress={() => setSelected(addDays(selected, -step))}
-              />
-              <Text variant="label" style={styles.navigationLabel}>
-                {view === 'day'
-                  ? isToday
-                    ? "Aujourd'hui"
-                    : formatDayLabel(selected)
-                  : `Du ${formatShortDay(weekStart)} au ${formatShortDay(addDays(weekStart, 6))}`}
-              </Text>
-              <Button
-                title="Suiv. ›"
-                variant="ghost"
-                accessibilityLabel={view === 'day' ? 'Jour suivant' : 'Semaine suivante'}
-                onPress={() => setSelected(addDays(selected, step))}
-              />
-            </View>
-
-            {week.isPending ? (
-              <LoadingState />
-            ) : week.isError ? (
-              <ErrorState onRetry={() => week.refetch()} />
-            ) : view === 'day' ? (
-              <DaySlots slots={visibleSlots.filter((slot) => slot.day === toISODate(selected))} />
-            ) : (
-              <WeekSlots weekStart={weekStart} slots={visibleSlots} />
-            )}
+            <Text variant="subtitle">
+              {weekdayLabels[listWeekday - 1]}
+              {source === 'week' && listWeekday === todayWeekday ? ' (aujourd’hui)' : ''}
+            </Text>
+            <DayList slots={slots.filter((slot) => slot.weekday === listWeekday)} />
           </>
+        )}
+
+        {changes.length > 0 && (
+          <View style={styles.slots}>
+            <Text variant="subtitle">Changements cette semaine</Text>
+            {changes.map((slot) => (
+              <View key={slot.key} style={styles.slots}>
+                <Text variant="label" color="textMuted">
+                  {weekdayLabels[slot.weekday - 1]}
+                </Text>
+                <Slot slot={slot} />
+              </View>
+            ))}
+          </View>
         )}
       </View>
     </ScrollView>
   );
 }
 
-/** Pendant les vacances, rappel de la période qui remplace le planning habituel. */
-function CurrentPeriod({ period }: { period: SchedulePeriod }) {
-  if (period.kind !== 'holidays') {
-    return null;
-  }
-  return (
-    <Card highlighted>
-      <Text variant="subtitle">Planning des vacances</Text>
-      <Text color="textMuted">
-        {period.name} : jusqu’au {formatDayLabel(parseISODate(period.end_date))}.
-      </Text>
-    </Card>
-  );
-}
-
-function Slot({ slot }: { slot: PlanningSlot }) {
+function Slot({ slot }: { slot: WeekSlot }) {
   return (
     <ScheduleSlot
-      start={formatTime(slot.start_time)}
-      end={formatTime(slot.end_time)}
+      start={slot.start}
+      end={slot.end}
       title={slot.title}
       location={slot.location}
-      cancelled={slot.is_cancelled}
-      note={slot.cancellation_reason}
-      exceptional={slot.is_exceptional}
+      cancelled={slot.cancelled}
+      note={slot.note}
+      exceptional={slot.exceptional}
     />
   );
 }
 
-function DaySlots({ slots }: { slots: PlanningSlot[] }) {
+function DayList({ slots }: { slots: WeekSlot[] }) {
   if (slots.length === 0) {
     return (
       <Card>
@@ -182,96 +256,11 @@ function DaySlots({ slots }: { slots: PlanningSlot[] }) {
   }
   return (
     <View style={styles.slots}>
-      {slots[0].period_kind === 'holidays' && <Badge label="Vacances" tone="warning" />}
-      {slots.map((slot) => (
-        <Slot key={slot.schedule_id} slot={slot} />
-      ))}
-    </View>
-  );
-}
-
-function WeekSlots({ weekStart, slots }: { weekStart: Date; slots: PlanningSlot[] }) {
-  const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index)).map((date) => ({
-    date,
-    slots: slots.filter((slot) => slot.day === toISODate(date)),
-  }));
-
-  if (slots.length === 0) {
-    return (
-      <Card>
-        <Text color="textMuted">Aucun créneau cette semaine.</Text>
-      </Card>
-    );
-  }
-  return (
-    <View style={styles.days}>
-      {days
-        .filter((day) => day.slots.length > 0)
-        .map((day) => (
-          <View key={toISODate(day.date)} style={styles.slots}>
-            <View style={styles.dayHeader}>
-              <Text variant="subtitle">{formatDayLabel(day.date)}</Text>
-              {day.slots[0].period_kind === 'holidays' && <Badge label="Vacances" tone="warning" />}
-            </View>
-            {day.slots.map((slot) => (
-              <Slot key={slot.schedule_id} slot={slot} />
-            ))}
-          </View>
+      {[...slots]
+        .sort((a, b) => a.start.localeCompare(b.start))
+        .map((slot) => (
+          <Slot key={slot.key} slot={slot} />
         ))}
-    </View>
-  );
-}
-
-/** Filtre « Vacances » : périodes de vacances en cours ou à venir et leurs créneaux habituels. */
-function HolidaysView({ query }: { query: ReturnType<typeof useHolidayPeriods> }) {
-  if (query.isPending) return <LoadingState />;
-  if (query.isError) return <ErrorState onRetry={() => query.refetch()} />;
-  if (query.data.length === 0) {
-    return (
-      <Card>
-        <Text color="textMuted">Aucune période de vacances à venir.</Text>
-      </Card>
-    );
-  }
-  return (
-    <View style={styles.days}>
-      {query.data.map((period) => (
-        <View key={period.id} style={styles.slots}>
-          <Text variant="subtitle">{period.name}</Text>
-          <Text color="textMuted">
-            Du {formatDayLabel(parseISODate(period.start_date))} au {formatDayLabel(parseISODate(period.end_date))}
-          </Text>
-          {period.schedules.length === 0 ? (
-            <Text color="textMuted">Pas de créneau pendant ces vacances.</Text>
-          ) : (
-            period.schedules
-              // Programme daté : seulement les jours à venir.
-              .filter((slot) => !slot.date || slot.date >= toISODate(new Date()))
-              .map((slot) => (
-                <View key={slot.id} style={styles.slots}>
-                  <Text variant="label" color="textMuted">
-                    {slot.date
-                      ? formatDayLabel(parseISODate(slot.date))
-                      : slot.weekday
-                        ? `Chaque ${weekdayLabels[slot.weekday - 1].toLowerCase()}`
-                        : ''}
-                  </Text>
-                  <ScheduleSlot
-                    start={formatTime(slot.start_time)}
-                    end={formatTime(slot.end_time)}
-                    title={slot.title}
-                    location={slot.location}
-                    cancelled={slot.is_cancelled}
-                    note={slot.cancellation_reason}
-                  />
-                </View>
-              ))
-          )}
-        </View>
-      ))}
-      <Text variant="small" color="textMuted">
-        Les annulations et créneaux exceptionnels apparaissent dans les vues Jour et Semaine.
-      </Text>
     </View>
   );
 }
@@ -286,31 +275,15 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     gap: Space.lg,
   },
+  toolbar: {
+    gap: Space.sm,
+  },
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Space.sm,
   },
-  navigation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Space.sm,
-  },
-  navigationLabel: {
-    flex: 1,
-    textAlign: 'center',
-  },
   slots: {
-    gap: Space.sm,
-  },
-  days: {
-    gap: Space.xl,
-  },
-  dayHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
     gap: Space.sm,
   },
 });

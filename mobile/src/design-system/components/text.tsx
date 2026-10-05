@@ -11,6 +11,7 @@ export type TextVariant =
   | 'bodyStrong'
   | 'small'
   | 'caption'
+  | 'micro'
   | 'label';
 
 export type TextProps = RNTextProps & {
@@ -42,6 +43,9 @@ export function variantStyle(tokens: DesignTokens, variant: TextVariant): TextSt
       return { fontFamily: fonts.body, fontSize: 14, lineHeight: 20 };
     case 'caption':
       return { fontFamily: fonts.body, fontSize: 12, lineHeight: 16 };
+    case 'micro':
+      // Texte des cases du calendrier de la semaine (colonnes étroites).
+      return { fontFamily: fonts.label, fontSize: 10, lineHeight: 12 };
     case 'label':
       return {
         fontFamily: fonts.label,

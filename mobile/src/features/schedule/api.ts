@@ -121,7 +121,7 @@ export function useHolidayPeriods(today: Date) {
       const { data, error } = await supabase
         .from('schedule_periods')
         .select(
-          'id, name, start_date, end_date, schedules (id, weekday, date, start_time, end_time, type, title, location, is_cancelled, cancellation_reason)'
+          'id, name, kind, start_date, end_date, schedules (id, weekday, date, start_time, end_time, type, title, location, is_cancelled, cancellation_reason)'
         )
         .eq('kind', 'holidays')
         .gte('end_date', iso)

@@ -9,7 +9,8 @@ import { normalize } from "@/lib/text";
  * Le fichier mélange plusieurs mises en page ; chaque onglet est reconnu par sa structure :
  * - grille : une ligne d'en-tête LUNDI … DIMANCHE, une activité par ligne, et dans chaque case
  *   « Lieu » puis « 20h00 - 22h00 » (plusieurs lieux possibles). Avec une ligne de dates sous
- *   l'en-tête, c'est le programme de vacances ; sans dates, les créneaux de la semaine ;
+ *   l'en-tête, c'est une période de vacances : les dates donnent seulement le début et la fin de la
+ *   période, les créneaux restent par jour de la semaine (le planning est le même chaque semaine) ;
  * - liste : une ligne d'en-tête Jour / début / fin. Le jour est soit un jour de la semaine
  *   (créneaux récurrents), soit une date (événements) ; un onglet « Annulations » donne des annulations.
  * Dans un onglet qui a une grille, la liste en dessous (demandes à la ville) est ignorée.
@@ -161,6 +162,7 @@ function parseGrid(sheet: string, title: string, rows: Row[], headers: ReturnTyp
   const slots: ParsedSlot[] = [];
   const ignored: string[] = [];
   const dates: string[] = [];
+  const seen = new Set<string>();
 
   for (const { index, columns } of headers) {
     const firstDay = Math.min(...columns.keys());
@@ -187,10 +189,13 @@ function parseGrid(sheet: string, title: string, rows: Row[], headers: ReturnTyp
         if (cellSlots.length === 0) {
           ignored.push(`${activity} · ${WEEKDAYS[weekday - 1]} : « ${value.replace(/\s+/g, " ")} »`);
         }
-        const date = dateByColumn.get(column) ?? null;
-        if (dateByColumn.size > 0 && !date) continue;
+        if (dateByColumn.size > 0 && !dateByColumn.has(column)) continue;
         for (const slot of cellSlots) {
-          slots.push({ ...slot, weekday: date ? null : weekday, date, type: inferType(activity), title: activity });
+          const key = [weekday, slot.start_time, slot.end_time, activity, normalize(slot.location)].join("|");
+          // Une grille de vacances répète souvent la même semaine : chaque créneau n'est gardé qu'une fois.
+          if (seen.has(key)) continue;
+          seen.add(key);
+          slots.push({ ...slot, weekday, date: null, type: inferType(activity), title: activity });
         }
       }
     }
