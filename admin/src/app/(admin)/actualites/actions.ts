@@ -1,6 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { toActionState, type ActionState } from "@/lib/action-state";
@@ -108,6 +109,20 @@ export async function updateNews(_state: ActionState, formData: FormData): Promi
   }
   if (imagePath !== current.image_path) await removePhoto(supabase, current.image_path);
   redirect("/actualites");
+}
+
+/** Archive (masque dans l'app) ou désarchive une actualité (NEWS_UPDATE). */
+export async function setNewsArchived(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("news")
+    .update({ archived_at: formData.get("archive") === "1" ? new Date().toISOString() : null })
+    .eq("id", String(formData.get("newsId")))
+    .select("id");
+  if (error) return toActionState(error);
+  if (data.length === 0) return { error: "Vous n'avez pas le droit de modifier cette actualité." };
+  refresh();
+  return null;
 }
 
 export async function deleteNews(_state: ActionState, formData: FormData): Promise<ActionState> {

@@ -59,6 +59,7 @@ export function useUpcomingStages() {
         .from('stages')
         .select(STAGE_COLUMNS)
         .eq('is_published', true)
+        .is('archived_at', null)
         // Un stage de plusieurs jours déjà commencé reste proposé pour ses jours suivants.
         .gt('end_at', new Date().toISOString())
         .order('start_at');
@@ -72,7 +73,13 @@ export function useStage(id: string) {
   return useQuery({
     queryKey: ['stages', 'item', id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('stages').select(STAGE_COLUMNS).eq('id', id).eq('is_published', true).maybeSingle();
+      const { data, error } = await supabase
+        .from('stages')
+        .select(STAGE_COLUMNS)
+        .eq('id', id)
+        .eq('is_published', true)
+        .is('archived_at', null)
+        .maybeSingle();
       // 22P02 : identifiant mal formé (lien invalide) → même affichage qu'un stage introuvable.
       if (error && error.code !== '22P02') throw error;
       return data ? (await withPlacesLeft([data]))[0] : null;

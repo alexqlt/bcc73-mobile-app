@@ -15,7 +15,7 @@ import {
 } from "@/lib/shop";
 import { createClient } from "@/lib/supabase/server";
 
-import { addPrice, cancelTestOrder, deletePrice, deleteStage, updatePrice, updateStage } from "../actions";
+import { addPrice, cancelTestOrder, deletePrice, deleteStage, setStageArchived, updatePrice, updateStage } from "../actions";
 import { BackLink, StageForm } from "../stage-form";
 
 export const metadata = { title: "Événement — BCC73 Administration" };
@@ -33,7 +33,7 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
   const { data: stage, error } = await supabase
     .from("stages")
     .select(
-      `id, title, description, location, start_at, end_at, capacity, is_published, kind,
+      `id, title, description, location, start_at, end_at, capacity, is_published, kind, archived_at,
        stage_prices (id, name, amount_cents, position, day),
        stage_registrations (id, status, price_name, amount_cents, created_at, confirmed_at, days,
                             member_name, member_license, orders (id, payer_email, provider))`
@@ -60,6 +60,7 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
       </PageHeader>
       <p className="mb-4 flex flex-wrap items-center gap-2 text-muted">
         <Badge tone="accent">{eventKindLabels[stage.kind]}</Badge>
+        {stage.archived_at && <Badge tone="warning">Archivé le {formatDate(stage.archived_at)}</Badge>}
         {formatStageDates(stage.start_at, stage.end_at, stage.kind)} · {stage.capacity} place(s){meal ? "" : " par jour"}
       </p>
 
@@ -205,6 +206,24 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
             </ol>
           )}
         </section>
+      )}
+
+      {canUpdate && (
+        <div className="mb-4">
+          <ActionForm action={setStageArchived}>
+            <input type="hidden" name="stageId" value={stage.id} />
+            <input type="hidden" name="archive" value={stage.archived_at ? "0" : "1"} />
+            {stage.archived_at ? (
+              <Button type="submit" variant="secondary">
+                Désarchiver l&apos;événement
+              </Button>
+            ) : (
+              <ConfirmButton variant="secondary" message="Archiver cet événement ? Il ne sera plus affiché (inscriptions conservées).">
+                Archiver l&apos;événement
+              </ConfirmButton>
+            )}
+          </ActionForm>
+        </div>
       )}
 
       {viewer.permissions.has("STAGE_DELETE") && (

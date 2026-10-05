@@ -264,6 +264,7 @@ export type Database = {
       }
       news: {
         Row: {
+          archived_at: string | null
           author_id: string | null
           content: string
           created_at: string
@@ -274,6 +275,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           author_id?: string | null
           content: string
           created_at?: string
@@ -284,6 +286,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           author_id?: string | null
           content?: string
           created_at?: string
@@ -741,6 +744,7 @@ export type Database = {
       }
       stages: {
         Row: {
+          archived_at: string | null
           capacity: number
           created_at: string
           description: string | null
@@ -754,6 +758,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           capacity: number
           created_at?: string
           description?: string | null
@@ -767,6 +772,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           capacity?: number
           created_at?: string
           description?: string | null

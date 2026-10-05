@@ -136,6 +136,7 @@ const FIELD_LABELS: Record<string, string> = {
   content: "Contenu",
   image_path: "Photo",
   published_at: "Publication",
+  archived_at: "Archivage",
   kind: "Type",
   location: "Lieu",
   start_at: "Début",

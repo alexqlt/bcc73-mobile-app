@@ -7,14 +7,14 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Événements — BCC73 Administration" };
 
-/** P6-10 : stages à venir puis passés, avec le remplissage. */
-export default async function StagesPage() {
+/** P6-10 : stages à venir puis passés, avec le remplissage ; les archivés à part (?archives=1). */
+export default async function StagesPage({ searchParams }: PageProps<"/stages">) {
   const viewer = await requireAnyPermission(STAGE_PERMISSIONS);
+  const archives = (await searchParams).archives === "1";
   const supabase = await createClient();
 
-  const { data: stages, error } = await supabase
-    .from("stages")
-    .select("id, title, start_at, end_at, capacity, is_published, kind, stage_prices (id)")
+  const query = supabase.from("stages").select("id, title, start_at, end_at, capacity, is_published, kind, stage_prices (id)");
+  const { data: stages, error } = await (archives ? query.not("archived_at", "is", null) : query.is("archived_at", null))
     .order("start_at", { ascending: false });
   if (error) throw error;
 
@@ -31,7 +31,13 @@ export default async function StagesPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Club" title="Événements">
+      <PageHeader eyebrow="Club" title={archives ? "Événements archivés" : "Événements"}>
+        <Link
+          href={archives ? "/stages" : "/stages?archives=1"}
+          className="text-sm underline decoration-accent decoration-2 underline-offset-4"
+        >
+          {archives ? "Retour aux événements" : "Voir les archives"}
+        </Link>
         {viewer.permissions.has("STAGE_CREATE") && (
           <Link
             href="/stages/nouveau"
@@ -43,7 +49,7 @@ export default async function StagesPage() {
       </PageHeader>
 
       <h2 className="mb-3 text-xl">À venir</h2>
-      <StageList stages={upcoming} placesLeft={placesLeft} empty="Aucun événement à venir." />
+      <StageList stages={upcoming} placesLeft={placesLeft} empty={archives ? "Aucun événement archivé à venir." : "Aucun événement à venir."} />
       {past.length > 0 && (
         <>
           <h2 className="mt-10 mb-3 text-xl">Passés</h2>

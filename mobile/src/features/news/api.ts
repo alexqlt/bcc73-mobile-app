@@ -10,7 +10,7 @@ const NEWS_COLUMNS = 'id, title, content, image_path, published_at';
 const PAGE_SIZE = 20;
 
 /**
- * Seules les actualités publiées sont affichées dans l'app, y compris pour les responsables
+ * Seules les actualités publiées et non archivées sont affichées dans l'app, y compris pour les responsables
  * de la communication (qui voient aussi les brouillons dans la base, pour le back-office).
  */
 function publishedNews() {
@@ -18,6 +18,7 @@ function publishedNews() {
     .from('news')
     .select(NEWS_COLUMNS)
     .not('published_at', 'is', null)
+    .is('archived_at', null)
     .order('published_at', { ascending: false });
 }
 
@@ -57,6 +58,7 @@ export function useNewsItem(id: string) {
         .select(NEWS_COLUMNS)
         .eq('id', id)
         .not('published_at', 'is', null)
+        .is('archived_at', null)
         .maybeSingle();
       // 22P02 : identifiant mal formé (lien invalide) → même affichage qu'une actualité introuvable.
       if (error && error.code !== '22P02') throw error;

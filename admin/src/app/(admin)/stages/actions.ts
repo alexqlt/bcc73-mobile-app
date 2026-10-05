@@ -122,11 +122,25 @@ export async function deleteStage(_state: ActionState, formData: FormData): Prom
   const supabase = await createClient();
   const { data, error } = await supabase.from("stages").delete().eq("id", String(formData.get("stageId"))).select("id");
   if (error?.code === "23503") {
-    return { error: "Cet événement a des inscriptions : il ne peut plus être supprimé. Retirez-le de l'app en le dépubliant." };
+    return { error: "Cet événement a des inscriptions : il ne peut plus être supprimé. Retirez-le de l'app en l'archivant." };
   }
   if (error) return toActionState(error);
   if (data.length === 0) return noRightError;
   redirect("/stages");
+}
+
+/** Archive (masque partout, inscriptions conservées) ou désarchive un événement (STAGE_UPDATE). */
+export async function setStageArchived(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("stages")
+    .update({ archived_at: formData.get("archive") === "1" ? new Date().toISOString() : null })
+    .eq("id", String(formData.get("stageId")))
+    .select("id");
+  if (error) return toActionState(error);
+  if (data.length === 0) return noRightError;
+  refresh();
+  return null;
 }
 
 /** Tarif saisi : nom, montant et jour couvert (vide = tous les jours), qui doit être un jour du stage. */

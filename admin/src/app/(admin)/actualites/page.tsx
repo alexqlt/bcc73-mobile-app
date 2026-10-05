@@ -8,21 +8,27 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Actualités — BCC73 Administration" };
 
-/** P3-05 : actualités du club, brouillons en tête. */
-export default async function ActualitesPage() {
+/** P3-05 : actualités du club, brouillons en tête ; les archivées à part (?archives=1). */
+export default async function ActualitesPage({ searchParams }: PageProps<"/actualites">) {
   const viewer = await requireAnyPermission(NEWS_PERMISSIONS);
+  const archives = (await searchParams).archives === "1";
   const supabase = await createClient();
 
-  const { data: news, error } = await supabase
-    .from("news")
-    .select("id, title, image_path, published_at, updated_at")
+  const query = supabase.from("news").select("id, title, image_path, published_at, updated_at");
+  const { data: news, error } = await (archives ? query.not("archived_at", "is", null) : query.is("archived_at", null))
     .order("published_at", { ascending: false, nullsFirst: true })
     .order("updated_at", { ascending: false });
   if (error) throw error;
 
   return (
     <>
-      <PageHeader eyebrow="Communication" title="Actualités">
+      <PageHeader eyebrow="Communication" title={archives ? "Actualités archivées" : "Actualités"}>
+        <Link
+          href={archives ? "/actualites" : "/actualites?archives=1"}
+          className="text-sm underline decoration-accent decoration-2 underline-offset-4"
+        >
+          {archives ? "Retour aux actualités" : "Voir les archives"}
+        </Link>
         {viewer.permissions.has("NEWS_CREATE") && (
           <Link
             href="/actualites/nouvelle"
@@ -34,7 +40,7 @@ export default async function ActualitesPage() {
       </PageHeader>
 
       {news.length === 0 ? (
-        <EmptyState>Aucune actualité pour le moment.</EmptyState>
+        <EmptyState>{archives ? "Aucune actualité archivée." : "Aucune actualité pour le moment."}</EmptyState>
       ) : (
         <ul className="flex flex-col gap-3">
           {news.map((item) => (
