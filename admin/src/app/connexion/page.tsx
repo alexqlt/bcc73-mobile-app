@@ -11,9 +11,9 @@ export const metadata = { title: "Connexion — BCC73 Administration" };
 export default async function ConnexionPage({ searchParams }: PageProps<"/connexion">) {
   const disabled = (await searchParams).desactive === "1";
   return (
-    // Fond jaune du club (comme l'accueil de l'app), carte nette avec une ombre noire décalée.
+    // Fond jaune du club (comme l'accueil de l'app), carte nette avec une légère ombre décalée.
     <main className="flex flex-1 items-center justify-center bg-accent p-6">
-      <Card className="w-full max-w-md shadow-[8px_8px_0_0_#0d0d0d]">
+      <Card className="w-full max-w-md shadow-[4px_4px_0_0_rgba(13,13,13,0.25)]">
         <Logo height={110} className="flex justify-center" />
         <h1 className="mt-4 text-center text-3xl">Administration</h1>
         <div className="mx-auto mt-2 h-1.5 w-12 -skew-x-[20deg] bg-accent" />
