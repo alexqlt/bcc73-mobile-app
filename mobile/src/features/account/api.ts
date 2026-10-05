@@ -1,8 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { File } from 'expo-file-system';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
+import { Platform } from 'react-native';
 
 import { useAuth } from '@/features/auth/auth-provider';
+import { UserFacingError } from '@/features/auth/errors';
 import { supabase } from '@/lib/supabase';
 
 const AVATAR_BUCKET = 'avatars';
@@ -10,6 +13,20 @@ const AVATAR_BUCKET = 'avatars';
 const AVATAR_SIZE = 512;
 
 const accountKey = (accountId: string | undefined) => ['account', accountId] as const;
+
+/**
+ * Contenu de l'image préparée. Sur téléphone, `fetch(file://…)` peut échouer sans erreur et renvoyer
+ * le texte « File not found » : le fichier est lu avec expo-file-system, puis on vérifie que c'est
+ * bien un JPEG avant de l'envoyer.
+ */
+async function readJpeg(uri: string) {
+  const body = Platform.OS === 'web' ? await (await fetch(uri)).arrayBuffer() : await new File(uri).arrayBuffer();
+  const bytes = new Uint8Array(body);
+  if (bytes.length < 100 || bytes[0] !== 0xff || bytes[1] !== 0xd8) {
+    throw new UserFacingError('La photo n’a pas pu être préparée. Réessayez avec une autre image.');
+  }
+  return body;
+}
 
 /** Compte connecté (photo de profil). */
 export function useAccount() {
@@ -68,7 +85,7 @@ export function useChangeAvatar() {
         .resize({ width: AVATAR_SIZE, height: null })
         .renderAsync();
       const image = await rendered.saveAsync({ format: SaveFormat.JPEG, compress: 0.8 });
-      const body = await (await fetch(image.uri)).arrayBuffer();
+      const body = await readJpeg(image.uri);
 
       // Nom unique : le cache d'images n'affiche jamais l'ancienne photo.
       const path = `${accountId}/${Date.now()}.jpg`;
