@@ -7,6 +7,8 @@ import { todayInParis } from "@/lib/planning";
 import { createClient } from "@/lib/supabase/server";
 
 const BATCH = 1000;
+/** Marque UTF-8 en tête de fichier : Excel affiche alors correctement les accents. */
+const BOM = String.fromCharCode(0xfeff);
 
 /** Cellule CSV : entre guillemets, guillemets doublés. */
 function cell(value: unknown) {
@@ -49,7 +51,7 @@ export async function GET(request: NextRequest) {
     log.target_id,
     JSON.stringify(log.details),
   ]);
-  const csv = "﻿" + [header, ...rows].map((row) => row.map(cell).join(";")).join("\r\n");
+  const csv = BOM + [header, ...rows].map((row) => row.map(cell).join(";")).join("\r\n");
   const suffix = category ? `-${category.value}` : "";
 
   return new Response(csv, {
