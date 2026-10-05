@@ -26,3 +26,10 @@ export function validateImage(file: File | null): string | null {
 export function publicImageUrl(bucket: string, path: string) {
   return `${env.supabaseUrl}/storage/v1/object/public/${bucket}/${path}`;
 }
+
+/** Bucket public des photos de profil, envoyées depuis l'app (voir la migration account_avatar). */
+export const AVATAR_BUCKET = "avatars";
+
+export function avatarUrl(path: string | null) {
+  return path ? publicImageUrl(AVATAR_BUCKET, path) : null;
+}

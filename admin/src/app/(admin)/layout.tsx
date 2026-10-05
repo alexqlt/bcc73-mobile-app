@@ -58,7 +58,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/">) {
 
   return (
     <div className="flex flex-1 flex-col md:flex-row">
-      <Sidebar items={items} email={viewer.email} signOut={signOut} />
+      <Sidebar
+        items={items}
+        user={{ name: viewer.name, initials: viewer.initials, avatarPath: viewer.avatarPath }}
+        signOut={signOut}
+      />
       <main className="flex-1 p-6 md:p-10">{children}</main>
     </div>
   );

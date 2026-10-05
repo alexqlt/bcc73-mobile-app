@@ -27,6 +27,10 @@ export type Permission =
 
 export type Viewer = {
   email: string;
+  /** Prénom et nom du titulaire du compte (ou du premier membre), l'email à défaut. */
+  name: string;
+  initials: string;
+  avatarPath: string | null;
   permissions: Set<Permission>;
 };
 
@@ -41,9 +45,25 @@ export const getViewer = cache(async (): Promise<Viewer> => {
     redirect("/connexion");
   }
 
-  const { data: permissions } = await supabase.rpc("my_permissions");
+  const [{ data: permissions }, { data: members }, { data: account }] = await Promise.all([
+    supabase.rpc("my_permissions"),
+    // Ses propres membres : la RLS les limite au compte connecté, même pour un responsable.
+    supabase
+      .from("members")
+      .select("first_name, last_name")
+      .eq("account_id", data.claims.sub)
+      .order("is_account_holder", { ascending: false })
+      .order("created_at")
+      .limit(1),
+    supabase.from("accounts").select("avatar_path").eq("id", data.claims.sub).maybeSingle(),
+  ]);
+  const email = String(data.claims.email ?? "");
+  const member = members?.[0];
   return {
-    email: String(data.claims.email ?? ""),
+    email,
+    name: member ? `${member.first_name} ${member.last_name}` : email,
+    initials: (member ? `${member.first_name[0]}${member.last_name[0]}` : email.charAt(0)).toUpperCase(),
+    avatarPath: account?.avatar_path ?? null,
     permissions: new Set((permissions ?? []) as Permission[]),
   };
 });

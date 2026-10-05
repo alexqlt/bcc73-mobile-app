@@ -3,11 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { Avatar } from "./avatar";
 import { Logo } from "./logo";
 
 export type NavItem = { href: string; label: string };
 
-export function Sidebar({ items, email, signOut }: { items: NavItem[]; email: string; signOut: () => Promise<void> }) {
+export function Sidebar({
+  items,
+  user,
+  signOut,
+}: {
+  items: NavItem[];
+  user: { name: string; initials: string; avatarPath: string | null };
+  signOut: () => Promise<void>;
+}) {
   const pathname = usePathname();
 
   return (
@@ -32,7 +41,8 @@ export function Sidebar({ items, email, signOut }: { items: NavItem[]; email: st
         })}
       </nav>
       <div className="mt-auto flex flex-col gap-2 text-sm">
-        <span className="truncate opacity-70">{email}</span>
+        <Avatar path={user.avatarPath} initials={user.initials} size={56} />
+        <span className="truncate font-bold">{user.name}</span>
         <form action={signOut}>
           <button type="submit" className="cursor-pointer font-heading text-xs uppercase tracking-wider underline decoration-accent decoration-2 underline-offset-4">
             Se déconnecter
