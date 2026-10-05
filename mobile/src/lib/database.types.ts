@@ -171,6 +171,44 @@ export type Database = {
         }
         Relationships: []
       }
+      event_default_prices: {
+        Row: {
+          id: boolean
+          meal_adult_cents: number | null
+          meal_child_cents: number | null
+          stage_all_days_cents: number | null
+          stage_day_cents: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: boolean
+          meal_adult_cents?: number | null
+          meal_child_cents?: number | null
+          stage_all_days_cents?: number | null
+          stage_day_cents?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: boolean
+          meal_adult_cents?: number | null
+          meal_child_cents?: number | null
+          stage_all_days_cents?: number | null
+          stage_day_cents?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_default_prices_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       members: {
         Row: {
           account_id: string

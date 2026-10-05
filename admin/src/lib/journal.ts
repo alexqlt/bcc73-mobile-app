@@ -73,7 +73,7 @@ export const eventCategories: {
   {
     value: "boutique-stages",
     label: "Boutique et événements",
-    targetTypes: ["products", "stages", "stage_prices"],
+    targetTypes: ["products", "stages", "stage_prices", "event_default_prices"],
     permissions: ["VOLANT_MANAGE", "VOLANT_VIEW_SALES", "STAGE_CREATE", "STAGE_UPDATE", "STAGE_DELETE", "STAGE_VIEW_REGISTRATIONS"],
     events: {
       "insert:products": "a ajouté un article à la boutique",
@@ -85,6 +85,7 @@ export const eventCategories: {
       "insert:stage_prices": "a ajouté un tarif d'événement",
       "update:stage_prices": "a modifié un tarif d'événement",
       "delete:stage_prices": "a supprimé un tarif d'événement",
+      "update:event_default_prices": "a modifié les tarifs par défaut des événements",
     },
   },
   {

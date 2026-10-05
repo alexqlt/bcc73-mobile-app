@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { ActionForm } from "@/components/action-form";
+import type { EventDefaults } from "@/lib/event-defaults";
 import { Button, Input, Label, Select, Textarea } from "@/components/ui";
 import {
   eurosInputValue,
@@ -36,12 +37,25 @@ export type StageValues = {
  * création : un stage reçoit un tarif par jour (même montant) et un pour tous les jours (proposé à
  * « tarif du jour × nombre de jours ») ; un repas du club, un tarif Adulte et un tarif Enfant.
  */
-export function StageForm({ action, stage, readOnly }: { action: Action; stage?: StageValues; readOnly?: boolean }) {
+export function StageForm({
+  action,
+  stage,
+  readOnly,
+  defaults,
+}: {
+  action: Action;
+  stage?: StageValues;
+  readOnly?: boolean;
+  /** Tarifs par défaut (Paramètres), proposés à la création. */
+  defaults?: EventDefaults;
+}) {
+  const initial = (cents: number | null | undefined) => (cents ? eurosInputValue(cents) : "");
   const [schedule, setSchedule] = useState<EventSchedule>(
     stage ? eventSchedule(stage.start_at, stage.end_at) : { startDate: "", endDate: "", startTime: "", endTime: "" }
   );
-  const [dayPrice, setDayPrice] = useState("");
-  const [allDaysPrice, setAllDaysPrice] = useState<string | null>(null);
+  const [dayPrice, setDayPrice] = useState(initial(defaults?.stageDay));
+  // Sans tarif « tous les jours » par défaut : proposé à « un jour × nombre de jours ».
+  const [allDaysPrice, setAllDaysPrice] = useState<string | null>(defaults?.stageAllDays ? initial(defaults.stageAllDays) : null);
   const [kind, setKind] = useState<EventKind>(stage?.kind ?? "stage");
   const meal = kind === "meal";
   const bounds = eventBounds(kind, schedule);
@@ -130,11 +144,11 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="adultPrice">Tarif adulte (€)</Label>
-                <Input id="adultPrice" name="adultPrice" inputMode="decimal" placeholder="25,00" />
+                <Input id="adultPrice" name="adultPrice" inputMode="decimal" placeholder="25,00" defaultValue={initial(defaults?.mealAdult)} />
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="childPrice">Tarif enfant (€)</Label>
-                <Input id="childPrice" name="childPrice" inputMode="decimal" placeholder="12,00" />
+                <Input id="childPrice" name="childPrice" inputMode="decimal" placeholder="12,00" defaultValue={initial(defaults?.mealChild)} />
               </div>
             </div>
             <p className="text-xs text-muted">

@@ -12,7 +12,7 @@ import {
   type Permission,
 } from "@/lib/auth";
 
-const navigation: (NavItem & { permissions?: Permission[]; adminOnly?: boolean })[] = [
+const navigation: (NavItem & { permissions?: Permission[]; adminOnly?: boolean; orAdmin?: boolean })[] = [
   { href: "/", label: "Tableau de bord" },
   { href: "/actualites", label: "Actualités", permissions: NEWS_PERMISSIONS },
   { href: "/planning", label: "Planning", permissions: SCHEDULE_PERMISSIONS },
@@ -23,7 +23,8 @@ const navigation: (NavItem & { permissions?: Permission[]; adminOnly?: boolean }
   { href: "/utilisateurs", label: "Utilisateurs", permissions: ["USER_MANAGE"] },
   { href: "/roles", label: "Rôles", permissions: ["ROLE_MANAGE"] },
   { href: "/journal", label: "Journal", permissions: JOURNAL_PERMISSIONS },
-  { href: "/parametres", label: "Paramètres", adminOnly: true },
+  // Administrateur, ou responsables des événements (tarifs par défaut).
+  { href: "/parametres", label: "Paramètres", permissions: ["STAGE_CREATE"], orAdmin: true },
 ];
 
 export default async function AdminLayout({ children }: LayoutProps<"/">) {
@@ -52,8 +53,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/">) {
   const admin = await isAdmin();
   const items = navigation.filter(
     (item) =>
-      (!item.adminOnly || admin) &&
-      (!item.permissions || item.permissions.some((permission) => viewer.permissions.has(permission)))
+      (item.orAdmin && admin) ||
+      ((!item.adminOnly || admin) &&
+        (!item.permissions || item.permissions.some((permission) => viewer.permissions.has(permission))))
   );
 
   return (
