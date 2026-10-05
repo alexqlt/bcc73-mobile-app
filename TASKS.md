@@ -172,3 +172,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P2-17 | Tableau de bord : ventes de la saison (volants, stages, total, graphique mensuel), demandes de licence, comptes actifs | 2026-10-06 | `2d252ba` |
 | P2-18 | Back-office : photo de profil, prénom et nom en bas du menu au lieu de l'email | 2026-10-06 | `8895168` |
 | P2-19 | Back-office : photos de profil dans les listes Adhérents et Utilisateurs | 2026-10-06 | `2e60cd7` |
+| P6-19 | Stages sur plusieurs jours : tarifs par jour et tous les jours, places par jour, plusieurs participants par inscription | 2026-10-06 | `7446dad` |
