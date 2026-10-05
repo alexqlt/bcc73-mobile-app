@@ -6,6 +6,7 @@ Application web d'administration du club (Next.js + TypeScript + Tailwind CSS).
 
 ```bash
 npm install
+cp .env.example .env.local   # puis renseigner l'URL et la clé publique Supabase
 npm run dev        # http://localhost:3000
 npm run lint
 npm run typecheck

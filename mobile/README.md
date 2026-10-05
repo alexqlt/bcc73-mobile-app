@@ -6,6 +6,7 @@ Application Expo (React Native + TypeScript + Expo Router).
 
 ```bash
 npm install
+cp .env.example .env.local   # puis renseigner l'URL et la clé publique Supabase
 npm start        # serveur de développement (touche w pour le web)
 npm run lint
 npm run typecheck
