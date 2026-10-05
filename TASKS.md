@@ -16,6 +16,7 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 - [ ] **P1-18** Tester l'ajout d'un enfant (le reste du parcours mobile est validé)
 - [ ] **P2-13** Tester le back-office : connexion, validation de licence, création de rôle, attribution, journal
+- [ ] **P4-09** Tester le planning : saison + vacances, créneaux, annulation d'une date, créneau exceptionnel, image ; affichage jour / semaine / vacances sur téléphone
 - [ ] **P3-07** Tester les actualités : publication avec photo depuis le back-office, affichage accueil / liste / détail sur téléphone
 
 ---
@@ -40,14 +41,7 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ### Phase 4 — Planning
 
-- [ ] **P4-01** Tables `schedules` et `schedule_periods` (planning normal, vacances)
-- [ ] **P4-02** Logique « quel planning s'applique aujourd'hui » selon la période
-- [ ] **P4-03** Mobile : écran Planning (vue du jour + semaine)
-- [ ] **P4-04** Mobile : filtres Jeu libre / Entraînements / Vacances et créneaux exceptionnels
-- [ ] **P4-05** Back-office : ajouter / modifier / supprimer un créneau
-- [ ] **P4-06** Back-office : gestion des périodes (normal, vacances, dates)
-- [ ] **P4-07** Créneaux exceptionnels et annulation d'un créneau
-- [ ] **P4-08** Import d'une image de planning (affichage seul, complémentaire)
+_Toutes les cartes sont terminées (test en cours : P4-09)._
 
 ### Phase 5 — Classements FFBaD
 
@@ -174,3 +168,11 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 | P3-03 | Liste des actualités paginée, tirer pour rafraîchir | 2026-10-05 | `b44f018` |
 | P3-04 | Détail d'une actualité (photo, date, paragraphes) | 2026-10-05 | `b44f018` |
 | P3-05 | Back-office : créer, modifier, publier / dépublier, supprimer une actualité avec photo | 2026-10-05 | `b44f018` |
+| P4-01 | Tables `schedule_periods` (normal / vacances), `schedules` (récurrent ou exceptionnel), `schedule_cancellations` + RLS `SCHEDULE_*` | 2026-10-05 | `e3d1e7b` |
+| P4-02 | Fonctions `schedule_period_on()` et `planning(du, au)` : vacances prioritaires, exceptions et annulations | 2026-10-05 | `e3d1e7b` |
+| P4-03 | Mobile : écran Planning, vue du jour et de la semaine avec navigation | 2026-10-05 | `e3d1e7b` |
+| P4-04 | Mobile : filtres Jeu libre / Entraînements / Vacances, créneaux exceptionnels et annulés signalés | 2026-10-05 | `e3d1e7b` |
+| P4-05 | Back-office : ajouter / modifier / supprimer un créneau de la semaine | 2026-10-05 | `e3d1e7b` |
+| P4-06 | Back-office : périodes (normal, vacances, dates) et aperçu des 7 prochains jours | 2026-10-05 | `e3d1e7b` |
+| P4-07 | Créneaux exceptionnels, annulation d'un créneau pour une date et rétablissement | 2026-10-05 | `e3d1e7b` |
+| P4-08 | Image du planning par période (bucket `planning-images`), affichée en complément | 2026-10-05 | `e3d1e7b` |
