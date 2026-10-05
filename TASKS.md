@@ -14,7 +14,9 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ## 🔄 En cours
 
-_(vide)_
+- [ ] **P0-05** Créer le projet Supabase dev — _fait : dossier `supabase/` initialisé. Reste : créer `bcc73-dev` sur supabase.com, renseigner `mobile/.env.local` et `admin/.env.local`, puis `npx supabase@latest link`_
+- [ ] **P0-11** CI — _fait : workflow `.github/workflows/ci.yml`. Reste : créer le dépôt GitHub et y pousser le code pour l'activer_
+- [ ] **P0-12** EAS — _fait : `eas.json`. Reste : `npx eas-cli@latest login` puis `init`, et choisir les identifiants de l'app (bundle iOS / package Android)_
 
 ---
 
@@ -22,20 +24,7 @@ _(vide)_
 
 ### Phase 0 — Fondation
 
-- [ ] **P0-01** Choisir la structure du dépôt : monorepo `mobile/` + `admin/` + `supabase/` (le projet Expo est actuellement à la racine)
-- [ ] **P0-02** Nettoyer le template Expo (écran `explore`, composants de démo, `scripts/reset-project.js`)
-- [ ] **P0-03** Définir l'architecture des dossiers mobile (`src/app`, `src/components`, `src/features`, `src/lib`…)
-- [ ] **P0-04** Créer le projet Next.js + TypeScript pour le back-office
-- [ ] **P0-05** Créer le projet Supabase (dev) et initialiser la CLI Supabase (`supabase/` + migrations)
-- [ ] **P0-06** Créer l'environnement Supabase de prod
-- [ ] **P0-07** Gérer les variables d'environnement (mobile, admin, Supabase) — `.env` hors Git
-- [ ] **P0-08** Installer TanStack Query (données serveur) côté mobile
-- [ ] **P0-09** Choisir et installer la librairie de formulaires / validation
-- [ ] **P0-10** Mettre en place le client Supabase côté mobile avec stockage sécurisé de la session
-- [ ] **P0-11** CI : lint + typecheck sur chaque push (mobile + admin)
-- [ ] **P0-12** Configurer EAS (`eas.json`, profils development / preview / production)
-- [ ] **P0-13** Appliquer le design system à la barre d'onglets réelle (libellés FR, onglets de l'app, indicateur jaune)
-- [ ] **P0-14** Corriger l'erreur de lint du template dans `src/hooks/use-color-scheme.web.ts`
+- [ ] **P0-06** Créer l'environnement Supabase de prod (projet `bcc73-prod`) — avant la publication
 
 ### Phase 1 — Authentification et comptes
 
@@ -167,4 +156,14 @@ _(vide)_
 | ID | Tâche | Date | Commit |
 |----|-------|------|--------|
 | — | Création du projet Expo (TypeScript + Expo Router) | — | `b0171a0` |
-| DS-01 | Design system validé : style « Club » (A), fidèle à bcc73.com — tokens + composants dans `src/design-system/` | 2026-10-05 | — |
+| DS-01 | Design system validé : style « Club » (A), fidèle à bcc73.com — tokens + composants dans `mobile/src/design-system/` | 2026-10-05 | `fa74ca0` |
+| P0-14 | Corriger l'erreur de lint du template (`use-color-scheme.web.ts`) | 2026-10-05 | `a33d098` |
+| P0-02 | Nettoyer le template Expo (écran Explore, démos, script reset) | 2026-10-05 | `54b40c1` |
+| P0-01 | Monorepo : app Expo déplacée dans `mobile/` | 2026-10-05 | `2c20c1f` |
+| P0-03 | Architecture des dossiers mobile documentée (`mobile/README.md`) | 2026-10-05 | `013a144` |
+| P0-04 | Projet Next.js du back-office (`admin/`) aux couleurs du club | 2026-10-05 | `2d941b7` |
+| P0-07 | Variables d'environnement : `.env.example` mobile et admin | 2026-10-05 | `4e4bb94` |
+| P0-08 | TanStack Query côté mobile (pause hors réseau, rafraîchissement au premier plan) | 2026-10-05 | `8f332dd` |
+| P0-09 | React Hook Form + Zod, champ `FormTextField` | 2026-10-05 | `ede7d63` |
+| P0-10 | Client Supabase mobile, session persistée (`expo-sqlite/localStorage`) | 2026-10-05 | `7da957f` |
+| P0-13 | Barre d'onglets : 5 onglets aux couleurs du club | 2026-10-05 | `528b759` |
