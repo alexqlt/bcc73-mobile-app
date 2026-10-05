@@ -41,12 +41,22 @@ export async function GET(request: NextRequest) {
     if (data.length < BATCH) break;
   }
 
-  const header = ["Date", "Auteur", "Action", "Élément", "Type", "Identifiant", "Détails (JSON)"];
+  const header = ["Date", "Auteur", "Action", "Élément", "Changements", "Type", "Identifiant", "Détails (JSON)"];
   const rows = logs.map((log) => [
     formatDate(log.created_at),
     journal.actor(log),
     journal.action(log),
     journal.describe(log),
+    journal
+      .changes(log)
+      .map((change) =>
+        log.action === "insert"
+          ? `${change.field} : ${change.after}`
+          : log.action === "delete"
+            ? `${change.field} : ${change.before}`
+            : `${change.field} : ${change.before} → ${change.after}`
+      )
+      .join(" ; "),
     `${log.action}:${log.target_type}`,
     log.target_id,
     JSON.stringify(log.details),

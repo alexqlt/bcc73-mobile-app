@@ -111,6 +111,79 @@ export function parseCategory(value: unknown) {
   return eventCategories.find((category) => category.value === value) ?? null;
 }
 
+/** Champs techniques masqués dans le détail des changements. */
+const HIDDEN_FIELDS = new Set([
+  "id",
+  "created_at",
+  "updated_at",
+  "updated_by",
+  "author_id",
+  "granted_by",
+  "granted_at",
+  "stage_id",
+  "period_id",
+  "schedule_id",
+  "order_id",
+  "is_system",
+  "position",
+]);
+
+/** Nom lisible de chaque champ (les autres gardent leur nom technique). */
+const FIELD_LABELS: Record<string, string> = {
+  name: "Nom",
+  title: "Titre",
+  description: "Description",
+  content: "Contenu",
+  image_path: "Photo",
+  published_at: "Publication",
+  kind: "Type",
+  location: "Lieu",
+  start_at: "Début",
+  end_at: "Fin",
+  capacity: "Places",
+  is_published: "Publié",
+  day: "Jour",
+  amount_cents: "Montant",
+  price_cents: "Prix",
+  active: "Visible dans l'app",
+  start_date: "Du",
+  end_date: "Au",
+  date: "Date",
+  weekday: "Jour de la semaine",
+  start_time: "Début",
+  end_time: "Fin",
+  type: "Type",
+  is_cancelled: "Annulé",
+  cancellation_reason: "Motif d'annulation",
+  reason: "Motif",
+  meal_adult_cents: "Tarif adulte (repas)",
+  meal_child_cents: "Tarif enfant (repas)",
+  stage_day_cents: "Tarif un jour (stage)",
+  stage_all_days_cents: "Tarif tous les jours (stage)",
+  role_id: "Rôle",
+  permission_code: "Permission",
+  account_id: "Compte",
+  status: "Statut",
+  rejection_reason: "Motif du refus",
+  license_number: "Licence",
+};
+
+const WEEKDAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+const ENUM_LABELS: Record<string, string> = {
+  stage: "Stage",
+  meal: "Repas du club",
+  normal: "Planning normal",
+  holidays: "Vacances",
+  free_play: "Jeu libre",
+  training: "Entraînement",
+  other: "Autre",
+  pending: "En attente",
+  approved: "Validée",
+  rejected: "Refusée",
+};
+
+export type FieldChange = { field: string; before: string; after: string };
+
 /**
  * Contexte pour rendre une ligne lisible : prénom et nom des personnes citées (auteurs et comptes
  * concernés, l'email seulement pour un compte sans membre), noms des rôles et des permissions.
@@ -125,7 +198,49 @@ export async function loadJournalContext(supabase: Supabase) {
   const roleNameById = new Map((roles ?? []).map((role) => [role.id, role.name]));
   const permissionById = new Map((permissions ?? []).map((p) => [p.code, p.description]));
 
+  /** Valeur lisible d'un champ : euros, oui / non, dates, noms des rôles et des comptes… */
+  const formatValue = (field: string, value: unknown): string => {
+    if (value === null || value === undefined || value === "") return "—";
+    if (typeof value === "boolean") return value ? "Oui" : "Non";
+    if (field.endsWith("_cents") && typeof value === "number") {
+      return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(value / 100);
+    }
+    if (field === "weekday" && typeof value === "number") return WEEKDAYS[value - 1] ?? String(value);
+    if (field === "role_id") return roleNameById.get(String(value)) ?? "Rôle supprimé";
+    if (field === "permission_code") return permissionById.get(String(value)) ?? String(value);
+    if (field === "account_id") return nameById.get(String(value)) ?? "un utilisateur";
+    if (field === "image_path") return "photo";
+    const text = String(value);
+    if (ENUM_LABELS[text]) return ENUM_LABELS[text];
+    if (/^\d{4}-\d{2}-\d{2}T/.test(text)) {
+      return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" }).format(new Date(text));
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+      return new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${text}T12:00:00Z`));
+    }
+    if (/^\d{2}:\d{2}:\d{2}$/.test(text)) return text.slice(0, 5);
+    return text.length > 200 ? `${text.slice(0, 200)}…` : text;
+  };
+
   return {
+    /**
+     * Changements d'une ligne : champs modifiés (ancienne → nouvelle valeur), ou valeurs créées /
+     * supprimées. Le journal n'enregistre pas les champs vides : un champ absent vaut « — ».
+     */
+    changes(log: AuditLog): FieldChange[] {
+      const row = (log.details as { new?: Record<string, unknown>; old?: Record<string, unknown> }) ?? {};
+      if (!row.new && !row.old) return [];
+      const fields = [...new Set([...Object.keys(row.old ?? {}), ...Object.keys(row.new ?? {})])].filter(
+        (field) => !HIDDEN_FIELDS.has(field)
+      );
+      return fields
+        .filter((field) => JSON.stringify(row.old?.[field] ?? null) !== JSON.stringify(row.new?.[field] ?? null))
+        .map((field) => ({
+          field: FIELD_LABELS[field] ?? field,
+          before: row.old ? formatValue(field, row.old[field]) : "",
+          after: row.new ? formatValue(field, row.new[field]) : "",
+        }));
+    },
     /** Auteur de l'action. */
     actor(log: AuditLog) {
       return log.actor_id ? (nameById.get(log.actor_id) ?? "Un responsable") : "Supabase (SQL)";
