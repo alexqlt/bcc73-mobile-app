@@ -19,6 +19,7 @@ import { useSignOut } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/auth-provider';
 import { useAddMember, useMembers, useRemoveMember, type Member } from '@/features/members/api';
 import { memberStatusLabel, memberStatusTone } from '@/features/members/status';
+import { usePermissions } from '@/features/permissions/api';
 
 /** Profil (APP.md : Mon badminton > Profil) : compte, membres rattachés et déconnexion. */
 export function ProfileScreen() {
@@ -27,6 +28,7 @@ export function ProfileScreen() {
   const { session } = useAuth();
   const members = useMembers();
   const signOut = useSignOut();
+  const permissions = usePermissions();
 
   return (
     <ScrollView
@@ -42,6 +44,11 @@ export function ProfileScreen() {
       <View style={styles.inner}>
         <SectionTitle eyebrow="Mon badminton" title="Mon profil" />
         <Text color="textMuted">{session?.user.email}</Text>
+        {!!permissions.data?.size && (
+          <Text variant="small" color="textMuted">
+            Vous avez accès au back-office du club avec ce compte.
+          </Text>
+        )}
 
         <PendingValidationBanner />
 
