@@ -174,3 +174,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P2-19 | Back-office : photos de profil dans les listes Adhérents et Utilisateurs | 2026-10-06 | `2e60cd7` |
 | P6-19 | Stages sur plusieurs jours : tarifs par jour et tous les jours, places par jour, plusieurs participants par inscription | 2026-10-06 | `7446dad` |
 | P6-20 | Mode test des stages (administrateurs) : inscription sans paiement, marquée « Test », annulable, exclue des ventes | 2026-10-06 | `9f17931` |
+| P6-21 | Mode développeur (administrateurs, Mon profil) : paiements des stages et des volants sans HelloAsso, bouton explicite | 2026-10-06 | `de8b681` |
