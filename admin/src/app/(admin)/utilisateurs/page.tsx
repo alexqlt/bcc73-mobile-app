@@ -1,9 +1,10 @@
 import { ActionForm } from "@/components/action-form";
 import { Badge, Button, formatDate, PageHeader } from "@/components/ui";
-import { requirePermission } from "@/lib/auth";
+import { isAdmin, requirePermission } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 import { grantRole, revokeRole } from "./actions";
+import { CreateAccountForm } from "./create-account-form";
 
 export const metadata = { title: "Utilisateurs — BCC73 Administration" };
 
@@ -24,6 +25,7 @@ export default async function UtilisateursPage() {
   return (
     <>
       <PageHeader eyebrow="Accès" title="Utilisateurs" />
+      <CreateAccountForm roles={roles} canGrantAdmin={await isAdmin()} />
       <p className="mb-6 max-w-2xl text-muted">
         Chaque adhérent qui crée un compte dans l&apos;application apparaît ici. Attribuez un rôle aux bénévoles qui
         doivent accéder au back-office : ils se connectent avec le même email et le même mot de passe.

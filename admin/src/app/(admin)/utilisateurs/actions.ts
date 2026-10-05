@@ -34,3 +34,29 @@ export async function revokeRole(_state: ActionState, formData: FormData): Promi
   refresh();
   return null;
 }
+
+export type CreateAccountState = { error?: string; created?: { email: string; password: string } } | null;
+
+/**
+ * Crée un compte (adresse confirmée, mot de passe provisoire) et lui attribue les rôles cochés,
+ * par l'Edge Function admin-create-account qui vérifie USER_MANAGE et les règles des rôles.
+ */
+export async function createAccount(_state: CreateAccountState, formData: FormData): Promise<CreateAccountState> {
+  // « Créer un autre compte » : retour au formulaire vide.
+  if (formData.get("reset")) return null;
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) return { error: "Indiquez l'adresse email de la personne." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.functions.invoke<{ email: string; password: string }>("admin-create-account", {
+    body: { email, roleIds: formData.getAll("roleIds").map(String) },
+  });
+  if (error) {
+    // Message de la fonction (adresse déjà utilisée, droits…), déjà en français.
+    const body = "context" in error && error.context instanceof Response ? await error.context.json().catch(() => null) : null;
+    return { error: body?.error ?? "Le compte n'a pas pu être créé." };
+  }
+  refresh();
+  return { created: { email: data!.email, password: data!.password } };
+}
+

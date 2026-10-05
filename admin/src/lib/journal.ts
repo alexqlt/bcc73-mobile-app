@@ -18,8 +18,9 @@ export const eventCategories: { value: string; label: string; targetTypes: strin
   {
     value: "roles",
     label: "Rôles et accès",
-    targetTypes: ["roles", "role_permissions", "account_roles"],
+    targetTypes: ["roles", "role_permissions", "account_roles", "accounts"],
     events: {
+      "create_account:accounts": "a créé un compte",
       "insert:roles": "a créé un rôle",
       "update:roles": "a modifié un rôle",
       "delete:roles": "a supprimé un rôle",
@@ -114,9 +115,16 @@ export async function loadJournalContext(supabase: Supabase, canListUsers: boole
     /** Détail lisible de l'élément concerné, à partir de la ligne enregistrée. */
     describe(details: Json) {
       const row =
-        (details as { new?: Record<string, string>; old?: Record<string, string>; reason?: string; deleted?: number }) ?? {};
+        (details as {
+          new?: Record<string, string>;
+          old?: Record<string, string>;
+          reason?: string;
+          deleted?: number;
+          email?: string;
+        }) ?? {};
       const data = row.new ?? row.old ?? {};
       const parts = [
+        row.email,
         data.name,
         data.title,
         data.date,
