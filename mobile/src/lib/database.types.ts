@@ -232,6 +232,107 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          id: string
+          label: string
+          order_id: string
+          product_id: string | null
+          quantity: number
+          unit_price_cents: number
+        }
+        Insert: {
+          id?: string
+          label: string
+          order_id: string
+          product_id?: string | null
+          quantity: number
+          unit_price_cents: number
+        }
+        Update: {
+          id?: string
+          label?: string
+          order_id?: string
+          product_id?: string | null
+          quantity?: number
+          unit_price_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          account_id: string | null
+          cancelled_at: string | null
+          created_at: string
+          id: string
+          paid_at: string | null
+          payer_email: string | null
+          payer_name: string | null
+          picked_up_at: string | null
+          provider: string
+          provider_checkout_id: string | null
+          provider_order_id: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          total_cents: number
+          type: Database["public"]["Enums"]["order_type"]
+        }
+        Insert: {
+          account_id?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payer_email?: string | null
+          payer_name?: string | null
+          picked_up_at?: string | null
+          provider?: string
+          provider_checkout_id?: string | null
+          provider_order_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          total_cents: number
+          type: Database["public"]["Enums"]["order_type"]
+        }
+        Update: {
+          account_id?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payer_email?: string | null
+          payer_name?: string | null
+          picked_up_at?: string | null
+          provider?: string
+          provider_checkout_id?: string | null
+          provider_order_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          total_cents?: number
+          type?: Database["public"]["Enums"]["order_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           code: string
@@ -244,6 +345,36 @@ export type Database = {
         Update: {
           code?: string
           description?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price_cents: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price_cents: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price_cents?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -422,6 +553,148 @@ export type Database = {
           },
         ]
       }
+      stage_prices: {
+        Row: {
+          amount_cents: number
+          id: string
+          name: string
+          position: number
+          stage_id: string
+        }
+        Insert: {
+          amount_cents: number
+          id?: string
+          name: string
+          position?: number
+          stage_id: string
+        }
+        Update: {
+          amount_cents?: number
+          id?: string
+          name?: string
+          position?: number
+          stage_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stage_prices_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stage_registrations: {
+        Row: {
+          amount_cents: number
+          cancelled_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          id: string
+          member_id: string
+          order_id: string | null
+          price_name: string
+          stage_id: string
+          stage_price_id: string | null
+          status: Database["public"]["Enums"]["registration_status"]
+        }
+        Insert: {
+          amount_cents: number
+          cancelled_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          member_id: string
+          order_id?: string | null
+          price_name: string
+          stage_id: string
+          stage_price_id?: string | null
+          status?: Database["public"]["Enums"]["registration_status"]
+        }
+        Update: {
+          amount_cents?: number
+          cancelled_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          member_id?: string
+          order_id?: string | null
+          price_name?: string
+          stage_id?: string
+          stage_price_id?: string | null
+          status?: Database["public"]["Enums"]["registration_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stage_registrations_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stage_registrations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stage_registrations_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stage_registrations_stage_price_id_fkey"
+            columns: ["stage_price_id"]
+            isOneToOne: false
+            referencedRelation: "stage_prices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stages: {
+        Row: {
+          capacity: number
+          created_at: string
+          description: string | null
+          end_at: string
+          id: string
+          is_published: boolean
+          location: string | null
+          start_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          capacity: number
+          created_at?: string
+          description?: string | null
+          end_at: string
+          id?: string
+          is_published?: boolean
+          location?: string | null
+          start_at: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          description?: string | null
+          end_at?: string
+          id?: string
+          is_published?: boolean
+          location?: string | null
+          start_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -455,12 +728,24 @@ export type Database = {
       }
       approve_member: { Args: { member_id: string }; Returns: undefined }
       can_edit_news: { Args: never; Returns: boolean }
+      cancel_pending_order: { Args: { order_id: string }; Returns: undefined }
       clear_audit_logs: { Args: never; Returns: number }
+      confirm_order_payment: {
+        Args: { order_id: string; provider_order: string }
+        Returns: undefined
+      }
+      create_shop_order: { Args: { items: Json }; Returns: string }
+      create_stage_registration: {
+        Args: { member: string; price: string; stage: string }
+        Returns: string
+      }
+      expire_pending_orders: { Args: never; Returns: undefined }
       has_permission: { Args: { permission: string }; Returns: boolean }
       import_planning: { Args: { payload: Json }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
       is_system_role: { Args: { role: string }; Returns: boolean }
       my_permissions: { Args: never; Returns: string[] }
+      order_hold_interval: { Args: never; Returns: string }
       planning: {
         Args: { from_date: string; to_date: string }
         Returns: {
@@ -485,6 +770,7 @@ export type Database = {
         Args: { member_id: string; reason: string }
         Returns: undefined
       }
+      require_approved_account: { Args: never; Returns: undefined }
       require_permission: { Args: { permission: string }; Returns: undefined }
       schedule_period_on: {
         Args: { day: string }
@@ -504,9 +790,13 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      stage_places_left: { Args: { stage: string }; Returns: number }
     }
     Enums: {
       member_status: "pending" | "approved" | "rejected"
+      order_status: "pending" | "paid" | "cancelled"
+      order_type: "shop" | "stage"
+      registration_status: "pending" | "confirmed" | "cancelled"
       schedule_period_kind: "normal" | "holidays"
       schedule_type: "free_play" | "training" | "other"
     }
@@ -640,6 +930,9 @@ export const Constants = {
   public: {
     Enums: {
       member_status: ["pending", "approved", "rejected"],
+      order_status: ["pending", "paid", "cancelled"],
+      order_type: ["shop", "stage"],
+      registration_status: ["pending", "confirmed", "cancelled"],
       schedule_period_kind: ["normal", "holidays"],
       schedule_type: ["free_play", "training", "other"],
     },
