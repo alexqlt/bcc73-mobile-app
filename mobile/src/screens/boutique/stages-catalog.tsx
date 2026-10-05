@@ -3,7 +3,31 @@ import { StyleSheet, View } from 'react-native';
 
 import { ErrorState, LoadingState } from '@/components/query-status';
 import { Card, Space, StageCard, Text } from '@/design-system';
-import { formatStageDates, useUpcomingStages } from '@/features/stages/api';
+import { formatStageDates, useUpcomingStages, type Stage } from '@/features/stages/api';
+
+/**
+ * Tarifs résumés pour la carte : un seul tarif « Un jour » (le détail de chaque jour est sur l'écran
+ * du stage) puis les tarifs valables tous les jours.
+ */
+function summaryPrices(stage: Stage) {
+  const dayPrices = stage.stage_prices.filter((price) => price.day).map((price) => price.amount_cents);
+  const multiDay = stage.days.length > 1;
+  const oneDay = dayPrices.length
+    ? [
+        {
+          label: new Set(dayPrices).size > 1 ? 'Un jour (dès)' : 'Un jour',
+          amount: Math.min(...dayPrices) / 100,
+        },
+      ]
+    : [];
+  const allDays = stage.stage_prices
+    .filter((price) => !price.day)
+    .map((price) => ({
+      label: multiDay && price.name.startsWith('Tous les jours') ? 'Tous les jours' : price.name,
+      amount: price.amount_cents / 100,
+    }));
+  return [...oneDay, ...allDays];
+}
 
 /** P6-11 : stages à venir, avec les places restantes et les tarifs. */
 export function StagesCatalog({ stages }: { stages: ReturnType<typeof useUpcomingStages> }) {
@@ -28,7 +52,7 @@ export function StagesCatalog({ stages }: { stages: ReturnType<typeof useUpcomin
             time={[dates.time, stage.location].filter(Boolean).join(' · ')}
             capacity={stage.capacity}
             registered={stage.capacity - stage.placesLeft}
-            prices={stage.stage_prices.map((price) => ({ label: price.name, amount: price.amount_cents / 100 }))}
+            prices={summaryPrices(stage)}
             perDay={stage.days.length > 1}
             registerLabel={stage.placesLeft > 0 ? "Voir et s'inscrire" : 'Complet · voir le stage'}
             onRegister={() => router.push(`/stage/${stage.id}`)}
