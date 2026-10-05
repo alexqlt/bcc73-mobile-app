@@ -170,3 +170,4 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 | P2-09 | Back-office : rôles et permissions | 2026-10-05 | `8e66d20` |
 | P2-10 | Back-office : attribution des rôles | 2026-10-05 | `8e66d20` |
 | P2-05 | `my_permissions()` + hook `usePermissions` dans l'app | 2026-10-05 | `a61727f` |
+| P1-19 | Licence du parent facultative : accès dès qu'une licence du compte (parent ou enfant) est en attente ou validée | 2026-10-05 | `4ccface` |
