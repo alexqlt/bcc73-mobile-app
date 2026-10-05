@@ -169,3 +169,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P1-20 | Photo de profil facultative dans Mon profil (galerie, recadrée et réduite, initiales à défaut) | 2026-10-06 | `22d7850` |
 | P2-15 | Journal : chaque rôle voit les événements de son domaine (filtré par la base, export compris) | 2026-10-06 | `c69ba1c` |
 | P2-16 | Journal : prénom et nom des personnes au lieu de l'email (page et export) | 2026-10-06 | `01c7dad` |
+| P2-17 | Tableau de bord : ventes de la saison (volants, stages, total, graphique mensuel), demandes de licence, comptes actifs | 2026-10-06 | `2d252ba` |
