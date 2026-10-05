@@ -48,7 +48,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
             <ActionForm action={clearJournal}>
               <ConfirmButton
                 variant="danger"
-                message="Effacer définitivement tout le journal ? Pensez à le télécharger avant. Une ligne indiquera que vous l'avez vidé."
+                message="Effacer définitivement tout le journal ? Pensez à le télécharger avant : rien ne sera conservé."
               >
                 Tout effacer
               </ConfirmButton>
