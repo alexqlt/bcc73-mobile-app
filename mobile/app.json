@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "BCC73",
-    "slug": "BCC73",
+    "slug": "bcc73",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -38,6 +38,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "cece813b-e726-4c3f-b6f7-f457f50f476c"
+      }
+    },
+    "owner": "scunange"
   }
 }
