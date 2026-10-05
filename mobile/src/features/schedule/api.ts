@@ -176,6 +176,8 @@ export function formatCancellation(start: string | null, end: string | null, rea
 export type CancelledSlot = {
   key: string;
   title: string;
+  /** Jour de la semaine où trouver le créneau dans le planning (1 = lundi). */
+  weekday: number;
   /** Ex. « mardi 20:00 » (créneau habituel) ou « sam. 14 nov. 10:00 » (créneau exceptionnel). */
   when: string;
   /** Ex. « jusqu'au 25 oct. », « le lundi 12 octobre », « du 20 oct. au 25 oct. ». */
@@ -226,6 +228,7 @@ export function useCurrentCancellations(today: Date) {
                 {
                   key: row.id,
                   title: row.schedules.title,
+                  weekday: row.schedules.weekday ?? 1,
                   when: `${weekdayLabels[(row.schedules.weekday ?? 1) - 1].toLowerCase()} ${formatTime(row.schedules.start_time)}`,
                   period: cancellationPeriod(row.start_date, row.end_date, iso),
                   reason: row.reason,
@@ -236,6 +239,7 @@ export function useCurrentCancellations(today: Date) {
         ...exceptional.data.map((row) => ({
           key: row.id,
           title: row.title,
+          weekday: ((parseISODate(row.date!).getDay() + 6) % 7) + 1,
           when: `${formatShortDay(parseISODate(row.date!))} ${formatTime(row.start_time)}`,
           period: '',
           reason: row.cancellation_reason,

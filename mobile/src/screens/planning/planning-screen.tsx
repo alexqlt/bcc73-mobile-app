@@ -56,7 +56,7 @@ function isoWeekday(date: Date) {
  * touche cette semaine, en avertissement si elle est à venir. Pendant les vacances, le planning des
  * vacances remplace l'habituel.
  */
-export function PlanningScreen() {
+export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } = {}) {
   const insets = useSafeAreaInsets();
   const { tokens, mode } = useDesignSystem();
   const today = parseISODate(toISODate(new Date()));
@@ -64,7 +64,7 @@ export function PlanningScreen() {
 
   const [source, setSource] = useState<Source>('week');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
-  const [listWeekday, setListWeekday] = useState(todayWeekday);
+  const [listWeekday, setListWeekday] = useState(initialWeekday ?? todayWeekday);
 
   const week = usePlanningWeek(startOfWeek(today));
   const currentPeriod = usePeriodOn(today);
