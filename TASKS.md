@@ -178,3 +178,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P6-22 | Vocabulaire : « stage » devient « événement » (app, back-office, emails, rôles, permissions) | 2026-10-06 | `0b2cbe7` |
 | P6-23 | Types d'événements : stage (jours, tarifs par jour) et repas du club (soirée, tarifs Adulte / Enfant par participant) | 2026-10-07 | `74fa39b` |
 | P6-24 | Paramètres : tarifs par défaut des événements (repas adulte / enfant, stage un jour / tous les jours) | 2026-10-07 | `0f93bf2` |
+| P2-20 | Journal : détail des changements au clic (champs modifiés, avant → après), colonne Changements dans l'export | 2026-10-07 | `2c6bd57` |
