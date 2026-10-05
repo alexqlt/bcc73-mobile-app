@@ -15,7 +15,6 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 ## 🔄 En cours
 
 - [ ] **P0-05** Créer le projet Supabase dev — _fait : dossier `supabase/` initialisé, projet `bcc73-dev` (ref `avqfxxepxieugwgiidqa`) créé et branché via `.env.local` (mobile + admin). Reste : `npx supabase@latest login` puis `link --project-ref avqfxxepxieugwgiidqa`_
-- [ ] **P0-11** CI — _fait : workflow `.github/workflows/ci.yml`, code poussé sur [github.com/alexqlt/bcc73-mobile-app](https://github.com/alexqlt/bcc73-mobile-app) (branche `main`). Reste : vérifier que le premier run est vert (onglet Actions)_
 - [ ] **P0-12** EAS — _fait : `eas.json`. Reste : `npx eas-cli@latest login` puis `init` (les identifiants stores sont reportés à P8-02)_
 
 ---
@@ -167,3 +166,4 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 | P0-09 | React Hook Form + Zod, champ `FormTextField` | 2026-10-05 | `ede7d63` |
 | P0-10 | Client Supabase mobile, session persistée (`expo-sqlite/localStorage`) | 2026-10-05 | `7da957f` |
 | P0-13 | Barre d'onglets : 5 onglets aux couleurs du club | 2026-10-05 | `528b759` |
+| P0-11 | CI GitHub Actions (lint, typecheck, build) active sur [alexqlt/bcc73-mobile-app](https://github.com/alexqlt/bcc73-mobile-app) — premier run vert | 2026-10-05 | `e2ae6db` |
