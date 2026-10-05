@@ -30,7 +30,8 @@ function defaultMealPrice(stage: Stage, member: Member) {
 
 /**
  * P6-11 et P6-12 : détail d'un événement et inscription des membres du compte.
- * - Stage : places jour par jour, un tarif (un jour ou tous les jours) commun aux participants.
+ * - Stage : places jour par jour, tarifs communs aux participants : tous les jours, ou un ou plusieurs
+ *   jours uniques (choisir « tous les jours » retire les jours uniques, et inversement).
  * - Repas du club : une soirée, un tarif par participant (adulte / enfant).
  */
 export function StageDetailScreen({ id }: { id: string }) {
@@ -42,7 +43,7 @@ export function StageDetailScreen({ id }: { id: string }) {
   const checkout = useCheckout();
   const devMode = useDevMode();
   const [memberIds, setMemberIds] = useState<string[]>([]);
-  const [priceId, setPriceId] = useState<string>();
+  const [priceIds, setPriceIds] = useState<string[]>([]);
   const [mealPrices, setMealPrices] = useState<Record<string, string>>({});
   const today = toISODate(new Date());
 
@@ -50,13 +51,15 @@ export function StageDetailScreen({ id }: { id: string }) {
   const meal = event?.kind === 'meal';
   const approved = (members.data ?? []).filter((member) => member.status === 'approved');
 
-  // Tarif de chaque participant : commun (stage) ou propre à chacun (repas).
-  const priceOf = (member: Member): StagePrice | undefined =>
-    !event
-      ? undefined
-      : meal
-        ? (event.stage_prices.find((price) => price.id === mealPrices[member.id]) ?? defaultMealPrice(event, member))
-        : event.stage_prices.find((price) => price.id === priceId);
+  // Tarifs de chaque participant : communs (stage, un par jour choisi) ou un seul propre à chacun (repas).
+  const pricesOf = (member: Member): StagePrice[] => {
+    if (!event) return [];
+    if (meal) {
+      const price = event.stage_prices.find((item) => item.id === mealPrices[member.id]) ?? defaultMealPrice(event, member);
+      return price ? [price] : [];
+    }
+    return event.stage_prices.filter((price) => priceIds.includes(price.id));
+  };
 
   // Jours où chaque membre est déjà inscrit à cet événement (ou paiement en cours).
   const takenDays = (memberId: string) =>
@@ -64,25 +67,40 @@ export function StageDetailScreen({ id }: { id: string }) {
       .filter((registration) => registration.stages?.id === id && registration.member_id === memberId)
       .flatMap((registration) => registration.days);
   const alreadyIn = (member: Member) => {
-    const price = priceOf(member) ?? event?.stage_prices[0];
-    return !!event && !!price && priceDays(event, price).some((day) => takenDays(member.id).includes(day));
+    if (!event) return false;
+    const taken = takenDays(member.id);
+    const prices = pricesOf(member);
+    // Aucun tarif choisi : « déjà inscrit » seulement s'il l'est à tous les jours.
+    if (prices.length === 0) return event.days.length > 0 && event.days.every((row) => taken.includes(row.day));
+    return prices.some((price) => priceDays(event, price).some((day) => taken.includes(day)));
   };
 
   const participants = approved.filter((member) => memberIds.includes(member.id) && !alreadyIn(member));
-  const entries = participants.flatMap((member) => {
-    const price = priceOf(member);
-    return price ? [{ memberId: member.id, priceId: price.id, amount: price.amount_cents }] : [];
-  });
+  const entries = participants.flatMap((member) =>
+    pricesOf(member).map((price) => ({ memberId: member.id, priceId: price.id, amount: price.amount_cents }))
+  );
   const total = entries.reduce((sum, entry) => sum + entry.amount, 0);
   // Chaque tarif choisi doit être disponible pour tous les participants (places comptées ensemble).
   const unavailable = event
     ? entries
         .map((entry) => event.stage_prices.find((price) => price.id === entry.priceId)!)
-        .map((price) => ({ price, state: priceAvailability(event, price, entries.length, today) }))
+        .map((price) => ({ price, state: priceAvailability(event, price, participants.length, today) }))
         .find((item) => !item.state.available)
     : undefined;
-  const complete = entries.length > 0 && entries.length === participants.length;
+  const complete = participants.length > 0 && participants.every((member) => pricesOf(member).length > 0);
   const canPay = complete && !unavailable && !checkout.isPending;
+
+  // « Tous les jours » remplace les jours uniques ; un jour unique retire « tous les jours ».
+  const togglePrice = (price: StagePrice) => {
+    if (priceIds.includes(price.id)) {
+      setPriceIds(priceIds.filter((item) => item !== price.id));
+    } else if (!price.day) {
+      setPriceIds([price.id]);
+    } else {
+      const singleDays = priceIds.filter((item) => event?.stage_prices.find((other) => other.id === item)?.day);
+      setPriceIds([...singleDays, price.id]);
+    }
+  };
 
   const toggleMember = (memberId: string) =>
     setMemberIds(memberIds.includes(memberId) ? memberIds.filter((item) => item !== memberId) : [...memberIds, memberId]);
@@ -184,7 +202,7 @@ export function StageDetailScreen({ id }: { id: string }) {
                           <Chip
                             key={item.id}
                             label={`${item.name} · ${formatEuros(item.amount_cents)}`}
-                            selected={priceOf(member)?.id === item.id}
+                            selected={pricesOf(member)[0]?.id === item.id}
                             disabled={!priceAvailability(event, item, 1, today).available}
                             onPress={() => setMealPrices({ ...mealPrices, [member.id]: item.id })}
                           />
@@ -195,7 +213,9 @@ export function StageDetailScreen({ id }: { id: string }) {
                 ) : (
                   <>
                     <Text variant="label" color="textMuted">
-                      Tarif
+                      {event.stage_prices.filter((item) => item.day).length > 1
+                        ? 'Tarif (plusieurs jours possibles)'
+                        : 'Tarif'}
                     </Text>
                     <View style={styles.prices}>
                       {event.stage_prices.map((item) => {
@@ -204,9 +224,9 @@ export function StageDetailScreen({ id }: { id: string }) {
                           <View key={item.id} style={styles.price}>
                             <Chip
                               label={`${item.name} · ${formatEuros(item.amount_cents)}`}
-                              selected={item.id === priceId}
+                              selected={priceIds.includes(item.id)}
                               disabled={!state.available}
-                              onPress={() => setPriceId(item.id)}
+                              onPress={() => togglePrice(item)}
                             />
                             {!state.available && (
                               <Text variant="caption" color="textMuted">

@@ -182,3 +182,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P4-12 | Accueil : créneaux annulés (en cours et 7 prochains jours) au-dessus des actualités | 2026-10-07 | `2e90840` |
 | P6-25 | Archivage des événements et des actualités : masqués dans l'app et les listes du back-office, « Voir les archives », désarchivage | 2026-10-07 | — |
 | P2-22 | Comptes : suppression complète, archivage (réactivable par un administrateur ou un responsable des licences) et blocage (administrateur), message « rendez-vous au club » | 2026-10-07 | — |
+| P6-26 | Stages : plusieurs jours uniques par participant (« tous les jours » et jours uniques s'excluent) | 2026-10-07 | — |

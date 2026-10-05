@@ -40,8 +40,10 @@ Deno.serve(async (request) => {
       .from('members')
       .select('first_name, last_name')
       .eq('account_id', accountId)
-      .eq('is_account_holder', true)
-      .neq('status', 'rejected')
+      // Titulaire d'abord, sinon le premier membre du compte.
+      .order('is_account_holder', { ascending: false })
+      .order('created_at')
+      .limit(1)
       .maybeSingle(),
     service.storage.from('avatars').list(accountId),
   ]);

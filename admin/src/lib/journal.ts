@@ -311,7 +311,7 @@ export async function loadJournalContext(supabase: Supabase) {
       }
       const parts = [
         // Compte créé, archivé, bloqué, réactivé ou supprimé : la personne (nom gardé dans la ligne).
-        log.target_type === "accounts" && log.target_id && (row.person ?? nameById.get(log.target_id) ?? "un utilisateur"),
+        log.target_type === "accounts" && log.target_id && (nameById.get(log.target_id) ?? row.person ?? "un utilisateur"),
         // Licence validée ou refusée : le membre concerné.
         row.member,
         row.member && row.license_number,
