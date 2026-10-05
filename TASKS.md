@@ -14,6 +14,7 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ## 🔄 En cours
 
+- [ ] **P7-11** Tester les notifications : build de développement EAS avec les identifiants push (APNs, FCM v1), clé `BREVO_API_KEY` ; actualité, stage, créneau annulé, paiement, préférences, emails (procédures dans `supabase/README.md`)
 - [ ] **P6-01** Compte et accès API HelloAsso : créer l'association de test sur helloasso-sandbox.com, récupérer le client API, enregistrer les secrets et l'URL de notification (procédure dans `supabase/README.md`), puis la même chose en production
 - [ ] **P6-17** Tester les paiements en sandbox : achat de volants, inscription à un stage (place réservée, complet), paiement abandonné, remise des articles, liste des inscrits et des paiements
 
@@ -35,7 +36,6 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ### Phase 3 — Actualités
 
-- [ ] **P3-06** Case « Envoyer une notification push » à la publication (dépend de P7-01)
 
 ### Phase 4 — Planning
 
@@ -47,16 +47,7 @@ _Reste P6-01 et le test P6-17, en cours._
 
 ### Phase 7 — Notifications
 
-- [ ] **P7-01** Installer et configurer `expo-notifications` + enregistrement du token push
-- [ ] **P7-02** Envoi des push depuis le serveur (Expo Push Service)
-- [ ] **P7-03** Push : nouvelle actualité
-- [ ] **P7-04** Push : stage ouvert
-- [ ] **P7-05** Push : inscription confirmée / paiement confirmé
-- [ ] **P7-06** Push : créneau annulé
-- [ ] **P7-07** Push : rappel de stage (optionnel)
-- [ ] **P7-08** Mobile : écran Paramètres des notifications
-- [ ] **P7-09** Intégration Brevo pour les emails transactionnels
-- [ ] **P7-10** Emails : bienvenue, compte validé, paiement reçu, inscription au stage
+- [ ] **P7-07** Push : rappel de stage la veille (optionnel, nécessite une tâche planifiée côté serveur)
 
 ### Phase 8 — Publication
 
@@ -170,3 +161,13 @@ _Reste P6-01 et le test P6-17, en cours._
 | P6-16 | Back-office : liste des paiements | 2026-10-06 | `47a0af6` |
 | P1-18 | Ajout d'un enfant testé (parcours mobile complet validé) | 2026-10-06 | — |
 | P2-13 | Back-office testé : connexion, validation de licence, création de rôle, attribution, journal | 2026-10-06 | — |
+| P3-06 | Case « Envoyer une notification push » à la publication d'une actualité | 2026-10-06 | `6cf29d9` |
+| P7-01 | `expo-notifications` + enregistrement de l'appareil (jeton Expo), retiré à la déconnexion | 2026-10-06 | `6cf29d9` |
+| P7-02 | Edge Function `send-push` (Expo Push Service), un envoi par élément, appareils désinscrits retirés | 2026-10-06 | `6cf29d9` |
+| P7-03 | Push : nouvelle actualité | 2026-10-06 | `6cf29d9` |
+| P7-04 | Push : stage ouvert aux inscriptions | 2026-10-06 | `6cf29d9` |
+| P7-05 | Push : paiement / inscription confirmés | 2026-10-06 | `6cf29d9` |
+| P7-06 | Push : créneau annulé (période ou créneau daté) | 2026-10-06 | `6cf29d9` |
+| P7-08 | Mobile : écran Paramètres des notifications (4 catégories, autorisation de l'appareil) | 2026-10-06 | `6cf29d9` |
+| P7-09 | Emails transactionnels par l'API Brevo (`send-email`, `email_log`) | 2026-10-06 | `35fd114` |
+| P7-10 | Emails : bienvenue, licence validée, paiement reçu, inscription au stage | 2026-10-06 | `35fd114` |
