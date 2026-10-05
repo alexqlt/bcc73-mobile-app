@@ -177,3 +177,4 @@ _Toutes les cartes sont terminées (test en cours : P4-09)._
 | P4-06 | Back-office : périodes (normal, vacances, dates) et aperçu des 7 prochains jours | 2026-10-05 | `e3d1e7b` |
 | P4-07 | Créneaux exceptionnels, annulation d'un créneau pour une date et rétablissement | 2026-10-05 | `e3d1e7b` |
 | P4-08 | ~~Image du planning~~ remplacée par l'import du fichier .xlsx du club (voir P4-10) | 2026-10-05 | `e3d1e7b` |
+| P4-10 | Import du planning depuis le fichier .xlsx du club : aperçu, choix des périodes, créneaux / vacances / événements / annulations, en une transaction | 2026-10-05 | `915aeec` |
