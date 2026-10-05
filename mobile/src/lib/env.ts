@@ -7,11 +7,14 @@ import { z } from 'zod';
 const envSchema = z.object({
   supabaseUrl: z.url('EXPO_PUBLIC_SUPABASE_URL doit être une URL'),
   supabasePublishableKey: z.string().min(1, 'EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY est vide'),
+  /** Adresse du back-office. Facultative : sans elle, le bouton d'accès est masqué. */
+  adminUrl: z.url('EXPO_PUBLIC_ADMIN_URL doit être une URL').optional(),
 });
 
 const result = envSchema.safeParse({
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
   supabasePublishableKey: process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  adminUrl: process.env.EXPO_PUBLIC_ADMIN_URL || undefined,
 });
 
 if (!result.success) {

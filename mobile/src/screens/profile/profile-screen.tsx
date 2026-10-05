@@ -1,4 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
+import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,7 +26,8 @@ import {
   type Member,
 } from '@/features/members/api';
 import { memberStatusLabel, memberStatusTone } from '@/features/members/status';
-import { usePermissions } from '@/features/permissions/api';
+import { usePermissions, type Permission } from '@/features/permissions/api';
+import { env } from '@/lib/env';
 
 /** Profil (APP.md : Mon badminton > Profil) : compte, membres rattachés et déconnexion. */
 export function ProfileScreen() {
@@ -50,11 +52,6 @@ export function ProfileScreen() {
       <View style={styles.inner}>
         <SectionTitle eyebrow="Mon badminton" title="Mon profil" />
         <Text color="textMuted">{session?.user.email}</Text>
-        {!!permissions.data?.size && (
-          <Text variant="small" color="textMuted">
-            Vous avez accès au back-office du club avec ce compte.
-          </Text>
-        )}
 
         <PendingValidationBanner />
 
@@ -65,6 +62,8 @@ export function ProfileScreen() {
           {/* La licence du parent est facultative : il peut l'ajouter plus tard. */}
           {!selectAccountHolder(members.data) && <AddMemberSection kind="self" />}
         </View>
+
+        {!!permissions.data?.length && <BackOfficeSection permissions={permissions.data} />}
 
         <View style={styles.section}>
           <Text variant="subtitle">Bientôt</Text>
@@ -80,6 +79,30 @@ export function ProfileScreen() {
         />
       </View>
     </ScrollView>
+  );
+}
+
+/** Bénévoles : ce que leurs rôles leur permettent, et l'accès au back-office. */
+function BackOfficeSection({ permissions }: { permissions: Permission[] }) {
+  return (
+    <View style={styles.section}>
+      <Text variant="subtitle">Back-office du club</Text>
+      <Card highlighted>
+        <Text variant="small" color="textMuted">
+          Vos rôles vous permettent de :
+        </Text>
+        {permissions.map((permission) => (
+          <Text key={permission.code}>— {permission.description}</Text>
+        ))}
+      </Card>
+      {env.adminUrl && (
+        <Button
+          title="Ouvrir le back-office"
+          fullWidth
+          onPress={() => WebBrowser.openBrowserAsync(env.adminUrl!)}
+        />
+      )}
+    </View>
   );
 }
 
