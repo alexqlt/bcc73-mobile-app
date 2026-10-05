@@ -4,13 +4,14 @@ import 'expo-sqlite/localStorage/install';
 import { createClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
+import type { Database } from './database.types';
 import { env } from './env';
 
 /**
  * Client Supabase de l'application. À n'utiliser que depuis `src/features/` :
  * les écrans passent par les hooks TanStack Query de chaque domaine.
  */
-export const supabase = createClient(env.supabaseUrl, env.supabasePublishableKey, {
+export const supabase = createClient<Database>(env.supabaseUrl, env.supabasePublishableKey, {
   auth: {
     // Absent pendant le rendu statique web (côté serveur) : la session n'est alors pas persistée.
     storage: typeof localStorage === 'undefined' ? undefined : localStorage,
