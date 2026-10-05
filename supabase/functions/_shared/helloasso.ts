@@ -10,6 +10,8 @@
 
 import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2';
 
+import { sendPush } from './push.ts';
+
 export class PaymentNotConfiguredError extends Error {}
 
 type Config = { apiUrl: string; clientId: string; clientSecret: string; organizationSlug: string };
@@ -109,7 +111,7 @@ export async function syncOrder(
 ): Promise<SyncResult> {
   const { data: order } = await supabase
     .from('orders')
-    .select('id, status, provider_checkout_id')
+    .select('id, status, provider_checkout_id, account_id, type, order_items (label)')
     .eq('id', orderId)
     .maybeSingle();
   if (!order) return 'unknown';
@@ -122,11 +124,12 @@ export async function syncOrder(
     return 'unknown';
   }
   if (intent.order?.id) {
-    const { error } = await supabase.rpc('confirm_order_payment', {
+    const { data: justConfirmed, error } = await supabase.rpc('confirm_order_payment', {
       order_id: order.id,
       provider_order: String(intent.order.id),
     });
     if (error) throw error;
+    if (justConfirmed) await notifyPayment(supabase, order);
     return 'paid';
   }
   if (options.cancelIfUnpaid && order.status === 'pending') {
@@ -136,3 +139,27 @@ export async function syncOrder(
   }
   return order.status;
 }
+
+/** P7-05 : prévient l'adhérent que son paiement est confirmé (une seule fois, sans bloquer le paiement). */
+async function notifyPayment(
+  supabase: SupabaseClient,
+  order: { id: string; account_id: string | null; type: string; order_items: { label: string }[] }
+) {
+  if (!order.account_id) return;
+  const stage = order.type === 'stage';
+  try {
+    await sendPush(supabase, {
+      category: 'payments',
+      refId: order.id,
+      accountIds: [order.account_id],
+      title: stage ? '✅ Inscription confirmée' : '✅ Paiement confirmé',
+      body: stage
+        ? `${order.order_items[0]?.label ?? 'Stage'} : paiement reçu, l'inscription est confirmée.`
+        : 'Vos articles sont à récupérer au club.',
+      url: stage ? '/stages' : '/achats',
+    });
+  } catch (cause) {
+    console.error('Notification de paiement non envoyée', cause);
+  }
+}
+

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { toActionState, type ActionState } from "@/lib/action-state";
 import { scheduleTypeLabels, type PeriodKind, type ScheduleType } from "@/lib/planning";
+import { notifyMembers } from "@/lib/push";
 import { createClient } from "@/lib/supabase/server";
 
 // Les permissions SCHEDULE_CREATE / SCHEDULE_UPDATE / SCHEDULE_DELETE sont vérifiées par la RLS.
@@ -161,13 +162,19 @@ export async function cancelSlotForPeriod(_state: ActionState, formData: FormDat
   if (endDate < startDate) return { error: "La date de fin doit être après la date de début." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("schedule_cancellations").insert({
-    schedule_id: text(formData, "scheduleId"),
-    start_date: startDate,
-    end_date: endDate,
-    reason: text(formData, "reason") || null,
-  });
+  const { data, error } = await supabase
+    .from("schedule_cancellations")
+    .insert({
+      schedule_id: text(formData, "scheduleId"),
+      start_date: startDate,
+      end_date: endDate,
+      reason: text(formData, "reason") || null,
+    })
+    .select("id")
+    .single();
   if (error) return toActionState(error);
+  // P7-06 : prévenir les adhérents (case cochée par défaut).
+  if (formData.get("notify") === "on") await notifyMembers(supabase, "cancellation", data.id);
   refresh();
   return null;
 }
@@ -198,6 +205,7 @@ export async function setExceptionalSlotCancelled(_state: ActionState, formData:
     .select("id");
   if (error) return toActionState(error);
   if (data.length === 0) return noRightError;
+  if (cancelled && formData.get("notify") === "on") await notifyMembers(supabase, "slot", data[0].id);
   refresh();
   return null;
 }

@@ -174,6 +174,12 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
                       {!slot.is_cancelled && (
                         <Input name="reason" placeholder="Motif (facultatif)" aria-label="Motif de l'annulation" maxLength={200} />
                       )}
+                      {!slot.is_cancelled && (
+                        <label className="flex items-center gap-2 text-sm">
+                          <input type="checkbox" name="notify" defaultChecked className="accent-[var(--accent)]" />
+                          Prévenir
+                        </label>
+                      )}
                       <Button type="submit" variant={slot.is_cancelled ? "secondary" : "danger"}>
                         {slot.is_cancelled ? "Rétablir" : "Annuler"}
                       </Button>

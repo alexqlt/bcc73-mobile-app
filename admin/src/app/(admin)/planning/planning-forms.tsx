@@ -161,6 +161,10 @@ export function CancelPeriodForm({ action, scheduleId }: { action: Action; sched
       <Field label="Motif" htmlFor={`cancel-reason-${scheduleId}`}>
         <Input id={`cancel-reason-${scheduleId}`} name="reason" placeholder="Ex. Gymnase fermé" maxLength={200} />
       </Field>
+      <label className="flex items-center gap-2 text-sm sm:col-span-2 lg:col-span-4">
+        <input type="checkbox" name="notify" defaultChecked className="accent-[var(--accent)]" />
+        Prévenir les adhérents par notification
+      </label>
       <div>
         <Button type="submit" variant="danger">
           Annuler le créneau

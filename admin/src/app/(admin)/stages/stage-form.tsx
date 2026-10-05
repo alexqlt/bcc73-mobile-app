@@ -54,6 +54,12 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
           Publié : visible dans l&apos;app et ouvert aux inscriptions (ajoutez d&apos;abord au moins un tarif)
         </label>
         {!readOnly && (
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="notify" defaultChecked className="accent-[var(--accent)]" />
+            Prévenir les adhérents par notification quand le stage est publié (une seule fois)
+          </label>
+        )}
+        {!readOnly && (
           <div>
             <Button type="submit" variant="accent">
               {stage ? "Enregistrer" : "Créer le stage"}

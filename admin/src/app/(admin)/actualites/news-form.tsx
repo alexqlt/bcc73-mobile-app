@@ -84,6 +84,13 @@ export function NewsForm({ action, news, readOnly }: { action: Action; news?: Ne
           <p className="text-xs text-muted">Texte simple : laissez une ligne vide entre deux paragraphes.</p>
         </div>
 
+        {!readOnly && !news?.isPublished && (
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="notify" defaultChecked className="accent-[var(--accent)]" />
+            Envoyer une notification push aux adhérents à la publication
+          </label>
+        )}
+
         {!readOnly && (
           <div className="flex flex-wrap gap-2">
             {!news ? (
