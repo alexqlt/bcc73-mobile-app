@@ -20,10 +20,10 @@ function cell(value: unknown) {
  * séparateur point-virgule et BOM UTF-8 pour les accents.
  */
 export async function GET(request: NextRequest) {
-  const viewer = await requireAnyPermission(JOURNAL_PERMISSIONS);
+  await requireAnyPermission(JOURNAL_PERMISSIONS);
   const category = parseCategory(request.nextUrl.searchParams.get("categorie"));
   const supabase = await createClient();
-  const journal = await loadJournalContext(supabase, viewer.permissions.has("USER_MANAGE"));
+  const journal = await loadJournalContext(supabase);
 
   // PostgREST limite chaque réponse : le journal est lu par lots.
   const logs: AuditLog[] = [];
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     formatDate(log.created_at),
     journal.actor(log),
     journal.action(log),
-    journal.describe(log.details),
+    journal.describe(log),
     `${log.action}:${log.target_type}`,
     log.target_id,
     JSON.stringify(log.details),

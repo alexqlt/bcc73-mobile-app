@@ -1,5 +1,5 @@
 import type { Permission } from "@/lib/auth";
-import type { Json, Tables } from "@/lib/database.types";
+import type { Tables } from "@/lib/database.types";
 import type { createClient } from "@/lib/supabase/server";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
@@ -111,50 +111,42 @@ export function parseCategory(value: unknown) {
 }
 
 /**
- * Contexte pour rendre une ligne lisible : emails des comptes (si l'utilisateur peut les voir),
- * noms des rôles et des permissions.
+ * Contexte pour rendre une ligne lisible : prénom et nom des personnes citées (auteurs et comptes
+ * concernés, l'email seulement pour un compte sans membre), noms des rôles et des permissions.
  */
-export async function loadJournalContext(supabase: Supabase, canListUsers: boolean) {
-  const [{ data: roles }, { data: permissions }, users, actors] = await Promise.all([
+export async function loadJournalContext(supabase: Supabase) {
+  const [{ data: roles }, { data: permissions }, { data: people }] = await Promise.all([
     supabase.from("roles").select("id, name"),
     supabase.from("permissions").select("code, description"),
-    canListUsers ? supabase.rpc("admin_list_users") : Promise.resolve({ data: null }),
-    // Auteurs des lignes visibles par le lecteur, même sans accès à la liste des comptes.
-    supabase.rpc("journal_actor_emails"),
+    supabase.rpc("journal_people"),
   ]);
-  const emailById = new Map([...(actors.data ?? []), ...(users.data ?? [])].map((user) => [user.id, user.email]));
+  const nameById = new Map((people ?? []).map((person) => [person.id, person.display_name]));
   const roleNameById = new Map((roles ?? []).map((role) => [role.id, role.name]));
   const permissionById = new Map((permissions ?? []).map((p) => [p.code, p.description]));
 
   return {
     /** Auteur de l'action. */
     actor(log: AuditLog) {
-      return log.actor_id ? (emailById.get(log.actor_id) ?? "Un responsable") : "Supabase (SQL)";
+      return log.actor_id ? (nameById.get(log.actor_id) ?? "Un responsable") : "Supabase (SQL)";
     },
     /** Libellé de l'action. */
     action(log: AuditLog) {
       return eventLabels[`${log.action}:${log.target_type}`] ?? `${log.action} ${log.target_type}`;
     },
     /** Détail lisible de l'élément concerné, à partir de la ligne enregistrée. */
-    describe(details: Json) {
-      const row =
-        (details as {
-          new?: Record<string, string>;
-          old?: Record<string, string>;
-          reason?: string;
-          deleted?: number;
-          email?: string;
-        }) ?? {};
+    describe(log: AuditLog) {
+      const row = (log.details as { new?: Record<string, string>; old?: Record<string, string>; reason?: string; deleted?: number }) ?? {};
       const data = row.new ?? row.old ?? {};
       const parts = [
-        row.email,
+        // Compte créé depuis le back-office.
+        log.target_type === "accounts" && log.target_id && (nameById.get(log.target_id) ?? "un utilisateur"),
         data.name,
         data.title,
         data.date,
         data.start_date && (data.start_date === data.end_date ? data.start_date : `${data.start_date} → ${data.end_date}`),
         data.role_id && roleNameById.get(data.role_id),
         data.permission_code && (permissionById.get(data.permission_code) ?? data.permission_code),
-        data.account_id && (emailById.get(data.account_id) ?? "un utilisateur"),
+        data.account_id && (nameById.get(data.account_id) ?? "un utilisateur"),
         row.reason && `motif : ${row.reason}`,
         row.deleted !== undefined && `${row.deleted} entrée(s) effacée(s)`,
       ];

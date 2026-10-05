@@ -26,7 +26,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
 
   const [{ data: logs, error }, journal, admin] = await Promise.all([
     query,
-    loadJournalContext(supabase, viewer.permissions.has("USER_MANAGE")),
+    loadJournalContext(supabase),
     isAdmin(),
   ]);
   if (error) throw error;
@@ -86,7 +86,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
                 <time className="w-36 shrink-0 text-sm text-muted">{formatDate(log.created_at)}</time>
                 <p>
                   <strong>{journal.actor(log)}</strong> {journal.action(log)}
-                  <span className="text-muted"> {journal.describe(log.details)}</span>
+                  <span className="text-muted"> {journal.describe(log)}</span>
                 </p>
               </li>
             ))}

@@ -783,10 +783,10 @@ export type Database = {
       import_planning: { Args: { payload: Json }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
       is_system_role: { Args: { role: string }; Returns: boolean }
-      journal_actor_emails: {
+      journal_people: {
         Args: never
         Returns: {
-          email: string
+          display_name: string
           id: string
         }[]
       }
