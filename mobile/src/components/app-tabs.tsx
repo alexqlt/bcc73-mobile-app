@@ -20,17 +20,13 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>Planning</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="calendar" md="calendar_month" />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="stages">
-        <NativeTabs.Trigger.Label>Stages</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="figure.badminton" md="badminton" />
+      <NativeTabs.Trigger name="boutique">
+        <NativeTabs.Trigger.Label>Boutique</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="bag.fill" md="shopping_bag" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="mon-profil">
         <NativeTabs.Trigger.Label>Mon profil</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="person.crop.circle.fill" md="account_circle" />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="plus">
-        <NativeTabs.Trigger.Label>Plus</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="ellipsis" md="more_horiz" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

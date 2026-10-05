@@ -26,10 +26,6 @@ export function PaymentScreen({ orderId }: { orderId: string | undefined }) {
     return () => clearTimeout(timer);
   }, [orderId]);
 
-  const next =
-    order.data?.type === 'stage'
-      ? { label: 'Voir mes inscriptions', go: () => router.navigate('/stages') }
-      : { label: 'Voir mes achats', go: () => router.replace('/achats') };
 
   return (
     <ScrollView
@@ -80,7 +76,7 @@ export function PaymentScreen({ orderId }: { orderId: string | undefined }) {
             )}
 
             {order.data!.status === 'paid' ? (
-              <Button title={next.label} fullWidth onPress={next.go} />
+              <Button title="Voir mon historique" fullWidth onPress={() => router.navigate('/boutique')} />
             ) : (
               <Button title="Retour" variant="secondary" fullWidth onPress={() => router.back()} />
             )}

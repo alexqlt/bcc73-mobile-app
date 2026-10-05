@@ -83,21 +83,27 @@ export function useOrder(orderId: string | undefined) {
   });
 }
 
-/** P6-07 : achats de la boutique du compte, du plus récent au plus ancien (hors paiements abandonnés). */
-export function useMyShopOrders() {
+/**
+ * P6-07 et P6-14 : historique du compte — achats de volants et inscriptions aux stages, du plus
+ * récent au plus ancien (hors paiements abandonnés).
+ */
+export function useMyOrders() {
   const { session } = useAuth();
   const accountId = session?.user.id;
 
   return useQuery({
-    queryKey: ['orders', 'shop', accountId],
+    queryKey: ['orders', 'history', accountId],
     enabled: !!accountId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, status, total_cents, created_at, paid_at, picked_up_at, order_items (label, quantity)')
+        .select(
+          `id, type, status, total_cents, created_at, paid_at, picked_up_at,
+           order_items (label, quantity),
+           stage_registrations (status, member_name, price_name, stages (id, title, start_at, end_at, location))`
+        )
         // Les responsables voient toutes les commandes (RLS) : on ne garde que celles du compte.
         .eq('account_id', accountId!)
-        .eq('type', 'shop')
         .neq('status', 'cancelled')
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -105,6 +111,8 @@ export function useMyShopOrders() {
     },
   });
 }
+
+export type HistoryOrder = NonNullable<ReturnType<typeof useMyOrders>['data']>[number];
 
 /** Ex. « 5 oct. 2026 ». */
 export function formatOrderDate(value: string) {
