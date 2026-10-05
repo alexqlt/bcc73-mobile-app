@@ -23,6 +23,7 @@ export const eventCategories: {
     targetTypes: ["members"],
     permissions: ["MEMBER_VIEW", "MEMBER_MANAGE"],
     events: {
+      "signup:members": "a créé son compte",
       "approve:members": "a validé une licence",
       "reject:members": "a refusé une licence",
     },
