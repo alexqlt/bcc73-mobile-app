@@ -32,10 +32,13 @@ export function Badge({ label, tone = 'neutral' }: { label: string; tone?: Badge
 export function Chip({
   label,
   selected,
+  disabled,
   onPress,
 }: {
   label: string;
   selected?: boolean;
+  /** Choix indisponible : grisé et inactif. */
+  disabled?: boolean;
   onPress?: () => void;
 }) {
   const { colors, radii } = useDS();
@@ -43,12 +46,14 @@ export function Chip({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled }}
+      disabled={disabled}
       onPress={onPress}
       style={[
         styles.chip,
         { borderRadius: radii.pill, borderColor: selected ? colors.accent : colors.border },
         selected && { backgroundColor: colors.accent },
+        disabled && styles.chipDisabled,
       ]}>
       <Text variant="label" style={{ color: selected ? colors.onAccent : colors.text }}>
         {label}
@@ -71,5 +76,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     paddingHorizontal: 14,
     paddingVertical: 8,
+  },
+  chipDisabled: {
+    opacity: 0.4,
   },
 });

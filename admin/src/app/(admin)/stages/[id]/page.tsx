@@ -2,9 +2,16 @@ import { notFound } from "next/navigation";
 
 import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
-import { Badge, Button, Card, EmptyState, formatDate, Input, Label, PageHeader } from "@/components/ui";
+import { Badge, Button, Card, EmptyState, formatDate, Input, Label, PageHeader, Select } from "@/components/ui";
 import { requireAnyPermission, STAGE_PERMISSIONS } from "@/lib/auth";
-import { eurosInputValue, formatEuros, formatStageDates, registrationStatusLabels } from "@/lib/shop";
+import {
+  eurosInputValue,
+  formatEuros,
+  formatStageDates,
+  formatStageDay,
+  registrationStatusLabels,
+  stageDays,
+} from "@/lib/shop";
 import { createClient } from "@/lib/supabase/server";
 
 import { addPrice, deletePrice, deleteStage, updatePrice, updateStage } from "../actions";
@@ -12,7 +19,7 @@ import { BackLink, StageForm } from "../stage-form";
 
 export const metadata = { title: "Stage — BCC73 Administration" };
 
-/** P6-10 et P6-15 : un stage, ses tarifs et ses inscrits. */
+/** P6-10 et P6-15 : un stage, ses places par jour, ses tarifs et ses inscrits. */
 export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
   const viewer = await requireAnyPermission(STAGE_PERMISSIONS);
   const canUpdate = viewer.permissions.has("STAGE_UPDATE");
@@ -25,8 +32,8 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
     .from("stages")
     .select(
       `id, title, description, location, start_at, end_at, capacity, is_published,
-       stage_prices (id, name, amount_cents, position),
-       stage_registrations (id, status, price_name, amount_cents, created_at, confirmed_at,
+       stage_prices (id, name, amount_cents, position, day),
+       stage_registrations (id, status, price_name, amount_cents, created_at, confirmed_at, days,
                             member_name, member_license, orders (payer_email))`
     )
     .eq("id", id)
@@ -36,18 +43,40 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
   if (error && error.code !== "22P02") throw error; // 22P02 : identifiant mal formé
   if (!stage) notFound();
 
-  const confirmed = stage.stage_registrations.filter((registration) => registration.status === "confirmed");
-  const pending = stage.stage_registrations.filter((registration) => registration.status === "pending");
+  const days = stageDays(stage.start_at, stage.end_at);
+  const { data: dayPlaces } = await supabase.rpc("stage_day_places", { stage: stage.id });
+  const placesByDay = new Map((dayPlaces ?? []).map((row) => [row.day, row.places_left]));
+  const active = stage.stage_registrations.filter((registration) => registration.status !== "cancelled");
+  const allDays = (registrationDays: string[]) => registrationDays.length === days.length && days.length > 1;
 
   return (
     <>
       <PageHeader eyebrow="Stages" title={stage.title}>
         <BackLink />
       </PageHeader>
-      <p className="mb-6 text-muted">
-        {formatStageDates(stage.start_at, stage.end_at)} · {confirmed.length} / {stage.capacity} place(s) prise(s)
-        {pending.length > 0 && ` · ${pending.length} paiement(s) en cours`}
+      <p className="mb-4 text-muted">
+        {formatStageDates(stage.start_at, stage.end_at)} · {stage.capacity} place(s) par jour
       </p>
+
+      {/* Remplissage de chaque jour : inscriptions confirmées et paiements en cours. */}
+      <ul className="mb-6 grid max-w-3xl gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {days.map((day) => {
+          const left = placesByDay.get(day) ?? stage.capacity;
+          const taken = stage.capacity - left;
+          return (
+            <li key={day} className="bg-surface p-3">
+              <p className="font-heading text-sm uppercase tracking-wider">{formatStageDay(day)}</p>
+              <div className="mt-2 h-2 bg-border">
+                <div className="h-full bg-accent" style={{ width: `${Math.min(100, (taken / stage.capacity) * 100)}%` }} />
+              </div>
+              <p className="mt-1 text-sm">
+                {taken} / {stage.capacity} place(s) prise(s)
+                {left <= 0 && <span className="ml-2"><Badge tone="danger">Complet</Badge></span>}
+              </p>
+            </li>
+          );
+        })}
+      </ul>
 
       <Card className="mb-6 max-w-3xl">
         <StageForm action={updateStage} readOnly={!canUpdate} stage={stage} />
@@ -55,6 +84,10 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
 
       <section className="mb-10 max-w-3xl">
         <h2 className="mb-3 text-xl">Tarifs</h2>
+        <p className="mb-3 text-sm text-muted">
+          Un tarif couvre un jour ou tous les jours. Dans l&apos;app, il n&apos;est plus proposé si l&apos;un de ses jours
+          est passé ou complet.
+        </p>
         {stage.stage_prices.length === 0 && (
           <EmptyState>Aucun tarif : le stage ne peut pas recevoir d&apos;inscriptions.</EmptyState>
         )}
@@ -65,8 +98,16 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
                 <div className="flex flex-wrap items-center gap-2">
                   <ActionForm action={updatePrice} className="flex flex-1 flex-wrap items-center gap-2">
                     <input type="hidden" name="priceId" value={price.id} />
+                    <input type="hidden" name="stageId" value={stage.id} />
                     <Input name="name" defaultValue={price.name} aria-label="Nom du tarif" maxLength={60} className="min-w-0 flex-1" />
-                    <Input name="amount" defaultValue={eurosInputValue(price.amount_cents)} aria-label="Montant en euros" inputMode="decimal" className="w-28" />
+                    <DaySelect days={days} value={price.day} />
+                    <Input
+                      name="amount"
+                      defaultValue={eurosInputValue(price.amount_cents)}
+                      aria-label="Montant en euros"
+                      inputMode="decimal"
+                      className="w-28"
+                    />
                     <Button type="submit" variant="secondary">
                       Enregistrer
                     </Button>
@@ -80,8 +121,14 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
                 </div>
               ) : (
                 <span>
-                  {price.name} · <span className="font-heading">{formatEuros(price.amount_cents)}</span>
+                  {price.name} · {price.day ? formatStageDay(price.day) : "tous les jours"} ·{" "}
+                  <span className="font-heading">{formatEuros(price.amount_cents)}</span>
                 </span>
+              )}
+              {price.day && !days.includes(price.day) && (
+                <p className="mt-1 text-sm text-red-700 dark:text-red-400">
+                  Ce jour ne fait plus partie du stage (dates modifiées) : ce tarif n&apos;est plus proposé.
+                </p>
               )}
             </li>
           ))}
@@ -92,7 +139,11 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
             <input type="hidden" name="position" value={stage.stage_prices.length} />
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <Label htmlFor="price-name">Nouveau tarif</Label>
-              <Input id="price-name" name="name" placeholder="Ex. Adhérent, Jeune, Non adhérent" maxLength={60} />
+              <Input id="price-name" name="name" placeholder="Ex. Jeune, tous les jours" maxLength={60} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="price-day">Jour</Label>
+              <DaySelect id="price-day" days={days} value={null} />
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="price-amount">Montant (€)</Label>
@@ -106,29 +157,31 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
       {canSeeRegistrations && (
         <section className="mb-10">
           <h2 className="mb-3 text-xl">Inscrits</h2>
-          {stage.stage_registrations.filter((registration) => registration.status !== "cancelled").length === 0 ? (
+          {active.length === 0 ? (
             <EmptyState>Aucune inscription pour le moment.</EmptyState>
           ) : (
             <ol className="flex flex-col divide-y divide-border bg-surface">
-              {[...confirmed, ...pending].map((registration, index) => (
-                <li key={registration.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 p-4">
-                  <span className="w-6 font-heading text-muted">{index + 1}</span>
-                  <span className="font-bold">{registration.member_name}</span>
-                  {registration.member_license && (
-                    <span className="text-sm text-muted">Licence {registration.member_license}</span>
-                  )}
-                  <span className="text-sm">
-                    {registration.price_name} · {formatEuros(registration.amount_cents)}
-                  </span>
-                  <Badge tone={registrationStatusLabels[registration.status].tone}>
-                    {registrationStatusLabels[registration.status].label}
-                  </Badge>
-                  <span className="ml-auto text-xs text-muted">
-                    {registration.orders?.payer_email} ·{" "}
-                    {formatDate(registration.confirmed_at ?? registration.created_at)}
-                  </span>
-                </li>
-              ))}
+              {[...active]
+                .sort((a, b) => Number(a.status !== "confirmed") - Number(b.status !== "confirmed"))
+                .map((registration, index) => (
+                  <li key={registration.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 p-4">
+                    <span className="w-6 font-heading text-muted">{index + 1}</span>
+                    <span className="font-bold">{registration.member_name}</span>
+                    {registration.member_license && (
+                      <span className="text-sm text-muted">Licence {registration.member_license}</span>
+                    )}
+                    <span className="text-sm">
+                      {allDays(registration.days) ? "Tous les jours" : registration.days.map(formatStageDay).join(", ")} ·{" "}
+                      {registration.price_name} · {formatEuros(registration.amount_cents)}
+                    </span>
+                    <Badge tone={registrationStatusLabels[registration.status].tone}>
+                      {registrationStatusLabels[registration.status].label}
+                    </Badge>
+                    <span className="ml-auto text-xs text-muted">
+                      {registration.orders?.payer_email} · {formatDate(registration.confirmed_at ?? registration.created_at)}
+                    </span>
+                  </li>
+                ))}
             </ol>
           )}
         </section>
@@ -143,5 +196,20 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
         </ActionForm>
       )}
     </>
+  );
+}
+
+/** Jour couvert par un tarif : tous les jours, ou l'un des jours du stage. */
+function DaySelect({ id, days, value }: { id?: string; days: string[]; value: string | null }) {
+  return (
+    <Select id={id} name="day" defaultValue={value ?? ""} aria-label="Jour couvert par le tarif">
+      <option value="">Tous les jours</option>
+      {days.map((day, index) => (
+        <option key={day} value={day}>
+          Jour {index + 1} · {formatStageDay(day)}
+        </option>
+      ))}
+      {value && !days.includes(value) && <option value={value}>{formatStageDay(value)} (hors dates)</option>}
+    </Select>
   );
 }

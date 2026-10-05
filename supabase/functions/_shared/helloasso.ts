@@ -147,24 +147,26 @@ async function emailPayment(supabase: SupabaseClient, orderId: string) {
       .from('orders')
       .select(
         `id, type, total_cents, payer_name, payer_email, order_items (label, quantity),
-         stage_registrations (member_name, price_name, stages (title, start_at, end_at, location))`
+         stage_registrations (member_name, price_name, days, stages (title, start_at, end_at, location))`
       )
       .eq('id', orderId)
       .single();
     if (!order?.payer_email) return;
 
     if (order.type === 'stage') {
-      const registration = order.stage_registrations[0];
-      const stage = registration?.stages as { title: string; start_at: string; end_at: string; location: string | null } | null;
-      if (!registration || !stage) return;
-      const when = new Intl.DateTimeFormat('fr-FR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Europe/Paris',
-      }).format(new Date(stage.start_at));
+      const registrations = order.stage_registrations as {
+        member_name: string;
+        price_name: string;
+        days: string[];
+        stages: { title: string; start_at: string; end_at: string; location: string | null } | null;
+      }[];
+      const stage = registrations[0]?.stages;
+      if (!stage) return;
+      const day = (iso: string) =>
+        new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
+          new Date(`${iso}T00:00:00Z`)
+        );
+      const names = registrations.map((registration) => registration.member_name);
       await sendEmail(supabase, {
         kind: 'stage_registration',
         refId: order.id,
@@ -173,15 +175,15 @@ async function emailPayment(supabase: SupabaseClient, orderId: string) {
         subject: `Inscription confirmée : ${stage.title}`,
         heading: 'Inscription confirmée !',
         paragraphs: [
-          `Nous avons bien reçu le paiement : ${registration.member_name} est inscrit(e) au stage « ${stage.title} ».`,
-          'Retrouvez vos inscriptions dans l’onglet Stages de l’application du club.',
+          `Nous avons bien reçu le paiement : ${names.join(', ')} ${names.length > 1 ? 'sont inscrits' : 'est inscrit(e)'} au stage « ${stage.title} ».`,
+          'Retrouvez vos inscriptions dans l’onglet Boutique de l’application du club.',
         ],
         details: [
           `Stage : ${stage.title}`,
-          `Début : ${when}`,
+          `Jour(s) : ${registrations[0].days.map(day).join(', ')}`,
           ...(stage.location ? [`Lieu : ${stage.location}`] : []),
-          `Participant : ${registration.member_name}`,
-          `Tarif : ${registration.price_name} (${euros(order.total_cents)})`,
+          `Participant(s) : ${names.join(', ')}`,
+          `Tarif : ${registrations[0].price_name} × ${names.length} (${euros(order.total_cents)})`,
         ],
       });
     } else {

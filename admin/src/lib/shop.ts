@@ -85,3 +85,30 @@ export function formatStageDates(startIso: string, endIso: string) {
     ? `${day(startIso)}, ${time(startIso)} → ${time(endIso)}`
     : `${day(startIso)} ${time(startIso)} → ${day(endIso)} ${time(endIso)}`;
 }
+
+/** Jours d'un stage (AAAA-MM-JJ, heure de Paris), du premier au dernier — même règle que stage_days() en SQL. */
+export function stageDays(startIso: string, endIso: string) {
+  const day = (iso: string) =>
+    new Intl.DateTimeFormat("en-CA", { timeZone: PARIS, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
+  const days: string[] = [];
+  for (let current = day(startIso), last = day(endIso); current <= last; ) {
+    days.push(current);
+    const next = new Date(`${current}T12:00:00Z`);
+    next.setUTCDate(next.getUTCDate() + 1);
+    current = next.toISOString().slice(0, 10);
+  }
+  return days;
+}
+
+/** « 2026-10-19 » → « lun. 19 oct. ». */
+export function formatStageDay(isoDate: string) {
+  return new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(
+    new Date(`${isoDate}T12:00:00Z`)
+  );
+}
+
+/** Nom d'un tarif à la journée : « Jour 1 · lun. 19 oct. ». */
+export function dayPriceName(days: string[], isoDate: string) {
+  return `Jour ${days.indexOf(isoDate) + 1} · ${formatStageDay(isoDate)}`;
+}
+

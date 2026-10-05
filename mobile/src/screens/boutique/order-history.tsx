@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ErrorState, LoadingState } from '@/components/query-status';
 import { Badge, Card, Space, Text, type BadgeTone } from '@/design-system';
 import { formatEuros, formatOrderDate, useMyOrders, type HistoryOrder } from '@/features/payments/api';
-import { formatStageDates } from '@/features/stages/api';
+import { formatStageDates, formatStageDay } from '@/features/stages/api';
 
 /** Statut affiché à l'adhérent, pour un achat de volants ou une inscription à un stage. */
 function statusOf(order: HistoryOrder): { label: string; tone: BadgeTone } {
@@ -45,6 +45,11 @@ function HistoryItem({ order }: { order: HistoryOrder }) {
   const status = statusOf(order);
   const registration = order.stage_registrations[0];
   const stage = registration?.stages;
+  // Une commande de stage peut inscrire plusieurs membres du compte, pour un jour ou tous les jours.
+  const participants = order.stage_registrations.map((item) => item.member_name).join(', ');
+  const stageDates = stage ? formatStageDates(stage.start_at, stage.end_at).date : '';
+  // Un seul jour d'un stage qui en compte plusieurs (« … → … ») : on affiche ce jour.
+  const days = registration?.days.length === 1 && stageDates.includes('→') ? formatStageDay(registration.days[0]) : stageDates;
   // À faire : une inscription à venir, des volants à récupérer.
   const actionNeeded = order.status === 'paid' && (status.label === 'Inscription confirmée' || !order.picked_up_at);
 
@@ -57,7 +62,7 @@ function HistoryItem({ order }: { order: HistoryOrder }) {
         <>
           <Text variant="bodyStrong">{stage.title}</Text>
           <Text variant="small" color="textMuted">
-            {formatStageDates(stage.start_at, stage.end_at).date} · {registration.member_name} · {registration.price_name}
+            {days} · {participants} · {registration.price_name}
           </Text>
         </>
       ) : (

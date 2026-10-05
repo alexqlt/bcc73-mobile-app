@@ -20,6 +20,8 @@ export type StageCardProps = {
   onRegister?: () => void;
   /** Libellé du bouton (« S'inscrire » par défaut). Sans `onRegister`, pas de bouton. */
   registerLabel?: string;
+  /** Stage sur plusieurs jours : la capacité est par jour, le remplissage est celui du jour le plus rempli. */
+  perDay?: boolean;
 };
 
 export function StageCard({
@@ -31,6 +33,7 @@ export function StageCard({
   prices,
   onRegister,
   registerLabel = "S'inscrire",
+  perDay,
 }: StageCardProps) {
   const { colors, radii } = useDS();
   const remaining = capacity - registered;
@@ -58,6 +61,7 @@ export function StageCard({
         </View>
         <Text variant="caption" color="textMuted">
           {remaining} places restantes sur {capacity}
+          {perDay ? ' par jour (jour le plus rempli)' : ''}
         </Text>
       </View>
 

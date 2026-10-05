@@ -1,13 +1,13 @@
 // P6-03 — Création d'un paiement HelloAsso (Checkout), appelée par l'app avec la session de l'utilisateur.
 //
-// 1. La commande est créée par la base (create_shop_order / create_stage_registration) : elle
+// 1. La commande est créée par la base (create_shop_order / create_stage_registrations) : elle
 //    vérifie les droits, la licence, les places et calcule le montant.
 // 2. Une intention de paiement HelloAsso est créée pour ce montant, avec l'id de la commande en
 //    métadonnée.
 // 3. L'app ouvre `redirectUrl` ; le paiement est confirmé plus tard par helloasso-return / -webhook.
 //
 // Corps : { "kind": "shop", "items": [{ "product_id", "quantity" }], "returnTo": "bcc73://paiement" }
-//      ou { "kind": "stage", "stageId", "memberId", "priceId", "returnTo": "…" }
+//      ou { "kind": "stage", "stageId", "memberIds": ["…"], "priceId", "returnTo": "…" }
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
@@ -40,7 +40,11 @@ Deno.serve(async (request) => {
   const created =
     body.kind === 'shop'
       ? await user.rpc('create_shop_order', { items: body.items ?? [] })
-      : await user.rpc('create_stage_registration', { stage: body.stageId, member: body.memberId, price: body.priceId });
+      : await user.rpc('create_stage_registrations', {
+          stage: body.stageId,
+          member_ids: Array.isArray(body.memberIds) ? body.memberIds : [],
+          price: body.priceId,
+        });
   if (created.error) {
     // Messages métier (P0001) déjà rédigés en français par la base.
     const message = created.error.code === 'P0001' ? created.error.message : 'La commande n’a pas pu être créée.';

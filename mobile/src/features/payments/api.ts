@@ -25,7 +25,7 @@ export function formatEuros(cents: number) {
 
 export type CheckoutRequest =
   | { kind: 'shop'; items: { product_id: string; quantity: number }[] }
-  | { kind: 'stage'; stageId: string; memberId: string; priceId: string };
+  | { kind: 'stage'; stageId: string; memberIds: string[]; priceId: string };
 
 /**
  * P6-06 / P6-12 : crée la commande et le paiement HelloAsso (Edge Function helloasso-checkout),
@@ -100,7 +100,7 @@ export function useMyOrders() {
         .select(
           `id, type, status, total_cents, created_at, paid_at, picked_up_at,
            order_items (label, quantity),
-           stage_registrations (status, member_name, price_name, stages (id, title, start_at, end_at, location))`
+           stage_registrations (status, member_name, price_name, days, stages (id, title, start_at, end_at, location))`
         )
         // Les responsables voient toutes les commandes (RLS) : on ne garde que celles du compte.
         .eq('account_id', accountId!)

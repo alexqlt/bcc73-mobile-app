@@ -589,6 +589,7 @@ export type Database = {
       stage_prices: {
         Row: {
           amount_cents: number
+          day: string | null
           id: string
           name: string
           position: number
@@ -596,6 +597,7 @@ export type Database = {
         }
         Insert: {
           amount_cents: number
+          day?: string | null
           id?: string
           name: string
           position?: number
@@ -603,6 +605,7 @@ export type Database = {
         }
         Update: {
           amount_cents?: number
+          day?: string | null
           id?: string
           name?: string
           position?: number
@@ -624,6 +627,7 @@ export type Database = {
           cancelled_at: string | null
           confirmed_at: string | null
           created_at: string
+          days: string[]
           id: string
           member_id: string
           member_license: string | null
@@ -639,6 +643,7 @@ export type Database = {
           cancelled_at?: string | null
           confirmed_at?: string | null
           created_at?: string
+          days: string[]
           id?: string
           member_id: string
           member_license?: string | null
@@ -654,6 +659,7 @@ export type Database = {
           cancelled_at?: string | null
           confirmed_at?: string | null
           created_at?: string
+          days?: string[]
           id?: string
           member_id?: string
           member_license?: string | null
@@ -776,8 +782,8 @@ export type Database = {
         Returns: boolean
       }
       create_shop_order: { Args: { items: Json }; Returns: string }
-      create_stage_registration: {
-        Args: { member: string; price: string; stage: string }
+      create_stage_registrations: {
+        Args: { member_ids: string[]; price: string; stage: string }
         Returns: string
       }
       expire_pending_orders: { Args: never; Returns: undefined }
@@ -839,6 +845,14 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      stage_day_places: {
+        Args: { stage: string }
+        Returns: {
+          day: string
+          places_left: number
+        }[]
+      }
+      stage_days: { Args: { stage: string }; Returns: string[] }
       stage_places_left: { Args: { stage: string }; Returns: number }
     }
     Enums: {

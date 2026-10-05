@@ -80,7 +80,8 @@ export async function loadSalesStats(supabase: Supabase, now = new Date()): Prom
       entry.stages += order.total_cents;
       if (inSeason) {
         totals.stages += order.total_cents;
-        totals.registrations += 1;
+        // Une commande peut inscrire plusieurs membres : une ligne par personne.
+        totals.registrations += order.order_items.length;
       }
     }
     byMonth.set(key, entry);

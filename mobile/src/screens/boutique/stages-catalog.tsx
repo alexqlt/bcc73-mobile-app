@@ -29,6 +29,7 @@ export function StagesCatalog({ stages }: { stages: ReturnType<typeof useUpcomin
             capacity={stage.capacity}
             registered={stage.capacity - stage.placesLeft}
             prices={stage.stage_prices.map((price) => ({ label: price.name, amount: price.amount_cents / 100 }))}
+            perDay={stage.days.length > 1}
             registerLabel={stage.placesLeft > 0 ? "Voir et s'inscrire" : 'Complet · voir le stage'}
             onRegister={() => router.push(`/stage/${stage.id}`)}
           />
