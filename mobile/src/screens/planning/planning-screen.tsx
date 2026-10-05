@@ -7,25 +7,27 @@ import { ErrorState, LoadingState } from '@/components/query-status';
 import { BottomTabInset, MaxContentWidth, WebTopInset } from '@/constants/theme';
 import { Card, Chip, ScheduleSlot, SectionTitle, Space, Text, useDesignSystem } from '@/design-system';
 import {
+  addDays,
   formatCancellation,
+  formatDayLabel,
   formatShortDay,
   formatTime,
   parseISODate,
   startOfWeek,
   toISODate,
-  useHolidayPeriods,
   usePeriodOn,
   usePlanningWeek,
   useUpcomingCancellations,
+  useUpcomingPeriods,
   weekdayLabels,
   type ScheduleType,
 } from '@/features/schedule/api';
 
-/** « Cette semaine », ou l'identifiant d'une période de vacances consultée à l'avance. */
-type Source = 'week' | string;
+/** Cette semaine (dates réelles), ou l'horaire type d'une période : normal ou vacances. */
+type ViewMode = 'week' | 'normal' | 'holidays';
 type TypeFilter = 'all' | 'free_play' | 'training';
 
-/** Un créneau de la semaine, rattaché à son jour (sans date). */
+/** Un créneau rattaché à son jour de la semaine. */
 type WeekSlot = {
   key: string;
   /** 1 = lundi … 7 = dimanche. */
@@ -50,28 +52,45 @@ function isoWeekday(date: Date) {
   return ((date.getDay() + 6) % 7) + 1;
 }
 
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 /**
- * P4-03 et P4-04 : le planning est le même chaque semaine ; il est présenté jour par jour, en liste.
- * Une annulation s'affiche sur le créneau lui-même, avec sa période et son motif : barré si elle
- * touche cette semaine, en avertissement si elle est à venir. Pendant une période de vacances, son
- * planning remplace l'habituel ; les vacances à venir se consultent à l'avance (une puce chacune).
+ * P4-03 et P4-04 : planning jour par jour, en liste, avec trois vues :
+ * - Cette semaine (par défaut) : les jours datés, vacances et annulations comprises ;
+ * - Horaire normal : la semaine type de la saison ;
+ * - Horaire vacances : la semaine type d'une période de vacances (une puce par période).
+ * Une annulation s'affiche sur le créneau : barré si elle touche le jour affiché, en avertissement
+ * si elle est à venir.
  */
 export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } = {}) {
   const insets = useSafeAreaInsets();
   const { tokens, mode } = useDesignSystem();
   const today = parseISODate(toISODate(new Date()));
+  const todayIso = toISODate(today);
   const todayWeekday = isoWeekday(today);
+  const weekStart = startOfWeek(today);
 
-  const [source, setSource] = useState<Source>('week');
+  const [view, setView] = useState<ViewMode>('week');
+  const [holidayId, setHolidayId] = useState<string>();
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [listWeekday, setListWeekday] = useState(initialWeekday ?? todayWeekday);
 
-  const week = usePlanningWeek(startOfWeek(today));
+  const week = usePlanningWeek(weekStart);
   const currentPeriod = usePeriodOn(today);
-  const holidays = useHolidayPeriods(today);
+  const periods = useUpcomingPeriods(today);
   const cancellations = useUpcomingCancellations(today);
 
-  /** Annulation à venir d'un créneau récurrent, hors celle qui touche déjà le jour affiché. */
+  // Horaire normal : la saison en cours (la plus récente), sinon la prochaine.
+  const normalPeriods = (periods.data ?? []).filter((period) => period.kind === 'normal');
+  const normalPeriod = [...normalPeriods].reverse().find((period) => period.start_date <= todayIso) ?? normalPeriods[0];
+  // Horaire vacances : vacances en cours ou à venir, la première par défaut.
+  const holidayPeriods = (periods.data ?? []).filter((period) => period.kind === 'holidays');
+  const holidayPeriod = holidayPeriods.find((period) => period.id === holidayId) ?? holidayPeriods[0];
+  const shownPeriod = view === 'normal' ? normalPeriod : view === 'holidays' ? holidayPeriod : undefined;
+
+  /** Annulation à venir d'un créneau, hors celle qui touche déjà le jour affiché. */
   const upcomingNote = (scheduleId: string, day?: string) => {
     const next = cancellations.data?.find(
       (cancellation) =>
@@ -79,13 +98,10 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
     );
     return next ? formatCancellation(next.start_date, next.end_date, next.reason) : null;
   };
-  // Vacances à venir (pas celles en cours : elles sont déjà le planning de la semaine).
-  const upcomingHolidays = (holidays.data ?? []).filter((period) => period.start_date > toISODate(today));
-  const shownHolidays = source === 'week' ? undefined : upcomingHolidays.find((period) => period.id === source);
 
-  const query = source === 'week' ? week : holidays;
+  const query = view === 'week' ? week : periods;
   const allSlots: WeekSlot[] =
-    source === 'week'
+    view === 'week'
       ? (week.data ?? []).map((slot) => ({
           key: `${slot.schedule_id}-${slot.day}`,
           weekday: isoWeekday(parseISODate(slot.day)),
@@ -99,7 +115,7 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
             ? formatCancellation(slot.cancellation_start, slot.cancellation_end, slot.cancellation_reason)
             : upcomingNote(slot.schedule_id, slot.day),
         }))
-      : (shownHolidays?.schedules ?? []).map((slot) => ({
+      : (shownPeriod?.schedules ?? []).map((slot) => ({
           key: slot.id,
           weekday: slot.weekday,
           start: formatTime(slot.start_time),
@@ -111,8 +127,8 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
         }));
   const slots = allSlots.filter((slot) => typeFilter === 'all' || slot.tone === typeFilter);
 
-  const period = source === 'week' ? currentPeriod.data : shownHolidays;
-  const isHolidays = period?.kind === 'holidays';
+  const weekHolidays = view === 'week' && currentPeriod.data?.kind === 'holidays' ? currentPeriod.data : undefined;
+  const dayOf = (weekday: number) => addDays(weekStart, weekday - 1);
 
   return (
     <ScrollView
@@ -126,36 +142,54 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
       ]}
       refreshControl={
         <RefreshControl
-          refreshing={
-            week.isRefetching || currentPeriod.isRefetching || holidays.isRefetching || cancellations.isRefetching
-          }
-          onRefresh={() =>
-            Promise.all([week.refetch(), currentPeriod.refetch(), holidays.refetch(), cancellations.refetch()])
-          }
+          refreshing={week.isRefetching || currentPeriod.isRefetching || periods.isRefetching || cancellations.isRefetching}
+          onRefresh={() => Promise.all([week.refetch(), currentPeriod.refetch(), periods.refetch(), cancellations.refetch()])}
           tintColor={tokens.colors.text}
         />
       }>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <View style={styles.inner}>
-        <SectionTitle eyebrow={isHolidays && period ? period.name : 'Chaque semaine'} title="Planning" />
+        <SectionTitle
+          eyebrow={view === 'week' ? (weekHolidays?.name ?? 'Cette semaine') : (shownPeriod?.name ?? 'Horaire')}
+          title="Planning"
+        />
 
-        {isHolidays && period && (
+        <View style={styles.chips}>
+          <Chip label="Cette semaine" selected={view === 'week'} onPress={() => setView('week')} />
+          {normalPeriod && <Chip label="Horaire normal" selected={view === 'normal'} onPress={() => setView('normal')} />}
+          {holidayPeriods.length > 0 && (
+            <Chip label="Horaire vacances" selected={view === 'holidays'} onPress={() => setView('holidays')} />
+          )}
+        </View>
+
+        {view === 'holidays' && holidayPeriods.length > 1 && (
+          <View style={styles.chips}>
+            {holidayPeriods.map((period) => (
+              <Chip
+                key={period.id}
+                label={period.name}
+                selected={period.id === holidayPeriod?.id}
+                onPress={() => setHolidayId(period.id)}
+              />
+            ))}
+          </View>
+        )}
+
+        {weekHolidays && (
           <Card highlighted>
             <Text variant="subtitle">Planning des vacances</Text>
             <Text color="textMuted">
-              Du {formatShortDay(parseISODate(period.start_date))} au {formatShortDay(parseISODate(period.end_date))}, il
-              remplace le planning habituel.
+              Du {formatShortDay(parseISODate(weekHolidays.start_date))} au{' '}
+              {formatShortDay(parseISODate(weekHolidays.end_date))}, il remplace le planning habituel.
             </Text>
           </Card>
         )}
-
-        {upcomingHolidays.length > 0 && (
-          <View style={styles.chips}>
-            <Chip label="Cette semaine" selected={source === 'week'} onPress={() => setSource('week')} />
-            {upcomingHolidays.map((item) => (
-              <Chip key={item.id} label={item.name} selected={source === item.id} onPress={() => setSource(item.id)} />
-            ))}
-          </View>
+        {shownPeriod && (
+          <Text color="textMuted">
+            {shownPeriod.kind === 'holidays'
+              ? `Du ${formatShortDay(parseISODate(shownPeriod.start_date))} au ${formatShortDay(parseISODate(shownPeriod.end_date))}, à la place du planning habituel.`
+              : `Chaque semaine, du ${formatShortDay(parseISODate(shownPeriod.start_date))} au ${formatShortDay(parseISODate(shownPeriod.end_date))}.`}
+          </Text>
         )}
 
         <View style={styles.chips}>
@@ -183,35 +217,23 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
               {weekdayLabels.map((label, index) => (
                 <Chip
                   key={label}
-                  label={label.slice(0, 3)}
+                  // Cette semaine : jours datés (« Lun 12 ») ; horaire type : jours de la semaine.
+                  label={view === 'week' ? `${label.slice(0, 3)} ${dayOf(index + 1).getDate()}` : label.slice(0, 3)}
                   selected={listWeekday === index + 1}
                   onPress={() => setListWeekday(index + 1)}
                 />
               ))}
             </View>
             <Text variant="subtitle">
-              {weekdayLabels[listWeekday - 1]}
-              {source === 'week' && listWeekday === todayWeekday ? ' (aujourd’hui)' : ''}
+              {view === 'week'
+                ? `${capitalize(formatDayLabel(dayOf(listWeekday)))}${listWeekday === todayWeekday ? ' (aujourd’hui)' : ''}`
+                : weekdayLabels[listWeekday - 1]}
             </Text>
             <DayList slots={slots.filter((slot) => slot.weekday === listWeekday)} />
           </>
         )}
-
       </View>
     </ScrollView>
-  );
-}
-
-function Slot({ slot }: { slot: WeekSlot }) {
-  return (
-    <ScheduleSlot
-      start={slot.start}
-      end={slot.end}
-      title={slot.title}
-      location={slot.location}
-      cancelled={slot.cancelled}
-      note={slot.note}
-    />
   );
 }
 
@@ -228,7 +250,15 @@ function DayList({ slots }: { slots: WeekSlot[] }) {
       {[...slots]
         .sort((a, b) => a.start.localeCompare(b.start))
         .map((slot) => (
-          <Slot key={slot.key} slot={slot} />
+          <ScheduleSlot
+            key={slot.key}
+            start={slot.start}
+            end={slot.end}
+            title={slot.title}
+            location={slot.location}
+            cancelled={slot.cancelled}
+            note={slot.note}
+          />
         ))}
     </View>
   );

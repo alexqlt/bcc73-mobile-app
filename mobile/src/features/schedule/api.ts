@@ -110,19 +110,19 @@ export function usePeriodOn(day: Date) {
   });
 }
 
-/** Périodes de vacances en cours ou à venir, avec leurs créneaux de la semaine. */
-export function useHolidayPeriods(today: Date) {
+/**
+ * Périodes en cours ou à venir (planning normal et vacances), avec leurs créneaux de la semaine,
+ * pour consulter un horaire indépendamment de la semaine en cours.
+ */
+export function useUpcomingPeriods(today: Date) {
   const iso = toISODate(today);
 
   return useQuery({
-    queryKey: ['planning', 'holidays', iso],
+    queryKey: ['planning', 'periods', iso],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('schedule_periods')
-        .select(
-          'id, name, kind, start_date, end_date, schedules (id, weekday, start_time, end_time, type, title, location)'
-        )
-        .eq('kind', 'holidays')
+        .select('id, name, kind, start_date, end_date, schedules (id, weekday, start_time, end_time, type, title, location)')
         .gte('end_date', iso)
         .order('start_date')
         .order('weekday', { referencedTable: 'schedules' })
