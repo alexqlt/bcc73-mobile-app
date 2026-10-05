@@ -229,6 +229,20 @@ export async function loadJournalContext(supabase: Supabase) {
      */
     changes(log: AuditLog): FieldChange[] {
       const row = (log.details as { new?: Record<string, unknown>; old?: Record<string, unknown> }) ?? {};
+      // Validation / refus d'une licence : le membre concerné et le changement de statut.
+      if (log.target_type === "members" && (log.action === "approve" || log.action === "reject")) {
+        const licence = log.details as { member?: string; license_number?: string; previous_status?: string; reason?: string };
+        return [
+          licence.member && { field: "Membre", before: "", after: licence.member },
+          licence.license_number && { field: "Licence", before: "", after: licence.license_number },
+          {
+            field: "Statut",
+            before: licence.previous_status ? formatValue("status", licence.previous_status) : "—",
+            after: formatValue("status", log.action === "approve" ? "approved" : "rejected"),
+          },
+          licence.reason && { field: "Motif du refus", before: "", after: licence.reason },
+        ].filter((change): change is FieldChange => !!change);
+      }
       if (!row.new && !row.old) return [];
       const fields = [...new Set([...Object.keys(row.old ?? {}), ...Object.keys(row.new ?? {})])].filter(
         (field) => !HIDDEN_FIELDS.has(field)
@@ -251,11 +265,22 @@ export async function loadJournalContext(supabase: Supabase) {
     },
     /** Détail lisible de l'élément concerné, à partir de la ligne enregistrée. */
     describe(log: AuditLog) {
-      const row = (log.details as { new?: Record<string, string>; old?: Record<string, string>; reason?: string; deleted?: number }) ?? {};
+      const row =
+        (log.details as {
+          new?: Record<string, string>;
+          old?: Record<string, string>;
+          reason?: string;
+          deleted?: number;
+          member?: string;
+          license_number?: string;
+        }) ?? {};
       const data = row.new ?? row.old ?? {};
       const parts = [
         // Compte créé depuis le back-office.
         log.target_type === "accounts" && log.target_id && (nameById.get(log.target_id) ?? "un utilisateur"),
+        // Licence validée ou refusée : le membre concerné.
+        row.member,
+        row.member && row.license_number,
         data.name,
         data.title,
         data.date,
