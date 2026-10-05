@@ -16,9 +16,6 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 - [ ] **P1-18** Tester l'ajout d'un enfant (le reste du parcours mobile est validé)
 - [ ] **P2-13** Tester le back-office : connexion, validation de licence, création de rôle, attribution, journal
-- [ ] **P4-09** Tester le planning : saison + vacances, créneaux, annulation d'une date, créneau exceptionnel ; affichage jour / semaine / vacances sur téléphone
-- [ ] **P4-11** Supprimer le bucket `planning-images` dans le tableau de bord Supabase (Storage) : impossible en SQL
-- [ ] **P3-07** Tester les actualités : publication avec photo depuis le back-office, affichage accueil / liste / détail sur téléphone
 
 ---
 
@@ -43,16 +40,6 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 ### Phase 4 — Planning
 
 _Toutes les cartes sont terminées (test en cours : P4-09)._
-
-### Phase 5 — Classements FFBaD
-
-- [ ] **P5-01** Accès aux webservices FFBaD (identifiants, appels de test)
-- [ ] **P5-02** Table `rankings` (simple / double / mixte, classement, points)
-- [ ] **P5-03** Synchronisation périodique des classements (Edge Function planifiée)
-- [ ] **P5-04** Historique des classements pour l'évolution
-- [ ] **P5-05** Mobile : écran « Mon classement » (3 disciplines)
-- [ ] **P5-06** Mobile : écran « Évolution »
-- [ ] **P5-07** Classements des enfants du compte
 
 ### Phase 6 — Paiements HelloAsso
 
@@ -112,7 +99,7 @@ _Toutes les cartes sont terminées (test en cours : P4-09)._
 - [ ] Vérification automatique des licences via les **webservices officiels FFBaD** (`ws_getlicenceinfobylicence`, `ws_getlicenceinfolistbyinstance`) : demande d'accès à faire par le club sur support.ffbad.org. Remplacerait la validation manuelle (anciennes cartes P1-02 à P1-04 et P1-08). MyFFBaD n'a pas d'API publique et les CGU Poona interdisent les robots.
 
 - [ ] Planning : reconnaissance automatique de l'image (OCR / IA) → créneaux détectés → validation humaine
-- [ ] Classements : mes derniers matchs, mes adversaires, points gagnés / perdus
+- [ ] Classements FFBaD (ancienne phase 5, abandonnée le 2026-10-05) : classements simple / double / mixte, évolution, classements des enfants, synchronisation via les webservices FFBaD (identifiants à demander à la fédération) ; puis derniers matchs, adversaires, points gagnés / perdus
 - [ ] Boutique : gestion du stock
 - [ ] Backend NestJS dédié si les intégrations FFBaD / HelloAsso deviennent trop complexes
 
@@ -178,3 +165,6 @@ _Toutes les cartes sont terminées (test en cours : P4-09)._
 | P4-07 | Créneaux exceptionnels, annulation d'un créneau pour une date et rétablissement | 2026-10-05 | `e3d1e7b` |
 | P4-08 | ~~Image du planning~~ remplacée par l'import du fichier .xlsx du club (voir P4-10) | 2026-10-05 | `e3d1e7b` |
 | P4-10 | Import du planning depuis le fichier .xlsx du club : aperçu, choix des périodes, créneaux / vacances / événements / annulations, en une transaction | 2026-10-05 | `915aeec` |
+| P3-07 | Actualités testées (publication avec photo, accueil / liste / détail) | 2026-10-05 | — |
+| P4-09 | Planning testé (saison, vacances, créneaux, annulations, import) | 2026-10-05 | — |
+| P4-11 | Bucket `planning-images` supprimé dans le tableau de bord Supabase | 2026-10-05 | — |

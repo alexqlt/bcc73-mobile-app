@@ -65,10 +65,6 @@ export function ProfileScreen() {
         </View>
 
 
-        <View style={styles.section}>
-          <Text variant="subtitle">Bientôt</Text>
-          <Text color="textMuted">Classements et évolution (phase 5).</Text>
-        </View>
 
         <Button
           title="Se déconnecter"
