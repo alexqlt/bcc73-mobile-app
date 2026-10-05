@@ -12,6 +12,7 @@ import {
   Badge,
   Button,
   Chip,
+  Logo,
   NewsCard,
   RankingRow,
   ScheduleSlot,
@@ -200,18 +201,9 @@ function LicenceFormDemo() {
 }
 
 function Header() {
-  const { colors, radii } = useDesignSystem().tokens;
-
   return (
     <View style={styles.header}>
-      <View style={styles.logo}>
-        <Text variant="display">BCC</Text>
-        <View style={[styles.logoBadge, { backgroundColor: colors.accent, borderRadius: radii.sm }]}>
-          <Text variant="display" color="onAccent">
-            73
-          </Text>
-        </View>
-      </View>
+      <Logo />
       <Text variant="body" color="textMuted">
         Bonjour Jean 👋
       </Text>
@@ -242,14 +234,6 @@ const styles = StyleSheet.create({
   header: {
     gap: Space.xs,
     paddingTop: Space.sm,
-  },
-  logo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Space.xs,
-  },
-  logoBadge: {
-    paddingHorizontal: Space.sm,
   },
   section: {
     gap: Space.md,

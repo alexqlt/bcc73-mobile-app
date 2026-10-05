@@ -2,6 +2,7 @@ export * from './components/alert-banner';
 export * from './components/badge';
 export * from './components/button';
 export * from './components/card';
+export * from './components/logo';
 export * from './components/news-card';
 export * from './components/ranking-card';
 export * from './components/schedule-slot';
