@@ -8,19 +8,20 @@ import '@/global.css';
 import { Platform } from 'react-native';
 
 export const Colors = {
+  // Aligné sur le style Club (voir src/design-system/tokens.ts).
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: '#0D0D0D',
+    background: '#FFFFFF',
+    backgroundElement: '#F7F7F7',
+    backgroundSelected: '#EDEDED',
+    textSecondary: '#5C5C5C',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: '#FFFFFF',
+    background: '#0D0D0D',
+    backgroundElement: '#1A1A1A',
+    backgroundSelected: '#262626',
+    textSecondary: '#A3A3A3',
   },
 } as const;
 

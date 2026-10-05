@@ -1,0 +1,170 @@
+# Tableau des tâches — BCC73
+
+Suivi des développements, tiré de [APP.md](APP.md). Fonctionne comme un tableau Trello :
+une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Terminé** avec sa date et son commit.
+
+## Mode d'emploi
+
+- Chaque carte a un identifiant `Px-yy` (phase / numéro), à reprendre dans les messages de commit (ex. `P1-04 Écran de connexion`).
+- Pour démarrer une carte : la **déplacer** dans « En cours » (une ou deux à la fois maximum).
+- Une fois finie : la cocher, la déplacer dans « Terminé » et compléter `date` + `commit`.
+- Ce qui n'est pas encore cadré va dans « Idées / V2 ».
+
+---
+
+## 🔄 En cours
+
+_(vide)_
+
+---
+
+## 📋 Backlog
+
+### Phase 0 — Fondation
+
+- [ ] **P0-01** Choisir la structure du dépôt : monorepo `mobile/` + `admin/` + `supabase/` (le projet Expo est actuellement à la racine)
+- [ ] **P0-02** Nettoyer le template Expo (écran `explore`, composants de démo, `scripts/reset-project.js`)
+- [ ] **P0-03** Définir l'architecture des dossiers mobile (`src/app`, `src/components`, `src/features`, `src/lib`…)
+- [ ] **P0-04** Créer le projet Next.js + TypeScript pour le back-office
+- [ ] **P0-05** Créer le projet Supabase (dev) et initialiser la CLI Supabase (`supabase/` + migrations)
+- [ ] **P0-06** Créer l'environnement Supabase de prod
+- [ ] **P0-07** Gérer les variables d'environnement (mobile, admin, Supabase) — `.env` hors Git
+- [ ] **P0-08** Installer TanStack Query (données serveur) côté mobile
+- [ ] **P0-09** Choisir et installer la librairie de formulaires / validation
+- [ ] **P0-10** Mettre en place le client Supabase côté mobile avec stockage sécurisé de la session
+- [ ] **P0-11** CI : lint + typecheck sur chaque push (mobile + admin)
+- [ ] **P0-12** Configurer EAS (`eas.json`, profils development / preview / production)
+- [ ] **P0-13** Appliquer le design system à la barre d'onglets réelle (libellés FR, onglets de l'app, indicateur jaune)
+- [ ] **P0-14** Corriger l'erreur de lint du template dans `src/hooks/use-color-scheme.web.ts`
+
+### Phase 1 — Authentification et comptes
+
+- [ ] **P1-01** Tables `accounts` et `members` (un compte → plusieurs membres) + policies RLS
+- [ ] **P1-02** Table locale des licenciés du club (`licensees`)
+- [ ] **P1-03** Import initial des licenciés du club (FFBaD ou fichier)
+- [ ] **P1-04** Synchronisation périodique des licenciés FFBaD (Edge Function planifiée)
+- [ ] **P1-05** Écran inscription — étape 1 : email + mot de passe
+- [ ] **P1-06** Vérification de l'email
+- [ ] **P1-07** Écran inscription — étape 2 : saisie du numéro de licence
+- [ ] **P1-08** Vérification licence ↔ club côté serveur + écran de confirmation « Cette licence correspond à… [Oui, c'est moi] »
+- [ ] **P1-09** Validation manuelle des cas particuliers (licence introuvable, conflit)
+- [ ] **P1-10** Écran de connexion
+- [ ] **P1-11** Déconnexion
+- [ ] **P1-12** Mot de passe oublié
+- [ ] **P1-13** Navigation protégée (redirection selon l'état de connexion)
+- [ ] **P1-14** Écran profil
+- [ ] **P1-15** Gestion des membres du compte : ajouter / retirer un enfant via sa licence
+- [ ] **P1-16** Sélecteur du membre actif (parent → enfants)
+
+### Phase 2 — Rôles, permissions et back-office utilisateurs
+
+- [ ] **P2-01** Tables `roles`, `permissions`, `role_permissions`, `account_roles`
+- [ ] **P2-02** Seed des permissions (`NEWS_*`, `SCHEDULE_*`, `STAGE_*`, `VOLANT_*`, `MEMBER_*`, `PAYMENT_VIEW`, `USER_MANAGE`, `ROLE_MANAGE`)
+- [ ] **P2-03** Seed des rôles de base (Administrateur, Communication, Responsable stages, Responsable boutique)
+- [ ] **P2-04** Vérification des permissions côté serveur (fonction SQL + RLS)
+- [ ] **P2-05** Endpoint « mes permissions » consommé par l'app (l'app n'en décide jamais seule)
+- [ ] **P2-06** Back-office : authentification et layout (menu latéral, tableau de bord)
+- [ ] **P2-07** Back-office : liste et fiche des adhérents
+- [ ] **P2-08** Back-office : liste des utilisateurs
+- [ ] **P2-09** Back-office : créer un rôle / ajouter des permissions
+- [ ] **P2-10** Back-office : attribuer un rôle à un utilisateur
+- [ ] **P2-11** Journalisation des actions administratives (`audit_logs`)
+
+### Phase 3 — Actualités
+
+- [ ] **P3-01** Table `news` + stockage des photos (Supabase Storage) + RLS
+- [ ] **P3-02** Mobile : écran d'accueil
+- [ ] **P3-03** Mobile : liste des actualités
+- [ ] **P3-04** Mobile : détail d'une actualité
+- [ ] **P3-05** Back-office : créer / modifier / publier / supprimer une actualité (titre, photo, contenu)
+- [ ] **P3-06** Case « Envoyer une notification push » à la publication (dépend de P7-01)
+
+### Phase 4 — Planning
+
+- [ ] **P4-01** Tables `schedules` et `schedule_periods` (planning normal, vacances)
+- [ ] **P4-02** Logique « quel planning s'applique aujourd'hui » selon la période
+- [ ] **P4-03** Mobile : écran Planning (vue du jour + semaine)
+- [ ] **P4-04** Mobile : filtres Jeu libre / Entraînements / Vacances et créneaux exceptionnels
+- [ ] **P4-05** Back-office : ajouter / modifier / supprimer un créneau
+- [ ] **P4-06** Back-office : gestion des périodes (normal, vacances, dates)
+- [ ] **P4-07** Créneaux exceptionnels et annulation d'un créneau
+- [ ] **P4-08** Import d'une image de planning (affichage seul, complémentaire)
+
+### Phase 5 — Classements FFBaD
+
+- [ ] **P5-01** Accès aux webservices FFBaD (identifiants, appels de test)
+- [ ] **P5-02** Table `rankings` (simple / double / mixte, classement, points)
+- [ ] **P5-03** Synchronisation périodique des classements (Edge Function planifiée)
+- [ ] **P5-04** Historique des classements pour l'évolution
+- [ ] **P5-05** Mobile : écran « Mon classement » (3 disciplines)
+- [ ] **P5-06** Mobile : écran « Évolution »
+- [ ] **P5-07** Classements des enfants du compte
+
+### Phase 6 — Paiements HelloAsso
+
+- [ ] **P6-01** Compte et accès API HelloAsso (sandbox puis prod)
+- [ ] **P6-02** Tables `orders` (type, provider, provider_order_id, paid_at…) et `order_items`
+- [ ] **P6-03** Edge Function : création d'un Checkout HelloAsso
+- [ ] **P6-04** Edge Function : réception du webhook HelloAsso → statut `PAID` (jamais le retour `success=true`)
+- [ ] **P6-05** Table `products` + back-office produits
+- [ ] **P6-06** Mobile : boutique volants (quantité, total, payer)
+- [ ] **P6-07** Mobile : « Mes achats » (statut, à récupérer)
+- [ ] **P6-08** Back-office : ventes de volants
+- [ ] **P6-09** Tables `stages`, `stage_prices`, `stage_registrations`
+- [ ] **P6-10** Back-office : créer / modifier un stage et ses tarifs
+- [ ] **P6-11** Mobile : stages à venir + détail d'un stage
+- [ ] **P6-12** Mobile : inscription d'un membre à un stage + paiement
+- [ ] **P6-13** Gestion de la capacité (places restantes)
+- [ ] **P6-14** Mobile : « Mes inscriptions »
+- [ ] **P6-15** Back-office : liste des inscrits d'un stage
+- [ ] **P6-16** Back-office : liste des paiements
+
+### Phase 7 — Notifications
+
+- [ ] **P7-01** Installer et configurer `expo-notifications` + enregistrement du token push
+- [ ] **P7-02** Envoi des push depuis le serveur (Expo Push Service)
+- [ ] **P7-03** Push : nouvelle actualité
+- [ ] **P7-04** Push : stage ouvert
+- [ ] **P7-05** Push : inscription confirmée / paiement confirmé
+- [ ] **P7-06** Push : créneau annulé
+- [ ] **P7-07** Push : rappel de stage (optionnel)
+- [ ] **P7-08** Mobile : écran Paramètres des notifications
+- [ ] **P7-09** Intégration Brevo pour les emails transactionnels
+- [ ] **P7-10** Emails : bienvenue, compte validé, paiement reçu, inscription au stage
+
+### Phase 8 — Publication
+
+- [ ] **P8-01** Comptes Apple Developer et Google Play Console
+- [ ] **P8-02** Icône, splash screen, nom et identifiants de l'app
+- [ ] **P8-03** EAS Build iOS / Android
+- [ ] **P8-04** Distribution TestFlight
+- [ ] **P8-05** Distribution Google Internal Testing
+- [ ] **P8-06** Mises à jour OTA avec EAS Update
+- [ ] **P8-07** Mise en production sur les stores
+
+### Transverse — RGPD et sécurité
+
+- [ ] **RG-01** Politique de confidentialité (accessible dans l'app)
+- [ ] **RG-02** Gestion des comptes des mineurs (consentement, rattachement au parent)
+- [ ] **RG-03** Export des données d'un utilisateur
+- [ ] **RG-04** Suppression du compte et des données
+- [ ] **RG-05** Revue de minimisation des données stockées
+- [ ] **RG-06** Revue des policies RLS / permissions côté serveur
+
+---
+
+## 💡 Idées / V2
+
+- [ ] Planning : reconnaissance automatique de l'image (OCR / IA) → créneaux détectés → validation humaine
+- [ ] Classements : mes derniers matchs, mes adversaires, points gagnés / perdus
+- [ ] Boutique : gestion du stock
+- [ ] Backend NestJS dédié si les intégrations FFBaD / HelloAsso deviennent trop complexes
+
+---
+
+## ✅ Terminé
+
+| ID | Tâche | Date | Commit |
+|----|-------|------|--------|
+| — | Création du projet Expo (TypeScript + Expo Router) | — | `b0171a0` |
+| DS-01 | Design system validé : style « Club » (A), fidèle à bcc73.com — tokens + composants dans `src/design-system/` | 2026-10-05 | — |
