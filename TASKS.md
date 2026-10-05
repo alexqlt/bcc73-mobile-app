@@ -33,7 +33,6 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 - [ ] **P2-12** Hébergement du back-office (ex. Vercel) sur `admin.bcc73.com` — à faire avant d'ouvrir l'accès aux bénévoles
 
-
 ### Phase 3 — Actualités
 
 - [ ] **P3-01** Table `news` + stockage des photos (Supabase Storage) + RLS
