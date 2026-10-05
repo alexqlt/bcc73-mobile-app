@@ -11,6 +11,5 @@ export * from './components/stage-card';
 export * from './components/tab-bar-preview';
 export * from './components/text';
 export * from './components/text-field';
-export * from './components/week-calendar';
 export * from './theme-context';
 export * from './tokens';

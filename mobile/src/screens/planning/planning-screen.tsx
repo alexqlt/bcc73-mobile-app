@@ -5,37 +5,37 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorState, LoadingState } from '@/components/query-status';
 import { BottomTabInset, MaxContentWidth, WebTopInset } from '@/constants/theme';
-import {
-  CalendarLegend,
-  Card,
-  Chip,
-  ScheduleSlot,
-  SectionTitle,
-  Space,
-  Text,
-  useDesignSystem,
-  WeekCalendar,
-  type CalendarItem,
-} from '@/design-system';
+import { Card, Chip, ScheduleSlot, SectionTitle, Space, Text, useDesignSystem } from '@/design-system';
 import {
   formatShortDay,
   formatTime,
   parseISODate,
-  scheduleTypeLabels,
   startOfWeek,
   toISODate,
   useHolidayPeriods,
   usePeriodOn,
   usePlanningWeek,
   weekdayLabels,
+  type ScheduleType,
 } from '@/features/schedule/api';
 
 type Source = 'week' | 'holidays';
-type Display = 'calendar' | 'list';
 type TypeFilter = 'all' | 'free_play' | 'training';
 
 /** Un créneau de la semaine, rattaché à son jour (sans date). */
-type WeekSlot = CalendarItem & { location: string | null; note: string | null };
+type WeekSlot = {
+  key: string;
+  /** 1 = lundi … 7 = dimanche. */
+  weekday: number;
+  start: string;
+  end: string;
+  title: string;
+  tone: ScheduleType;
+  cancelled?: boolean;
+  exceptional?: boolean;
+  location: string | null;
+  note: string | null;
+};
 
 const typeFilters: { value: TypeFilter; label: string }[] = [
   { value: 'all', label: 'Tout' },
@@ -49,8 +49,8 @@ function isoWeekday(date: Date) {
 }
 
 /**
- * P4-03 et P4-04 : le planning est le même chaque semaine ; il est présenté par jour de la semaine,
- * en calendrier ou en liste. Les changements de la semaine en cours (annulations, créneaux
+ * P4-03 et P4-04 : le planning est le même chaque semaine ; il est présenté jour par jour, en liste.
+ * Les changements de la semaine en cours (annulations, créneaux
  * exceptionnels) y apparaissent ; pendant les vacances, le planning des vacances remplace l'habituel.
  */
 export function PlanningScreen() {
@@ -60,9 +60,7 @@ export function PlanningScreen() {
   const todayWeekday = isoWeekday(today);
 
   const [source, setSource] = useState<Source>('week');
-  const [display, setDisplay] = useState<Display>('calendar');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
-  const [selectedKey, setSelectedKey] = useState<string>();
   const [listWeekday, setListWeekday] = useState(todayWeekday);
 
   const week = usePlanningWeek(startOfWeek(today));
@@ -103,7 +101,6 @@ export function PlanningScreen() {
             : []
         );
   const slots = allSlots.filter((slot) => typeFilter === 'all' || slot.tone === typeFilter);
-  const selected = slots.find((slot) => slot.key === selectedKey);
   const changes = source === 'week' ? allSlots.filter((slot) => slot.cancelled || slot.exceptional) : [];
 
   const period = source === 'holidays' ? nextHolidays : currentPeriod.data;
@@ -147,21 +144,15 @@ export function PlanningScreen() {
           </View>
         )}
 
-        <View style={styles.toolbar}>
-          <View style={styles.chips}>
-            {typeFilters.map((item) => (
-              <Chip
-                key={item.value}
-                label={item.label}
-                selected={item.value === typeFilter}
-                onPress={() => setTypeFilter(item.value)}
-              />
-            ))}
-          </View>
-          <View style={styles.chips}>
-            <Chip label="Calendrier" selected={display === 'calendar'} onPress={() => setDisplay('calendar')} />
-            <Chip label="Liste" selected={display === 'list'} onPress={() => setDisplay('list')} />
-          </View>
+        <View style={styles.chips}>
+          {typeFilters.map((item) => (
+            <Chip
+              key={item.value}
+              label={item.label}
+              selected={item.value === typeFilter}
+              onPress={() => setTypeFilter(item.value)}
+            />
+          ))}
         </View>
 
         {query.isPending ? (
@@ -172,28 +163,6 @@ export function PlanningScreen() {
           <Card>
             <Text color="textMuted">Aucun créneau pour le moment.</Text>
           </Card>
-        ) : display === 'calendar' ? (
-          <>
-            <WeekCalendar
-              items={slots}
-              highlightedWeekday={source === 'week' ? todayWeekday : undefined}
-              selectedKey={selected?.key}
-              onSelect={(item) => setSelectedKey(item.key === selectedKey ? undefined : item.key)}
-            />
-            <CalendarLegend labels={scheduleTypeLabels} />
-            {selected ? (
-              <View style={styles.slots}>
-                <Text variant="label" color="textMuted">
-                  {weekdayLabels[selected.weekday - 1]}
-                </Text>
-                <Slot slot={selected} />
-              </View>
-            ) : (
-              <Text variant="small" color="textMuted">
-                Touchez un créneau pour voir l’horaire et le lieu.
-              </Text>
-            )}
-          </>
         ) : (
           <>
             <View style={styles.chips}>
@@ -274,9 +243,6 @@ const styles = StyleSheet.create({
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
     gap: Space.lg,
-  },
-  toolbar: {
-    gap: Space.sm,
   },
   chips: {
     flexDirection: 'row',
