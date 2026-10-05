@@ -1,11 +1,5 @@
-import { ComingSoon } from '@/screens/coming-soon';
+import { StagesScreen } from '@/screens/stages/stages-screen';
 
-export default function StagesScreen() {
-  return (
-    <ComingSoon
-      title="Stages"
-      features={['Stages à venir', 'Détail et tarifs', 'Mes inscriptions']}
-      phase="phase 6"
-    />
-  );
+export default function StagesTab() {
+  return <StagesScreen />;
 }

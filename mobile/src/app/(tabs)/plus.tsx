@@ -1,11 +1,5 @@
-import { ComingSoon } from '@/screens/coming-soon';
+import { PlusScreen } from '@/screens/plus/plus-screen';
 
-export default function PlusScreen() {
-  return (
-    <ComingSoon
-      title="Plus"
-      features={['Boutique de volants et mes achats', 'Notifications', 'Paramètres']}
-      phase="phase 6 et 7"
-    />
-  );
+export default function PlusTab() {
+  return <PlusScreen />;
 }

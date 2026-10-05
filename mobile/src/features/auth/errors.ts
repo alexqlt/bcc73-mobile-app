@@ -22,8 +22,14 @@ const databaseMessages: Record<string, string> = {
   '42501': "Vous n'avez pas le droit d'effectuer cette action.",
 };
 
+/** Erreur dont le message, déjà rédigé en français, peut être montré tel quel. */
+export class UserFacingError extends Error {}
+
 /** Message lisible par l'utilisateur, quelle que soit l'origine de l'erreur. */
 export function getErrorMessage(error: unknown): string {
+  if (error instanceof UserFacingError) {
+    return error.message;
+  }
   if (isAuthError(error) && error.code && authMessages[error.code]) {
     return authMessages[error.code];
   }
@@ -31,6 +37,10 @@ export function getErrorMessage(error: unknown): string {
     const code = String((error as { code: unknown }).code);
     if (databaseMessages[code]) {
       return databaseMessages[code];
+    }
+    // Règles métier levées par la base (stage complet, licence non validée…), déjà en français.
+    if (code === 'P0001' && 'message' in error) {
+      return String((error as { message: unknown }).message);
     }
   }
   if (error instanceof TypeError && error.message.includes('fetch')) {

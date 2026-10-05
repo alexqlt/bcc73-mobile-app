@@ -95,3 +95,42 @@ remplacera cette procédure.
   jamais dans l'application (voir APP.md, section RGPD et sécurité).
 - Les clés secrètes (`service_role`, HelloAsso, Brevo, FFBaD) ne sortent jamais de Supabase :
   elles sont stockées en secrets des Edge Functions (`npx supabase@latest secrets set`).
+
+## Paiements HelloAsso (phase 6)
+
+Boutique et stages sont payés par HelloAsso Checkout. Les montants sont calculés par la base
+(`create_shop_order`, `create_stage_registration`) et une commande ne passe `paid` qu'après
+relecture du paiement auprès de l'API HelloAsso (les webhooks HelloAsso ne sont pas signés).
+
+| Edge Function | Rôle | JWT |
+|---------------|------|-----|
+| `helloasso-checkout` | crée la commande et l'intention de paiement, renvoie l'URL HelloAsso | oui (appelée par l'app) |
+| `helloasso-return` | retour du navigateur après paiement, vérifie puis renvoie vers l'app | non |
+| `helloasso-webhook` | notifications HelloAsso, vérifie puis confirme le paiement | non |
+
+### Brancher HelloAsso
+
+1. **Tests** : créer une association sur <https://www.helloasso-sandbox.com>, puis dans son
+   back-office récupérer le client API (*Mon compte > Intégrations et API*). En production, même
+   chose sur le compte HelloAsso du club.
+2. Enregistrer les secrets (projet lié) :
+
+   ```bash
+   npx supabase@latest secrets set      HELLOASSO_API_URL=https://api.helloasso-sandbox.com      HELLOASSO_CLIENT_ID=...      HELLOASSO_CLIENT_SECRET=...      HELLOASSO_ORGANIZATION_SLUG=slug-de-l-association
+   ```
+
+   En production : `HELLOASSO_API_URL=https://api.helloasso.com`.
+3. Dans le back-office HelloAsso, déclarer l'URL de notification :
+   `https://<ref>.supabase.co/functions/v1/helloasso-webhook`.
+4. Déployer les fonctions après une modification :
+
+   ```bash
+   npx supabase@latest functions deploy helloasso-checkout helloasso-return helloasso-webhook --use-api
+   ```
+
+Sans ces secrets, l'app affiche « Le paiement en ligne n'est pas encore configuré » et la commande
+est aussitôt annulée (la place de stage est libérée).
+
+Le retour dans l'app passe par le lien `bcc73://paiement` : il faut une build de développement ou
+de production (dans Expo Go, le lien `exp://…` fonctionne aussi pendant le développement).
+

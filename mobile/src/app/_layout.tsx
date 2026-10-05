@@ -77,6 +77,10 @@ function RootNavigator() {
       <Stack.Protected guard={isSignedIn && hasLicence}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="actualites" />
+        <Stack.Screen name="stage/[id]" />
+        <Stack.Screen name="boutique" />
+        <Stack.Screen name="achats" />
+        <Stack.Screen name="paiement" />
       </Stack.Protected>
     </Stack>
   );
