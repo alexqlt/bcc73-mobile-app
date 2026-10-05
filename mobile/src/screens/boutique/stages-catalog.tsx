@@ -47,7 +47,7 @@ export function StagesCatalog({ stages }: { stages: ReturnType<typeof useUpcomin
   return (
     <View style={styles.section}>
       {stages.data.map((stage) => {
-        const dates = formatStageDates(stage.start_at, stage.end_at);
+        const dates = formatStageDates(stage.start_at, stage.end_at, stage.kind);
         return (
           <StageCard
             key={stage.id}

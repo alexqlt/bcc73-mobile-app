@@ -80,17 +80,22 @@ export function isoToParisLocal(iso: string) {
     .replace(" ", "T");
 }
 
-/** Ex. « jeu. 12 nov. 2026, 09:00 → 17:00 » (même jour) ou les deux dates complètes. */
-export function formatStageDates(startIso: string, endIso: string) {
+/**
+ * Ex. « jeu. 12 nov. 2026, 09:00 → 17:00 » ; un stage de plusieurs jours : « sam. 24 oct. 2026 →
+ * lun. 26 oct. 2026, 09:00 → 17:00 » (horaires de chaque journée). Un repas reste une soirée, même
+ * s'il finit après minuit.
+ */
+export function formatStageDates(startIso: string, endIso: string, kind: EventKind = "stage") {
   const day = (iso: string) =>
     new Intl.DateTimeFormat("fr-FR", { timeZone: PARIS, weekday: "short", day: "numeric", month: "short", year: "numeric" }).format(
       new Date(iso)
     );
   const time = (iso: string) =>
     new Intl.DateTimeFormat("fr-FR", { timeZone: PARIS, hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
-  return day(startIso) === day(endIso)
-    ? `${day(startIso)}, ${time(startIso)} → ${time(endIso)}`
-    : `${day(startIso)} ${time(startIso)} → ${day(endIso)} ${time(endIso)}`;
+  const hours = `${time(startIso)} → ${time(endIso)}`;
+  return kind === "meal" || day(startIso) === day(endIso)
+    ? `${day(startIso)}, ${hours}`
+    : `${day(startIso)} → ${day(endIso)}, ${hours}`;
 }
 
 /** Jours d'un stage (AAAA-MM-JJ, heure de Paris), du premier au dernier — même règle que stage_days() en SQL. */
@@ -117,5 +122,34 @@ export function formatStageDay(isoDate: string) {
 /** Nom d'un tarif à la journée : « Jour 1 · lun. 19 oct. ». */
 export function dayPriceName(days: string[], isoDate: string) {
   return `Jour ${days.indexOf(isoDate) + 1} · ${formatStageDay(isoDate)}`;
+}
+
+export type EventSchedule = { startDate: string; endDate: string; startTime: string; endTime: string };
+
+/**
+ * Début et fin d'un événement (ISO) à partir des champs du formulaire, à l'heure de Paris :
+ * - repas : une date et une plage horaire (une fin avant le début = le lendemain, ex. 19:00 → 01:00) ;
+ * - stage : date de début et de fin, horaires d'une journée (les mêmes chaque jour).
+ */
+export function eventBounds(kind: EventKind, schedule: EventSchedule) {
+  const { startDate, startTime, endTime } = schedule;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{2}:\d{2}$/.test(startTime) || !/^\d{2}:\d{2}$/.test(endTime)) return null;
+  let endDate = kind === "meal" ? startDate : schedule.endDate;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(endDate)) return null;
+  if (kind === "meal" && endTime <= startTime) {
+    const next = new Date(`${startDate}T12:00:00Z`);
+    next.setUTCDate(next.getUTCDate() + 1);
+    endDate = next.toISOString().slice(0, 10);
+  }
+  const startAt = parisLocalToISO(`${startDate}T${startTime}`);
+  const endAt = parisLocalToISO(`${endDate}T${endTime}`);
+  return startAt && endAt && endAt > startAt ? { startAt, endAt } : null;
+}
+
+/** Champs du formulaire pour un événement existant (dates et heures à l'heure de Paris). */
+export function eventSchedule(startIso: string, endIso: string): EventSchedule {
+  const [startDate, startTime] = isoToParisLocal(startIso).split("T");
+  const [endDate, endTime] = isoToParisLocal(endIso).split("T");
+  return { startDate, endDate, startTime, endTime };
 }
 

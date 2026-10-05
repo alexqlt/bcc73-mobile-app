@@ -102,10 +102,10 @@ export function StageDetailScreen({ id }: { id: string }) {
           </Card>
         ) : (
           <>
-            <SectionTitle eyebrow={formatStageDates(event.start_at, event.end_at).date} title={event.title} />
+            <SectionTitle eyebrow={formatStageDates(event.start_at, event.end_at, event.kind).date} title={event.title} />
             <View style={styles.section}>
               <Badge label={eventKindLabels[event.kind]} tone="accent" />
-              <Text>{formatStageDates(event.start_at, event.end_at).time}</Text>
+              <Text>{formatStageDates(event.start_at, event.end_at, event.kind).time}</Text>
               {event.location && <Text color="textMuted">{event.location}</Text>}
               {event.description && <Text selectable>{event.description}</Text>}
             </View>

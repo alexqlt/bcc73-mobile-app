@@ -103,13 +103,16 @@ export function useMyRegistrations() {
   });
 }
 
-/** Ex. « jeu. 12 nov. 2026 » et « 09:00 → 17:00 » (ou les deux dates si le stage dure plusieurs jours). */
-export function formatStageDates(startIso: string, endIso: string) {
+/**
+ * Ex. « jeu. 12 nov. 2026 » et « 09:00 → 17:00 » ; pour un stage de plusieurs jours, les deux dates
+ * et les horaires de chaque journée. Un repas reste une soirée, même s'il finit après minuit.
+ */
+export function formatStageDates(startIso: string, endIso: string, kind: EventKind = 'stage') {
   const start = new Date(startIso);
   const end = new Date(endIso);
   const day = (date: Date) => date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   const time = (date: Date) => date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  return day(start) === day(end)
+  return kind === 'meal' || day(start) === day(end)
     ? { date: day(start), time: `${time(start)} → ${time(end)}` }
     : { date: `${day(start)} → ${day(end)}`, time: `${time(start)} → ${time(end)}` };
 }

@@ -4,7 +4,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { toActionState, type ActionState } from "@/lib/action-state";
-import { dayPriceName, parisLocalToISO, parseEuros, stageDays, type EventKind } from "@/lib/shop";
+import { dayPriceName, eventBounds, parseEuros, stageDays, type EventKind } from "@/lib/shop";
 import { createClient } from "@/lib/supabase/server";
 
 // STAGE_CREATE / STAGE_UPDATE / STAGE_DELETE sont vérifiés par la RLS.
@@ -13,14 +13,25 @@ const noRightError = { error: "Vous n'avez pas le droit d'effectuer cette action
 
 function readStage(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
-  const startAt = parisLocalToISO(formData.get("startAt"));
-  const endAt = parisLocalToISO(formData.get("endAt"));
   const capacity = Number(formData.get("capacity"));
   const kind: EventKind = formData.get("kind") === "meal" ? "meal" : "stage";
+  const field = (name: string) => String(formData.get(name) ?? "");
+  const bounds = eventBounds(kind, {
+    startDate: field("startDate"),
+    endDate: field("endDate"),
+    startTime: field("startTime"),
+    endTime: field("endTime"),
+  });
 
   if (!title) return { error: "Donnez un titre à l'événement." };
-  if (!startAt || !endAt) return { error: "Indiquez le début et la fin de l'événement." };
-  if (endAt <= startAt) return { error: "La fin de l'événement doit être après son début." };
+  if (!bounds) {
+    return {
+      error:
+        kind === "meal"
+          ? "Indiquez la date et les heures de début et de fin du repas."
+          : "Indiquez le premier et le dernier jour (dans l'ordre) et les horaires de la journée.",
+    };
+  }
   if (!Number.isInteger(capacity) || capacity < 1) return { error: "Indiquez le nombre de places par jour (au moins 1)." };
 
   return {
@@ -28,8 +39,8 @@ function readStage(formData: FormData) {
       title,
       description: String(formData.get("description") ?? "").trim() || null,
       location: String(formData.get("location") ?? "").trim() || null,
-      start_at: startAt,
-      end_at: endAt,
+      start_at: bounds.startAt,
+      end_at: bounds.endAt,
       capacity,
       is_published: formData.get("isPublished") === "on",
       kind,

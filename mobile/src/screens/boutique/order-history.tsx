@@ -51,7 +51,7 @@ function HistoryItem({ order }: { order: HistoryOrder }) {
   const stage = registration?.stages;
   // Une commande de stage peut inscrire plusieurs membres du compte, pour un jour ou tous les jours.
   const participants = order.stage_registrations.map((item) => item.member_name).join(', ');
-  const stageDates = stage ? formatStageDates(stage.start_at, stage.end_at).date : '';
+  const stageDates = stage ? formatStageDates(stage.start_at, stage.end_at, stage.kind).date : '';
   // Un seul jour d'un stage qui en compte plusieurs (« … → … ») : on affiche ce jour.
   const days = registration?.days.length === 1 && stageDates.includes('→') ? formatStageDay(registration.days[0]) : stageDates;
   // À faire : une inscription à venir, des volants à récupérer.

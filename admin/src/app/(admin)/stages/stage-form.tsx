@@ -9,11 +9,12 @@ import {
   eurosInputValue,
   eventKindLabels,
   formatStageDay,
-  isoToParisLocal,
-  parisLocalToISO,
+  eventBounds,
+  eventSchedule,
   parseEuros,
   stageDays,
   type EventKind,
+  type EventSchedule,
 } from "@/lib/shop";
 
 type Action = Parameters<typeof ActionForm>[0]["action"];
@@ -30,26 +31,23 @@ export type StageValues = {
   kind: EventKind;
 };
 
-/** Jours couverts par les dates saisies (vide tant qu'elles sont incomplètes ou incohérentes). */
-function daysOf(startLocal: string, endLocal: string) {
-  const start = parisLocalToISO(startLocal);
-  const end = parisLocalToISO(endLocal);
-  return start && end && end > start ? stageDays(start, end) : [];
-}
-
 /**
  * P6-10 : informations d'un événement. Le type ajuste le formulaire et les tarifs générés à la
  * création : un stage reçoit un tarif par jour (même montant) et un pour tous les jours (proposé à
  * « tarif du jour × nombre de jours ») ; un repas du club, un tarif Adulte et un tarif Enfant.
  */
 export function StageForm({ action, stage, readOnly }: { action: Action; stage?: StageValues; readOnly?: boolean }) {
-  const [startAt, setStartAt] = useState(stage ? isoToParisLocal(stage.start_at) : "");
-  const [endAt, setEndAt] = useState(stage ? isoToParisLocal(stage.end_at) : "");
+  const [schedule, setSchedule] = useState<EventSchedule>(
+    stage ? eventSchedule(stage.start_at, stage.end_at) : { startDate: "", endDate: "", startTime: "", endTime: "" }
+  );
   const [dayPrice, setDayPrice] = useState("");
   const [allDaysPrice, setAllDaysPrice] = useState<string | null>(null);
   const [kind, setKind] = useState<EventKind>(stage?.kind ?? "stage");
   const meal = kind === "meal";
-  const days = daysOf(startAt, endAt);
+  const bounds = eventBounds(kind, schedule);
+  const days = bounds ? stageDays(bounds.startAt, bounds.endAt) : [];
+  const setField = (field: keyof EventSchedule) => (event: { target: { value: string } }) =>
+    setSchedule({ ...schedule, [field]: event.target.value });
   const dayCents = parseEuros(dayPrice);
   const suggestedAllDays = dayCents && days.length > 1 ? eurosInputValue(dayCents * days.length) : "";
 
@@ -79,13 +77,30 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
               required
             />
           </div>
+          {meal ? (
+            <div className="flex flex-col gap-1 sm:col-span-2">
+              <Label htmlFor="startDate">Date</Label>
+              <Input id="startDate" name="startDate" type="date" value={schedule.startDate} onChange={setField("startDate")} required />
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="startDate">Premier jour</Label>
+                <Input id="startDate" name="startDate" type="date" value={schedule.startDate} onChange={setField("startDate")} required />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="endDate">Dernier jour</Label>
+                <Input id="endDate" name="endDate" type="date" value={schedule.endDate} onChange={setField("endDate")} required />
+              </div>
+            </>
+          )}
           <div className="flex flex-col gap-1">
-            <Label htmlFor="startAt">Début</Label>
-            <Input id="startAt" name="startAt" type="datetime-local" value={startAt} onChange={(event) => setStartAt(event.target.value)} required />
+            <Label htmlFor="startTime">{meal ? "Heure de début" : "Début de la journée"}</Label>
+            <Input id="startTime" name="startTime" type="time" value={schedule.startTime} onChange={setField("startTime")} required />
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor="endAt">Fin</Label>
-            <Input id="endAt" name="endAt" type="datetime-local" value={endAt} onChange={(event) => setEndAt(event.target.value)} required />
+            <Label htmlFor="endTime">{meal ? "Heure de fin" : "Fin de la journée"}</Label>
+            <Input id="endTime" name="endTime" type="time" value={schedule.endTime} onChange={setField("endTime")} required />
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="location">Lieu</Label>
@@ -103,7 +118,8 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
 
         {!meal && days.length > 0 && (
           <p className="text-sm text-muted">
-            {days.length} jour(s) : {days.map(formatStageDay).join(", ")}. Les places s&apos;entendent pour chaque jour.
+            {days.length} jour(s) : {days.map(formatStageDay).join(", ")}, de {schedule.startTime} à {schedule.endTime}. Les
+            places s&apos;entendent pour chaque jour.
           </p>
         )}
 

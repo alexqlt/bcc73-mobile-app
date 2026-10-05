@@ -78,7 +78,7 @@ function StageList({ stages, placesLeft, empty }: { stages: ListedStage[]; place
               <Badge>{eventKindLabels[stage.kind]}</Badge>
               {stage.is_published ? <Badge tone="success">Publié</Badge> : <Badge tone="warning">Brouillon</Badge>}
               {stage.stage_prices.length === 0 && <Badge tone="danger">Aucun tarif</Badge>}
-              <span className="text-sm text-muted">{formatStageDates(stage.start_at, stage.end_at)}</span>
+              <span className="text-sm text-muted">{formatStageDates(stage.start_at, stage.end_at, stage.kind)}</span>
               <span className="ml-auto font-heading text-sm">
                 {left <= 0
                   ? "Complet"

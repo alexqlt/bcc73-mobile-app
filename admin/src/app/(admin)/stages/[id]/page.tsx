@@ -60,12 +60,13 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
       </PageHeader>
       <p className="mb-4 flex flex-wrap items-center gap-2 text-muted">
         <Badge tone="accent">{eventKindLabels[stage.kind]}</Badge>
-        {formatStageDates(stage.start_at, stage.end_at)} · {stage.capacity} place(s){meal ? "" : " par jour"}
+        {formatStageDates(stage.start_at, stage.end_at, stage.kind)} · {stage.capacity} place(s){meal ? "" : " par jour"}
       </p>
 
       {/* Remplissage de chaque jour : inscriptions confirmées et paiements en cours. */}
       <ul className="mb-6 grid max-w-3xl gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {days.map((day) => {
+        {/* Un repas qui finit après minuit couvre deux dates : une seule soirée à afficher. */}
+        {(meal ? days.slice(0, 1) : days).map((day) => {
           const left = placesByDay.get(day) ?? stage.capacity;
           const taken = stage.capacity - left;
           return (
