@@ -171,3 +171,4 @@ _Reste P6-01 et le test P6-17, en cours._
 | P7-08 | Mobile : écran Paramètres des notifications (4 catégories, autorisation de l'appareil) | 2026-10-06 | `6cf29d9` |
 | P7-09 | Emails transactionnels par l'API Brevo (`send-email`, `email_log`) | 2026-10-06 | `35fd114` |
 | P7-10 | Emails : bienvenue, licence validée, paiement reçu, inscription au stage | 2026-10-06 | `35fd114` |
+| P7-12 | Paramètres généraux (back-office, administrateur) : notifications push activables, coupées par défaut | 2026-10-06 | `9cfff9c` |
