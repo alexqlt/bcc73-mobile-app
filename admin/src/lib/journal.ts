@@ -201,16 +201,18 @@ export type FieldChange = { field: string; before: string; after: string };
  * concernés, l'email seulement pour un compte sans membre), noms des rôles et des permissions.
  */
 export async function loadJournalContext(supabase: Supabase) {
-  const [{ data: roles }, { data: permissions }, { data: people }, { data: stages }] = await Promise.all([
+  const [{ data: roles }, { data: permissions }, { data: people }, { data: stages }, { data: schedules }] = await Promise.all([
     supabase.from("roles").select("id, name"),
     supabase.from("permissions").select("code, description"),
     supabase.rpc("journal_people"),
     supabase.from("stages").select("id, title"),
+    supabase.from("schedules").select("id, title"),
   ]);
   const nameById = new Map((people ?? []).map((person) => [person.id, person.display_name]));
   const roleNameById = new Map((roles ?? []).map((role) => [role.id, role.name]));
   const permissionById = new Map((permissions ?? []).map((p) => [p.code, p.description]));
   const stageTitleById = new Map((stages ?? []).map((stage) => [stage.id, stage.title]));
+  const scheduleTitleById = new Map((schedules ?? []).map((schedule) => [schedule.id, schedule.title]));
 
   /** Valeur lisible d'un champ : euros, oui / non, dates, noms des rôles et des comptes… */
   const formatValue = (field: string, value: unknown): string => {
@@ -292,6 +294,15 @@ export async function loadJournalContext(supabase: Supabase) {
       const data = row.new ?? row.old ?? {};
       // Tarif d'un événement : seulement le nom de l'événement (le détail est dans les changements).
       if (log.target_type === "stage_prices") return (data.stage_id && stageTitleById.get(data.stage_id)) || "Événement supprimé";
+      // Annulation d'un créneau (ou rétablissement) : le créneau et la période d'annulation.
+      if (log.target_type === "schedule_cancellations") {
+        const title = (data.schedule_id && scheduleTitleById.get(data.schedule_id)) || "Créneau supprimé";
+        // Les annulations d'avant les intervalles n'ont qu'une date.
+        const start = data.start_date ?? data.date;
+        const end = data.end_date ?? start;
+        const period = start === end ? `le ${formatValue("date", start)}` : `du ${formatValue("date", start)} au ${formatValue("date", end)}`;
+        return `${title} · ${period}`;
+      }
       const parts = [
         // Compte créé depuis le back-office.
         log.target_type === "accounts" && log.target_id && (nameById.get(log.target_id) ?? "un utilisateur"),
