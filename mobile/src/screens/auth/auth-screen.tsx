@@ -28,11 +28,11 @@ export function AuthScreen({ title, description, children }: AuthScreenProps) {
           { paddingTop: insets.top + Space.xxl, paddingBottom: insets.bottom + Space.xxl },
         ]}>
         <View style={styles.inner}>
-          <Logo />
           <View style={styles.heading}>
-            <SectionTitle title={title} />
+            <Logo height={120} />
+            <SectionTitle title={title} centered />
             {description && (
-              <Text variant="body" color="textMuted">
+              <Text variant="body" color="textMuted" style={styles.centeredText}>
                 {description}
               </Text>
             )}
@@ -59,6 +59,20 @@ const styles = StyleSheet.create({
     gap: Space.xl,
   },
   heading: {
-    gap: Space.sm,
+    alignItems: 'center',
+    gap: Space.md,
+  },
+  centeredText: {
+    // Pleine largeur pour que le texte revienne à la ligne au lieu de déborder.
+    alignSelf: 'stretch',
+    textAlign: 'center',
+  },
+});
+
+/** Styles partagés par les écrans d'authentification. */
+export const authStyles = StyleSheet.create({
+  /** Lien secondaire (bouton « ghost ») centré sous le formulaire. */
+  link: {
+    alignSelf: 'center',
   },
 });

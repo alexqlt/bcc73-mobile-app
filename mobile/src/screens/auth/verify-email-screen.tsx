@@ -9,7 +9,7 @@ import { Button, Space, Text } from '@/design-system';
 import { useResendSignUpCode, useVerifyEmail } from '@/features/auth/api';
 import { verifyEmailSchema, type VerifyEmailForm } from '@/features/auth/schemas';
 
-import { AuthScreen } from './auth-screen';
+import { AuthScreen, authStyles } from './auth-screen';
 
 /** Saisie du code reçu par email. Une fois validé, l'utilisateur est connecté. */
 export function VerifyEmailScreen({ email }: { email: string }) {
@@ -53,7 +53,7 @@ export function VerifyEmailScreen({ email }: { email: string }) {
           disabled={resendCode.isPending}
           onPress={() => resendCode.mutate(email)}
         />
-        <Button title="Retour à la connexion" variant="ghost" onPress={() => router.dismissTo('/connexion')} />
+        <Button title="Retour à la connexion" variant="ghost" style={authStyles.link} onPress={() => router.dismissTo('/connexion')} />
       </View>
     </AuthScreen>
   );

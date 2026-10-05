@@ -9,7 +9,7 @@ import { Button, Space } from '@/design-system';
 import { useSignUp } from '@/features/auth/api';
 import { signUpSchema, type SignUpForm } from '@/features/auth/schemas';
 
-import { AuthScreen } from './auth-screen';
+import { AuthScreen, authStyles } from './auth-screen';
 
 /** Étape 1 de l'inscription : email + mot de passe. La licence est demandée après la confirmation. */
 export function SignUpScreen() {
@@ -61,7 +61,7 @@ export function SignUpScreen() {
         <FormError error={signUp.error} />
         <Button title="Continuer" fullWidth disabled={signUp.isPending} onPress={onSubmit} />
       </View>
-      <Button title="J'ai déjà un compte" variant="ghost" onPress={() => router.back()} />
+      <Button title="J'ai déjà un compte" variant="ghost" style={authStyles.link} onPress={() => router.back()} />
     </AuthScreen>
   );
 }

@@ -4,17 +4,26 @@ import { useDS } from '../theme-context';
 import { Space } from '../tokens';
 import { Text } from './text';
 
-export function SectionTitle({ eyebrow, title }: { eyebrow?: string; title: string }) {
+export type SectionTitleProps = {
+  eyebrow?: string;
+  title: string;
+  /** Centre le titre et son soulignement (écrans de connexion). Aligné à gauche par défaut. */
+  centered?: boolean;
+};
+
+export function SectionTitle({ eyebrow, title, centered }: SectionTitleProps) {
   const { colors } = useDS();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, centered && styles.centered]}>
       {eyebrow && (
         <Text variant="label" color="textMuted">
           {eyebrow}
         </Text>
       )}
-      <Text variant="title">{title}</Text>
+      <Text variant="title" style={centered && styles.centeredText}>
+        {title}
+      </Text>
       <View style={[styles.underline, { backgroundColor: colors.accent }]} />
     </View>
   );
@@ -23,6 +32,12 @@ export function SectionTitle({ eyebrow, title }: { eyebrow?: string; title: stri
 const styles = StyleSheet.create({
   container: {
     gap: Space.xs,
+  },
+  centered: {
+    alignItems: 'center',
+  },
+  centeredText: {
+    textAlign: 'center',
   },
   underline: {
     width: 48,

@@ -10,7 +10,7 @@ import { useResendSignUpCode, useSignIn } from '@/features/auth/api';
 import { isEmailNotConfirmed } from '@/features/auth/errors';
 import { signInSchema, type SignInForm } from '@/features/auth/schemas';
 
-import { AuthScreen } from './auth-screen';
+import { AuthScreen, authStyles } from './auth-screen';
 
 export function SignInScreen() {
   const signIn = useSignIn();
@@ -58,6 +58,7 @@ export function SignInScreen() {
         <Button
           title="Mot de passe oublié ?"
           variant="ghost"
+          style={authStyles.link}
           onPress={() => router.push('/mot-de-passe-oublie')}
         />
       </View>

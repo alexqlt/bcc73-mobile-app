@@ -2,7 +2,7 @@ import { Tabs, TabList, TabTrigger, TabSlot, TabTriggerSlotProps, TabListProps }
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { MaxContentWidth } from '@/constants/theme';
-import { Space, Text, useDS } from '@/design-system';
+import { Logo, Space, Text, useDS } from '@/design-system';
 
 export default function AppTabs() {
   return (
@@ -51,9 +51,9 @@ export function CustomTabList(props: TabListProps) {
   return (
     <View {...props} style={styles.tabListContainer}>
       <View style={[styles.innerContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <Text variant="subtitle" style={styles.brandText}>
-          BCC73
-        </Text>
+        <View style={styles.brandText}>
+          <Logo height={40} />
+        </View>
         {props.children}
       </View>
     </View>

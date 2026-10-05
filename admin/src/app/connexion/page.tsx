@@ -1,4 +1,5 @@
 import { ActionForm } from "@/components/action-form";
+import { Logo } from "@/components/logo";
 import { Button, Card, Input, Label } from "@/components/ui";
 
 import { signIn } from "./actions";
@@ -10,10 +11,8 @@ export default function ConnexionPage() {
   return (
     <main className="flex flex-1 items-center justify-center p-6">
       <Card highlighted className="w-full max-w-md">
-        <p className="font-heading text-sm uppercase tracking-widest text-muted">Badminton Club de Chambéry</p>
-        <h1 className="mt-1 text-3xl">
-          BCC<span className="ml-1 bg-accent px-2 text-on-accent">73</span> Admin
-        </h1>
+        <Logo height={110} />
+        <h1 className="mt-4 text-3xl">Administration</h1>
         <div className="mt-2 h-1.5 w-12 -skew-x-[20deg] bg-accent" />
         <p className="mt-4 text-sm text-muted">
           Connectez-vous avec le compte que vous utilisez dans l&apos;application du club.

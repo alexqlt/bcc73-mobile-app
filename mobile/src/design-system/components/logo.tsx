@@ -1,32 +1,28 @@
-import { StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 
-import { useDS } from '../theme-context';
-import { Space } from '../tokens';
-import { Text } from './text';
+import { useDesignSystem } from '../theme-context';
 
-/** Logo texte « BCC73 », le 73 sur fond jaune. */
-export function Logo() {
-  const { colors, radii } = useDS();
+/** Proportions du logo (largeur / hauteur), d'après le SVG du site bcc73.com. */
+const LOGO_RATIO = 752 / 568;
+
+const sources = {
+  // « BCC Chambéry » en noir, pour les fonds clairs.
+  light: require('@/assets/images/logo.png'),
+  // « BCC Chambéry » en blanc, pour les fonds sombres.
+  dark: require('@/assets/images/logo-dark.png'),
+};
+
+/** Logo du Badminton Club de Chambéry, adapté au mode clair / sombre. */
+export function Logo({ height = 96 }: { height?: number }) {
+  const { mode } = useDesignSystem();
 
   return (
-    <View style={styles.logo} accessibilityRole="header" accessibilityLabel="BCC73">
-      <Text variant="display">BCC</Text>
-      <View style={[styles.badge, { backgroundColor: colors.accent, borderRadius: radii.sm }]}>
-        <Text variant="display" color="onAccent">
-          73
-        </Text>
-      </View>
-    </View>
+    <Image
+      source={sources[mode]}
+      style={{ height, width: height * LOGO_RATIO }}
+      contentFit="contain"
+      accessibilityRole="image"
+      accessibilityLabel="Badminton Club de Chambéry"
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  logo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Space.xs,
-  },
-  badge: {
-    paddingHorizontal: Space.sm,
-  },
-});

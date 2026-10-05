@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { Logo } from "./logo";
+
 export type NavItem = { href: string; label: string };
 
 export function Sidebar({ items, email, signOut }: { items: NavItem[]; email: string; signOut: () => Promise<void> }) {
@@ -10,8 +12,8 @@ export function Sidebar({ items, email, signOut }: { items: NavItem[]; email: st
 
   return (
     <aside className="flex w-full flex-col gap-6 bg-primary p-6 text-on-primary md:min-h-screen md:w-64">
-      <Link href="/" className="font-heading text-2xl uppercase">
-        BCC<span className="ml-1 bg-accent px-2 text-on-accent">73</span>
+      <Link href="/" aria-label="Tableau de bord">
+        <Logo height={80} inverted />
       </Link>
       <nav className="flex flex-row flex-wrap gap-1 md:flex-col">
         {items.map((item) => {

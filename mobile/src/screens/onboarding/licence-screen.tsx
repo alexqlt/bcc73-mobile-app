@@ -5,7 +5,7 @@ import { MemberFormFields } from '@/components/form/member-form';
 import { AlertBanner, Button, Chip, Space, Text } from '@/design-system';
 import { useSignOut } from '@/features/auth/api';
 import { useAddMember, useMembers } from '@/features/members/api';
-import { AuthScreen } from '@/screens/auth/auth-screen';
+import { AuthScreen, authStyles } from '@/screens/auth/auth-screen';
 
 type LicenceOwner = 'self' | 'child';
 
@@ -56,7 +56,7 @@ export function LicenceScreen() {
         error={addMember.error ?? members.error}
         onSubmit={(values) => addMember.mutate({ ...values, isAccountHolder: owner === 'self' })}
       />
-      <Button title="Se déconnecter" variant="ghost" onPress={() => signOut.mutate()} />
+      <Button title="Se déconnecter" variant="ghost" style={authStyles.link} onPress={() => signOut.mutate()} />
     </AuthScreen>
   );
 }

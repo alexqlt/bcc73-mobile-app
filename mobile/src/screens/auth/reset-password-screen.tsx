@@ -9,7 +9,7 @@ import { Button, Space } from '@/design-system';
 import { useResetPassword } from '@/features/auth/api';
 import { resetPasswordSchema, type ResetPasswordForm } from '@/features/auth/schemas';
 
-import { AuthScreen } from './auth-screen';
+import { AuthScreen, authStyles } from './auth-screen';
 
 /** Code reçu par email + nouveau mot de passe. En cas de succès, l'utilisateur est connecté. */
 export function ResetPasswordScreen({ email }: { email: string }) {
@@ -56,7 +56,7 @@ export function ResetPasswordScreen({ email }: { email: string }) {
         <FormError error={resetPassword.error} />
         <Button title="Enregistrer" fullWidth disabled={resetPassword.isPending} onPress={onSubmit} />
       </View>
-      <Button title="Retour à la connexion" variant="ghost" onPress={() => router.dismissTo('/connexion')} />
+      <Button title="Retour à la connexion" variant="ghost" style={authStyles.link} onPress={() => router.dismissTo('/connexion')} />
     </AuthScreen>
   );
 }

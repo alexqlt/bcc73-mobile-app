@@ -9,7 +9,7 @@ import { Button, Space } from '@/design-system';
 import { useRequestPasswordReset } from '@/features/auth/api';
 import { forgotPasswordSchema, type ForgotPasswordForm } from '@/features/auth/schemas';
 
-import { AuthScreen } from './auth-screen';
+import { AuthScreen, authStyles } from './auth-screen';
 
 export function ForgotPasswordScreen() {
   const requestReset = useRequestPasswordReset();
@@ -43,7 +43,7 @@ export function ForgotPasswordScreen() {
         <FormError error={requestReset.error} />
         <Button title="Recevoir un code" fullWidth disabled={requestReset.isPending} onPress={onSubmit} />
       </View>
-      <Button title="Retour à la connexion" variant="ghost" onPress={() => router.back()} />
+      <Button title="Retour à la connexion" variant="ghost" style={authStyles.link} onPress={() => router.back()} />
     </AuthScreen>
   );
 }
