@@ -32,6 +32,30 @@ npx supabase@latest gen types typescript --linked > mobile/src/lib/database.type
 
 Le `<ref>` d'un projet est l'identifiant visible dans son URL : `https://<ref>.supabase.co`.
 
+## Valider les licences (en attendant le back-office)
+
+Chaque nouvel adhérent saisit son numéro de licence dans l'app : sa fiche est créée avec le statut
+`pending`. Un responsable vérifie la licence (par exemple dans Poona) puis la valide depuis
+**SQL Editor** dans le tableau de bord Supabase :
+
+```sql
+-- Demandes en attente, avec l'email du compte
+select m.id, m.license_number, m.first_name, m.last_name, m.is_account_holder, u.email, m.created_at
+from public.members m
+join auth.users u on u.id = m.account_id
+where m.status = 'pending'
+order by m.created_at;
+
+-- Valider
+select public.approve_member('<id>');
+
+-- Refuser, avec un motif affiché dans l'app
+select public.reject_member('<id>', 'Licence introuvable au club : vérifiez le numéro.');
+```
+
+Ces fonctions ne sont pas accessibles depuis l'application. Le back-office (phase 2, carte P2-07)
+remplacera cette procédure.
+
 ## Règles
 
 - **Toute modification du schéma passe par une migration**, jamais par l'éditeur du tableau de bord

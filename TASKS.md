@@ -14,7 +14,8 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ## 🔄 En cours
 
-_(vide)_
+- [ ] **P1-17** Brancher le SMTP Brevo sur Supabase puis activer les modèles d'email (`supabase/templates/`, à décommenter dans `config.toml`) — _bloquant pour recevoir les codes : sans SMTP personnalisé, Supabase n'envoie qu'aux membres de l'équipe et refuse les modèles en français_
+- [ ] **P1-18** Tester le parcours complet sur téléphone : inscription → code → licence → validation SQL → profil
 
 ---
 
@@ -26,22 +27,7 @@ _(vide)_
 
 ### Phase 1 — Authentification et comptes
 
-- [ ] **P1-01** Tables `accounts` et `members` (un compte → plusieurs membres) + policies RLS
-- [ ] **P1-02** Table locale des licenciés du club (`licensees`)
-- [ ] **P1-03** Import initial des licenciés du club (FFBaD ou fichier)
-- [ ] **P1-04** Synchronisation périodique des licenciés FFBaD (Edge Function planifiée)
-- [ ] **P1-05** Écran inscription — étape 1 : email + mot de passe
-- [ ] **P1-06** Vérification de l'email
-- [ ] **P1-07** Écran inscription — étape 2 : saisie du numéro de licence
-- [ ] **P1-08** Vérification licence ↔ club côté serveur + écran de confirmation « Cette licence correspond à… [Oui, c'est moi] »
-- [ ] **P1-09** Validation manuelle des cas particuliers (licence introuvable, conflit)
-- [ ] **P1-10** Écran de connexion
-- [ ] **P1-11** Déconnexion
-- [ ] **P1-12** Mot de passe oublié
-- [ ] **P1-13** Navigation protégée (redirection selon l'état de connexion)
-- [ ] **P1-14** Écran profil
-- [ ] **P1-15** Gestion des membres du compte : ajouter / retirer un enfant via sa licence
-- [ ] **P1-16** Sélecteur du membre actif (parent → enfants)
+- [ ] **P1-16** Sélecteur du membre actif (parent → enfants) — utile à partir des stages et de la boutique
 
 ### Phase 2 — Rôles, permissions et back-office utilisateurs
 
@@ -51,7 +37,7 @@ _(vide)_
 - [ ] **P2-04** Vérification des permissions côté serveur (fonction SQL + RLS)
 - [ ] **P2-05** Endpoint « mes permissions » consommé par l'app (l'app n'en décide jamais seule)
 - [ ] **P2-06** Back-office : authentification et layout (menu latéral, tableau de bord)
-- [ ] **P2-07** Back-office : liste et fiche des adhérents
+- [ ] **P2-07** Back-office : liste et fiche des adhérents, **validation / refus des licences en attente** (remplace la procédure SQL de `supabase/README.md`)
 - [ ] **P2-08** Back-office : liste des utilisateurs
 - [ ] **P2-09** Back-office : créer un rôle / ajouter des permissions
 - [ ] **P2-10** Back-office : attribuer un rôle à un utilisateur
@@ -142,6 +128,8 @@ _(vide)_
 
 ## 💡 Idées / V2
 
+- [ ] Vérification automatique des licences via les **webservices officiels FFBaD** (`ws_getlicenceinfobylicence`, `ws_getlicenceinfolistbyinstance`) : demande d'accès à faire par le club sur support.ffbad.org. Remplacerait la validation manuelle (anciennes cartes P1-02 à P1-04 et P1-08). MyFFBaD n'a pas d'API publique et les CGU Poona interdisent les robots.
+
 - [ ] Planning : reconnaissance automatique de l'image (OCR / IA) → créneaux détectés → validation humaine
 - [ ] Classements : mes derniers matchs, mes adversaires, points gagnés / perdus
 - [ ] Boutique : gestion du stock
@@ -168,3 +156,15 @@ _(vide)_
 | P0-11 | CI GitHub Actions (lint, typecheck, build) active sur [alexqlt/bcc73-mobile-app](https://github.com/alexqlt/bcc73-mobile-app) — premier run vert | 2026-10-05 | `e2ae6db` |
 | P0-05 | Projet Supabase dev (ref `avqfxxepxieugwgiidqa`) branché via `.env.local` et relié à `supabase/` (`supabase link`) | 2026-10-05 | `d1112f6` |
 | P0-12 | EAS : `eas.json` + projet [@scunange/bcc73](https://expo.dev/accounts/scunange/projects/bcc73) (identifiants stores reportés à P8-02) | 2026-10-05 | `645ffd6` |
+| P1-01 | Tables `accounts` / `members` + RLS, statut `pending` / `approved` / `rejected` non modifiable par l'app | 2026-10-05 | `94e7f5b` |
+| P1-06 | Modèles d'email à code en français + config auth poussée (activation des modèles : P1-17) | 2026-10-05 | `d737f24` |
+| P1-05 | Inscription email + mot de passe | 2026-10-05 | `f99e78e` |
+| P1-07 | Saisie de la licence, prénom et nom du titulaire | 2026-10-05 | `f99e78e` |
+| P1-08 | Licence « en attente de validation » (validation manuelle, pas de liste FFBaD) | 2026-10-05 | `f99e78e` |
+| P1-10 | Connexion (renvoi du code si email non confirmé) | 2026-10-05 | `f99e78e` |
+| P1-11 | Déconnexion | 2026-10-05 | `f99e78e` |
+| P1-12 | Mot de passe oublié par code | 2026-10-05 | `f99e78e` |
+| P1-13 | Navigation protégée : connexion / licence / onglets | 2026-10-05 | `f99e78e` |
+| P1-14 | Profil (onglet Mon badminton) | 2026-10-05 | `f99e78e` |
+| P1-15 | Ajouter / retirer un enfant rattaché au compte | 2026-10-05 | `f99e78e` |
+| P1-09 | Validation manuelle des licences par SQL (procédure dans `supabase/README.md`) | 2026-10-05 | `0a07485` |
