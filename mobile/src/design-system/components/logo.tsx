@@ -10,15 +10,23 @@ const sources = {
   light: require('@/assets/images/logo.png'),
   // « BCC Chambéry » en blanc, pour les fonds sombres.
   dark: require('@/assets/images/logo-dark.png'),
+  // Volant en blanc, pour les fonds jaunes (comme sur la page d'accueil du site).
+  onAccent: require('@/assets/images/logo-on-yellow.png'),
 };
 
-/** Logo du Badminton Club de Chambéry, adapté au mode clair / sombre. */
-export function Logo({ height = 96 }: { height?: number }) {
+export type LogoProps = {
+  height?: number;
+  /** `accent` : posé sur le jaune du club. Par défaut, suit le mode clair / sombre. */
+  background?: 'default' | 'accent';
+};
+
+/** Logo du Badminton Club de Chambéry, adapté au fond sur lequel il est posé. */
+export function Logo({ height = 96, background = 'default' }: LogoProps) {
   const { mode } = useDesignSystem();
 
   return (
     <Image
-      source={sources[mode]}
+      source={background === 'accent' ? sources.onAccent : sources[mode]}
       style={{ height, width: height * LOGO_RATIO }}
       contentFit="contain"
       accessibilityRole="image"
