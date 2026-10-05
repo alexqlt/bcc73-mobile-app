@@ -14,6 +14,26 @@ npm run typecheck
 
 Ajouter une dépendance : toujours `npx expo install <paquet>` (versions compatibles avec le SDK).
 
+## Builds EAS
+
+Les profils sont définis dans `eas.json`. Chaque profil lit les variables d'environnement de
+l'environnement EAS du même nom (à renseigner sur expo.dev ou avec `npx eas-cli@latest env:create`).
+
+| Profil | Usage | Supabase |
+|--------|-------|----------|
+| `development` | build de développement installé sur le téléphone | dev |
+| `preview` | build de test partagé (TestFlight / test interne) | dev |
+| `production` | publication sur les stores, numéro de build incrémenté automatiquement | prod |
+
+```bash
+npx eas-cli@latest login                               # une seule fois
+npx eas-cli@latest init                                # relie l'app à un projet EAS (ajoute projectId dans app.json)
+npx eas-cli@latest build --profile preview --platform android
+```
+
+Le profil `development` nécessite `expo-dev-client` (`npx expo install expo-dev-client`), à ajouter
+le jour où l'app utilisera un module natif absent d'Expo Go.
+
 ## Organisation de `src/`
 
 ```
