@@ -11,6 +11,9 @@
   --on-accent: #0d0d0d;
   --primary: #0d0d0d;
   --on-primary: #ffffff;
+  /* Séries des graphiques (palette validée : contraste, daltonisme) — volants, stages. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,6 +25,8 @@
     --muted: #a3a3a3;
     --primary: #ffffff;
     --on-primary: #0d0d0d;
+    --series-1: #3987e5;
+    --series-2: #d95926;
   }
 }
 
