@@ -95,7 +95,7 @@ export function DesignShowcase() {
             <ScheduleSlot start="20:00" end="22:00" title="Entraînement compétiteurs" location="Gymnase Mérande" cancelled />
           </Section>
 
-          <Section eyebrow="Mon badminton" title="Mon classement">
+          <Section eyebrow="Mon profil" title="Mon classement">
             <RankingRow
               rankings={[
                 { discipline: 'Simple', level: 'R5', points: 1584, trend: 'up' },

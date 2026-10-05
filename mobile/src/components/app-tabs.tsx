@@ -24,9 +24,9 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>Stages</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="figure.badminton" md="badminton" />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="mon-badminton">
-        <NativeTabs.Trigger.Label>Mon bad</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="trophy.fill" md="emoji_events" />
+      <NativeTabs.Trigger name="mon-profil">
+        <NativeTabs.Trigger.Label>Mon profil</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="person.crop.circle.fill" md="account_circle" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="plus">
         <NativeTabs.Trigger.Label>Plus</NativeTabs.Trigger.Label>

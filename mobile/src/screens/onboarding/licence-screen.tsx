@@ -43,7 +43,7 @@ export function LicenceScreen() {
         </View>
         {owner === 'child' && (
           <Text variant="small" color="textMuted">
-            Vous pourrez ajouter d&apos;autres enfants, ou votre propre licence, depuis l&apos;onglet Mon badminton.
+            Vous pourrez ajouter d&apos;autres enfants, ou votre propre licence, depuis l&apos;onglet Mon profil.
           </Text>
         )}
       </View>

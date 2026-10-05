@@ -29,7 +29,7 @@ import { memberStatusLabel, memberStatusTone } from '@/features/members/status';
 import { useMyRoles, type Role } from '@/features/permissions/api';
 import { env } from '@/lib/env';
 
-/** Profil (APP.md : Mon badminton > Profil) : compte, membres rattachés et déconnexion. */
+/** Onglet « Mon profil » (APP.md : Mon badminton > Profil) : compte, membres rattachés et déconnexion. */
 export function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { tokens, mode } = useDesignSystem();
@@ -50,7 +50,7 @@ export function ProfileScreen() {
       ]}>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <View style={styles.inner}>
-        <SectionTitle eyebrow="Mon badminton" title="Mon profil" />
+        <SectionTitle title="Mon profil" />
         <Text color="textMuted">{session?.user.email}</Text>
         {!!roles.data?.length && <RolesSection roles={roles.data} />}
 
