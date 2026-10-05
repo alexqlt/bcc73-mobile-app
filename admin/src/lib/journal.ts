@@ -55,6 +55,22 @@ export const eventCategories: { value: string; label: string; targetTypes: strin
     },
   },
   {
+    value: "boutique-stages",
+    label: "Boutique et stages",
+    targetTypes: ["products", "stages", "stage_prices"],
+    events: {
+      "insert:products": "a ajouté un article à la boutique",
+      "update:products": "a modifié un article de la boutique",
+      "delete:products": "a supprimé un article de la boutique",
+      "insert:stages": "a créé un stage",
+      "update:stages": "a modifié un stage",
+      "delete:stages": "a supprimé un stage",
+      "insert:stage_prices": "a ajouté un tarif de stage",
+      "update:stage_prices": "a modifié un tarif de stage",
+      "delete:stage_prices": "a supprimé un tarif de stage",
+    },
+  },
+  {
     value: "journal",
     label: "Journal",
     targetTypes: ["audit_logs"],

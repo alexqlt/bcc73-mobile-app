@@ -1,12 +1,23 @@
 import { signOut } from "@/app/connexion/actions";
 import { Sidebar, type NavItem } from "@/components/sidebar";
 import { Card } from "@/components/ui";
-import { getViewer, JOURNAL_PERMISSIONS, NEWS_PERMISSIONS, SCHEDULE_PERMISSIONS, type Permission } from "@/lib/auth";
+import {
+  getViewer,
+  JOURNAL_PERMISSIONS,
+  NEWS_PERMISSIONS,
+  SCHEDULE_PERMISSIONS,
+  SHOP_PERMISSIONS,
+  STAGE_PERMISSIONS,
+  type Permission,
+} from "@/lib/auth";
 
 const navigation: (NavItem & { permissions?: Permission[] })[] = [
   { href: "/", label: "Tableau de bord" },
   { href: "/actualites", label: "Actualités", permissions: NEWS_PERMISSIONS },
   { href: "/planning", label: "Planning", permissions: SCHEDULE_PERMISSIONS },
+  { href: "/stages", label: "Stages", permissions: STAGE_PERMISSIONS },
+  { href: "/boutique", label: "Boutique", permissions: SHOP_PERMISSIONS },
+  { href: "/paiements", label: "Paiements", permissions: ["PAYMENT_VIEW"] },
   { href: "/adherents", label: "Adhérents", permissions: ["MEMBER_VIEW"] },
   { href: "/utilisateurs", label: "Utilisateurs", permissions: ["USER_MANAGE"] },
   { href: "/roles", label: "Rôles", permissions: ["ROLE_MANAGE"] },

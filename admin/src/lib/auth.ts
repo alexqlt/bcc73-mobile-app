@@ -79,3 +79,9 @@ export const isAdmin = cache(async () => {
   const { data } = await supabase.rpc("is_admin");
   return data === true;
 });
+
+/** Boutique : gestion des produits ou suivi des ventes. */
+export const SHOP_PERMISSIONS: Permission[] = ["VOLANT_MANAGE", "VOLANT_VIEW_SALES"];
+
+/** Stages : création, modification, suppression ou suivi des inscriptions. */
+export const STAGE_PERMISSIONS: Permission[] = ["STAGE_CREATE", "STAGE_UPDATE", "STAGE_DELETE", "STAGE_VIEW_REGISTRATIONS"];

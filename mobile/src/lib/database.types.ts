@@ -593,6 +593,8 @@ export type Database = {
           created_at: string
           id: string
           member_id: string
+          member_license: string | null
+          member_name: string
           order_id: string | null
           price_name: string
           stage_id: string
@@ -606,6 +608,8 @@ export type Database = {
           created_at?: string
           id?: string
           member_id: string
+          member_license?: string | null
+          member_name: string
           order_id?: string | null
           price_name: string
           stage_id: string
@@ -619,6 +623,8 @@ export type Database = {
           created_at?: string
           id?: string
           member_id?: string
+          member_license?: string | null
+          member_name?: string
           order_id?: string | null
           price_name?: string
           stage_id?: string
