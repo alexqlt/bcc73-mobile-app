@@ -2,6 +2,7 @@ import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
 import { useDS } from '@/design-system';
 
+/** Onglets principaux, d'après la navigation décrite dans APP.md. Version web : app-tabs.web.tsx. */
 export default function AppTabs() {
   const { colors } = useDS();
 
@@ -9,10 +10,27 @@ export default function AppTabs() {
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.accent}
+      tintColor={colors.text}
       labelStyle={{ selected: { color: colors.text } }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Accueil</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="planning">
+        <NativeTabs.Trigger.Label>Planning</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="calendar" md="calendar_month" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="stages">
+        <NativeTabs.Trigger.Label>Stages</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="figure.badminton" md="badminton" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="mon-badminton">
+        <NativeTabs.Trigger.Label>Mon bad</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="trophy.fill" md="emoji_events" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="plus">
+        <NativeTabs.Trigger.Label>Plus</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="ellipsis" md="more_horiz" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

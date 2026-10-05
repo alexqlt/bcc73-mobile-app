@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FormTextField } from '@/components/form/form-text-field';
-import { BottomTabInset, MaxContentWidth } from '@/constants/theme';
+import { BottomTabInset, MaxContentWidth, WebTopInset } from '@/constants/theme';
 import {
   AlertBanner,
   Badge,
@@ -50,7 +50,7 @@ export function DesignShowcase() {
   const [filter, setFilter] = useState(scheduleFilters[0]);
 
   return (
-    <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top + WebTopInset }]}>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + BottomTabInset + Space.xxl }}>
         <View style={styles.content}>
