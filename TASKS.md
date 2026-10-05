@@ -179,3 +179,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P6-23 | Types d'événements : stage (jours, tarifs par jour) et repas du club (soirée, tarifs Adulte / Enfant par participant) | 2026-10-07 | `74fa39b` |
 | P6-24 | Paramètres : tarifs par défaut des événements (repas adulte / enfant, stage un jour / tous les jours) | 2026-10-07 | `0f93bf2` |
 | P2-20 | Journal : détail des changements au clic (champs modifiés, avant → après), colonne Changements dans l'export | 2026-10-07 | `2c6bd57` |
+| P4-12 | Accueil : créneaux annulés (en cours et 7 prochains jours) au-dessus des actualités | 2026-10-07 | `2e90840` |
