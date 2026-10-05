@@ -709,6 +709,7 @@ export type Database = {
           end_at: string
           id: string
           is_published: boolean
+          kind: Database["public"]["Enums"]["event_kind"]
           location: string | null
           start_at: string
           title: string
@@ -721,6 +722,7 @@ export type Database = {
           end_at: string
           id?: string
           is_published?: boolean
+          kind?: Database["public"]["Enums"]["event_kind"]
           location?: string | null
           start_at: string
           title: string
@@ -733,6 +735,7 @@ export type Database = {
           end_at?: string
           id?: string
           is_published?: boolean
+          kind?: Database["public"]["Enums"]["event_kind"]
           location?: string | null
           start_at?: string
           title?: string
@@ -777,11 +780,11 @@ export type Database = {
           role_ids: string[]
         }[]
       }
-      admin_test_shop_order: { Args: { items: Json }; Returns: string }
-      admin_test_stage_registration: {
-        Args: { member_ids: string[]; price: string; stage: string }
+      admin_test_event_registration: {
+        Args: { entries: Json; stage: string }
         Returns: string
       }
+      admin_test_shop_order: { Args: { items: Json }; Returns: string }
       approve_member: { Args: { member_id: string }; Returns: undefined }
       can_edit_news: { Args: never; Returns: boolean }
       cancel_pending_order: { Args: { order_id: string }; Returns: undefined }
@@ -790,11 +793,11 @@ export type Database = {
         Args: { order_id: string; provider_order: string }
         Returns: boolean
       }
-      create_shop_order: { Args: { items: Json }; Returns: string }
-      create_stage_registrations: {
-        Args: { member_ids: string[]; price: string; stage: string }
+      create_event_registrations: {
+        Args: { entries: Json; stage: string }
         Returns: string
       }
+      create_shop_order: { Args: { items: Json }; Returns: string }
       expire_pending_orders: { Args: never; Returns: undefined }
       has_permission: { Args: { permission: string }; Returns: boolean }
       import_planning: { Args: { payload: Json }; Returns: Json }
@@ -829,6 +832,7 @@ export type Database = {
           type: Database["public"]["Enums"]["schedule_type"]
         }[]
       }
+      price_days: { Args: { price: string; stage: string }; Returns: string[] }
       readable_audit_targets: { Args: never; Returns: string[] }
       reject_member: {
         Args: { member_id: string; reason: string }
@@ -865,6 +869,7 @@ export type Database = {
       stage_places_left: { Args: { stage: string }; Returns: number }
     }
     Enums: {
+      event_kind: "stage" | "meal"
       member_status: "pending" | "approved" | "rejected"
       order_status: "pending" | "paid" | "cancelled"
       order_type: "shop" | "stage"
@@ -1001,6 +1006,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      event_kind: ["stage", "meal"],
       member_status: ["pending", "approved", "rejected"],
       order_status: ["pending", "paid", "cancelled"],
       order_type: ["shop", "stage"],

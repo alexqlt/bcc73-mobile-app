@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { requireAnyPermission, STAGE_PERMISSIONS } from "@/lib/auth";
-import { formatStageDates } from "@/lib/shop";
+import { formatStageDates, eventKindLabels, type EventKind } from "@/lib/shop";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Événements — BCC73 Administration" };
@@ -14,7 +14,7 @@ export default async function StagesPage() {
 
   const { data: stages, error } = await supabase
     .from("stages")
-    .select("id, title, start_at, end_at, capacity, is_published, stage_prices (id)")
+    .select("id, title, start_at, end_at, capacity, is_published, kind, stage_prices (id)")
     .order("start_at", { ascending: false });
   if (error) throw error;
 
@@ -61,6 +61,7 @@ type ListedStage = {
   end_at: string;
   capacity: number;
   is_published: boolean;
+  kind: EventKind;
   stage_prices: { id: string }[];
 };
 
@@ -74,11 +75,14 @@ function StageList({ stages, placesLeft, empty }: { stages: ListedStage[]; place
           <li key={stage.id}>
             <Link href={`/stages/${stage.id}`} className="flex flex-wrap items-center gap-3 bg-surface p-4 transition hover:opacity-80">
               <span className="font-bold">{stage.title}</span>
+              <Badge>{eventKindLabels[stage.kind]}</Badge>
               {stage.is_published ? <Badge tone="success">Publié</Badge> : <Badge tone="warning">Brouillon</Badge>}
               {stage.stage_prices.length === 0 && <Badge tone="danger">Aucun tarif</Badge>}
               <span className="text-sm text-muted">{formatStageDates(stage.start_at, stage.end_at)}</span>
               <span className="ml-auto font-heading text-sm">
-                {left <= 0 ? "Complet" : `${stage.capacity - left} / ${stage.capacity} le jour le plus rempli`}
+                {left <= 0
+                  ? "Complet"
+                  : `${stage.capacity - left} / ${stage.capacity}${stage.kind === "stage" ? " le jour le plus rempli" : " place(s) prise(s)"}`}
               </span>
             </Link>
           </li>

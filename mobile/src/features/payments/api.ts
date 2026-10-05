@@ -26,17 +26,16 @@ export function formatEuros(cents: number) {
 
 export type CheckoutRequest =
   | { kind: 'shop'; items: { product_id: string; quantity: number }[] }
-  | { kind: 'stage'; stageId: string; memberIds: string[]; priceId: string };
+  | { kind: 'stage'; stageId: string; entries: { memberId: string; priceId: string }[] };
 
 /** Commande de test (rôle Administrateur vérifié par la base), marquée « Test » et exclue des ventes. */
 async function testCheckout(request: CheckoutRequest) {
   const { data, error } =
     request.kind === 'shop'
       ? await supabase.rpc('admin_test_shop_order', { items: request.items })
-      : await supabase.rpc('admin_test_stage_registration', {
+      : await supabase.rpc('admin_test_event_registration', {
           stage: request.stageId,
-          member_ids: request.memberIds,
-          price: request.priceId,
+          entries: request.entries.map((entry) => ({ member_id: entry.memberId, price_id: entry.priceId })),
         });
   if (error) throw error;
   return data;

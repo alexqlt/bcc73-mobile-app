@@ -3,6 +3,13 @@ import type { Database } from "@/lib/database.types";
 export type OrderStatus = Database["public"]["Enums"]["order_status"];
 export type OrderType = Database["public"]["Enums"]["order_type"];
 export type RegistrationStatus = Database["public"]["Enums"]["registration_status"];
+export type EventKind = Database["public"]["Enums"]["event_kind"];
+
+/** Types d'événements : un stage (un ou plusieurs jours) ou un repas du club (une soirée). */
+export const eventKindLabels: Record<EventKind, string> = {
+  stage: "Stage",
+  meal: "Repas du club",
+};
 
 export const orderStatusLabels: Record<OrderStatus, { label: string; tone: "warning" | "success" | "neutral" }> = {
   pending: { label: "Paiement en cours", tone: "warning" },

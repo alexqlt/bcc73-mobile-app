@@ -147,7 +147,7 @@ async function emailPayment(supabase: SupabaseClient, orderId: string) {
       .from('orders')
       .select(
         `id, type, total_cents, payer_name, payer_email, order_items (label, quantity),
-         stage_registrations (member_name, price_name, days, stages (title, start_at, end_at, location))`
+         stage_registrations (member_name, price_name, days, stages (title, kind, start_at, end_at, location))`
       )
       .eq('id', orderId)
       .single();
@@ -158,7 +158,7 @@ async function emailPayment(supabase: SupabaseClient, orderId: string) {
         member_name: string;
         price_name: string;
         days: string[];
-        stages: { title: string; start_at: string; end_at: string; location: string | null } | null;
+        stages: { title: string; kind: string; start_at: string; end_at: string; location: string | null } | null;
       }[];
       const stage = registrations[0]?.stages;
       if (!stage) return;
@@ -180,10 +180,11 @@ async function emailPayment(supabase: SupabaseClient, orderId: string) {
         ],
         details: [
           `Événement : ${stage.title}`,
-          `Jour(s) : ${registrations[0].days.map(day).join(', ')}`,
+          `${stage.kind === 'meal' ? 'Date' : 'Jour(s)'} : ${registrations[0].days.map(day).join(', ')}`,
           ...(stage.location ? [`Lieu : ${stage.location}`] : []),
-          `Participant(s) : ${names.join(', ')}`,
-          `Tarif : ${registrations[0].price_name} × ${names.length} (${euros(order.total_cents)})`,
+          // Chaque participant a son tarif (repas : adulte / enfant).
+          ...registrations.map((registration) => `${registration.member_name} : ${registration.price_name}`),
+          `Total payé : ${euros(order.total_cents)}`,
         ],
       });
     } else {

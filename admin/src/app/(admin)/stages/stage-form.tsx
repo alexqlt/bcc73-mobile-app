@@ -4,8 +4,17 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { ActionForm } from "@/components/action-form";
-import { Button, Input, Label, Textarea } from "@/components/ui";
-import { eurosInputValue, formatStageDay, isoToParisLocal, parisLocalToISO, parseEuros, stageDays } from "@/lib/shop";
+import { Button, Input, Label, Select, Textarea } from "@/components/ui";
+import {
+  eurosInputValue,
+  eventKindLabels,
+  formatStageDay,
+  isoToParisLocal,
+  parisLocalToISO,
+  parseEuros,
+  stageDays,
+  type EventKind,
+} from "@/lib/shop";
 
 type Action = Parameters<typeof ActionForm>[0]["action"];
 
@@ -18,6 +27,7 @@ export type StageValues = {
   end_at: string;
   capacity: number;
   is_published: boolean;
+  kind: EventKind;
 };
 
 /** Jours couverts par les dates saisies (vide tant qu'elles sont incomplètes ou incohérentes). */
@@ -28,14 +38,17 @@ function daysOf(startLocal: string, endLocal: string) {
 }
 
 /**
- * P6-10 : informations d'un stage. À la création, les tarifs sont générés : un par jour (même
- * montant) et un pour tous les jours, proposé à « tarif du jour × nombre de jours ».
+ * P6-10 : informations d'un événement. Le type ajuste le formulaire et les tarifs générés à la
+ * création : un stage reçoit un tarif par jour (même montant) et un pour tous les jours (proposé à
+ * « tarif du jour × nombre de jours ») ; un repas du club, un tarif Adulte et un tarif Enfant.
  */
 export function StageForm({ action, stage, readOnly }: { action: Action; stage?: StageValues; readOnly?: boolean }) {
   const [startAt, setStartAt] = useState(stage ? isoToParisLocal(stage.start_at) : "");
   const [endAt, setEndAt] = useState(stage ? isoToParisLocal(stage.end_at) : "");
   const [dayPrice, setDayPrice] = useState("");
   const [allDaysPrice, setAllDaysPrice] = useState<string | null>(null);
+  const [kind, setKind] = useState<EventKind>(stage?.kind ?? "stage");
+  const meal = kind === "meal";
   const days = daysOf(startAt, endAt);
   const dayCents = parseEuros(dayPrice);
   const suggestedAllDays = dayCents && days.length > 1 ? eurosInputValue(dayCents * days.length) : "";
@@ -45,9 +58,26 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
       {stage && <input type="hidden" name="stageId" value={stage.id} />}
       <fieldset disabled={readOnly} className="contents">
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1 sm:col-span-2">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="kind">Type</Label>
+            <Select id="kind" name="kind" value={kind} onChange={(event) => setKind(event.target.value as EventKind)}>
+              {Object.entries(eventKindLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1">
             <Label htmlFor="title">Titre</Label>
-            <Input id="title" name="title" defaultValue={stage?.title} placeholder="Ex. Stage perfectionnement, tournoi interne" maxLength={150} required />
+            <Input
+              id="title"
+              name="title"
+              defaultValue={stage?.title}
+              placeholder={meal ? "Ex. Repas de fin de saison" : "Ex. Stage perfectionnement"}
+              maxLength={150}
+              required
+            />
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="startAt">Début</Label>
@@ -62,8 +92,8 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
             <Input id="location" name="location" defaultValue={stage?.location ?? undefined} placeholder="Ex. Gymnase du Bon Pasteur" maxLength={150} />
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor="capacity">Places par jour</Label>
-            <Input id="capacity" name="capacity" type="number" min={1} defaultValue={stage?.capacity ?? 16} required />
+            <Label htmlFor="capacity">{meal ? "Places" : "Places par jour"}</Label>
+            <Input id="capacity" name="capacity" type="number" min={1} defaultValue={stage?.capacity ?? (meal ? 60 : 16)} required />
           </div>
           <div className="flex flex-col gap-1 sm:col-span-2">
             <Label htmlFor="description">Description</Label>
@@ -71,13 +101,34 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
           </div>
         </div>
 
-        {days.length > 0 && (
+        {!meal && days.length > 0 && (
           <p className="text-sm text-muted">
             {days.length} jour(s) : {days.map(formatStageDay).join(", ")}. Les places s&apos;entendent pour chaque jour.
           </p>
         )}
 
-        {!stage && (
+        {!stage && meal && (
+          <fieldset className="flex flex-col gap-3 border-l-4 border-accent bg-background p-4">
+            <legend className="sr-only">Tarifs</legend>
+            <p className="font-heading text-xs uppercase tracking-widest">Tarifs générés</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="adultPrice">Tarif adulte (€)</Label>
+                <Input id="adultPrice" name="adultPrice" inputMode="decimal" placeholder="25,00" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="childPrice">Tarif enfant (€)</Label>
+                <Input id="childPrice" name="childPrice" inputMode="decimal" placeholder="12,00" />
+              </div>
+            </div>
+            <p className="text-xs text-muted">
+              À l&apos;inscription, le tarif adulte est proposé pour le titulaire du compte et le tarif enfant pour les
+              enfants rattachés (modifiable).
+            </p>
+          </fieldset>
+        )}
+
+        {!stage && !meal && (
           <fieldset className="flex flex-col gap-3 border-l-4 border-accent bg-background p-4">
             <legend className="sr-only">Tarifs</legend>
             <p className="font-heading text-xs uppercase tracking-widest">Tarifs générés</p>

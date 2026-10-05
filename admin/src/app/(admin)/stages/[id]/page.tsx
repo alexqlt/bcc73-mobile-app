@@ -6,6 +6,7 @@ import { Badge, Button, Card, EmptyState, formatDate, Input, Label, PageHeader, 
 import { isAdmin, requireAnyPermission, STAGE_PERMISSIONS } from "@/lib/auth";
 import {
   eurosInputValue,
+  eventKindLabels,
   formatEuros,
   formatStageDates,
   formatStageDay,
@@ -32,7 +33,7 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
   const { data: stage, error } = await supabase
     .from("stages")
     .select(
-      `id, title, description, location, start_at, end_at, capacity, is_published,
+      `id, title, description, location, start_at, end_at, capacity, is_published, kind,
        stage_prices (id, name, amount_cents, position, day),
        stage_registrations (id, status, price_name, amount_cents, created_at, confirmed_at, days,
                             member_name, member_license, orders (id, payer_email, provider))`
@@ -49,14 +50,17 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
   const placesByDay = new Map((dayPlaces ?? []).map((row) => [row.day, row.places_left]));
   const active = stage.stage_registrations.filter((registration) => registration.status !== "cancelled");
   const allDays = (registrationDays: string[]) => registrationDays.length === days.length && days.length > 1;
+  // Repas du club : une soirée, tarifs Adulte / Enfant valables pour l'événement entier.
+  const meal = stage.kind === "meal";
 
   return (
     <>
       <PageHeader eyebrow="Événements" title={stage.title}>
         <BackLink />
       </PageHeader>
-      <p className="mb-4 text-muted">
-        {formatStageDates(stage.start_at, stage.end_at)} · {stage.capacity} place(s) par jour
+      <p className="mb-4 flex flex-wrap items-center gap-2 text-muted">
+        <Badge tone="accent">{eventKindLabels[stage.kind]}</Badge>
+        {formatStageDates(stage.start_at, stage.end_at)} · {stage.capacity} place(s){meal ? "" : " par jour"}
       </p>
 
       {/* Remplissage de chaque jour : inscriptions confirmées et paiements en cours. */}
@@ -86,8 +90,9 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
       <section className="mb-10 max-w-3xl">
         <h2 className="mb-3 text-xl">Tarifs</h2>
         <p className="mb-3 text-sm text-muted">
-          Un tarif couvre un jour ou tous les jours. Dans l&apos;app, il n&apos;est plus proposé si l&apos;un de ses jours
-          est passé ou complet.
+          {meal
+            ? "Chaque participant choisit son tarif (adulte ou enfant) à l'inscription."
+            : "Un tarif couvre un jour ou tous les jours. Dans l'app, il n'est plus proposé si l'un de ses jours est passé ou complet."}
         </p>
         {stage.stage_prices.length === 0 && (
           <EmptyState>Aucun tarif : l&apos;événement ne peut pas recevoir d&apos;inscriptions.</EmptyState>
@@ -101,7 +106,7 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
                     <input type="hidden" name="priceId" value={price.id} />
                     <input type="hidden" name="stageId" value={stage.id} />
                     <Input name="name" defaultValue={price.name} aria-label="Nom du tarif" maxLength={60} className="min-w-0 flex-1" />
-                    <DaySelect days={days} value={price.day} />
+                    {meal ? <input type="hidden" name="day" value="" /> : <DaySelect days={days} value={price.day} />}
                     <Input
                       name="amount"
                       defaultValue={eurosInputValue(price.amount_cents)}
@@ -140,12 +145,16 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
             <input type="hidden" name="position" value={stage.stage_prices.length} />
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <Label htmlFor="price-name">Nouveau tarif</Label>
-              <Input id="price-name" name="name" placeholder="Ex. Jeune, tous les jours" maxLength={60} />
+              <Input id="price-name" name="name" placeholder={meal ? "Ex. Étudiant" : "Ex. Jeune, tous les jours"} maxLength={60} />
             </div>
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="price-day">Jour</Label>
-              <DaySelect id="price-day" days={days} value={null} />
-            </div>
+            {meal ? (
+              <input type="hidden" name="day" value="" />
+            ) : (
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="price-day">Jour</Label>
+                <DaySelect id="price-day" days={days} value={null} />
+              </div>
+            )}
             <div className="flex flex-col gap-1">
               <Label htmlFor="price-amount">Montant (€)</Label>
               <Input id="price-amount" name="amount" placeholder="35,00" inputMode="decimal" className="w-28" />

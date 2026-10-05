@@ -3,13 +3,17 @@ import { StyleSheet, View } from 'react-native';
 
 import { ErrorState, LoadingState } from '@/components/query-status';
 import { Card, Space, StageCard, Text } from '@/design-system';
-import { formatStageDates, useUpcomingStages, type Stage } from '@/features/stages/api';
+import { eventKindLabels, formatStageDates, useUpcomingStages, type Stage } from '@/features/stages/api';
 
 /**
  * Tarifs résumés pour la carte : un seul tarif « Un jour » (le détail de chaque jour est sur l'écran
  * du stage) puis les tarifs valables tous les jours.
  */
 function summaryPrices(stage: Stage) {
+  // Repas du club : les tarifs tels quels (Adulte, Enfant…).
+  if (stage.kind === 'meal') {
+    return stage.stage_prices.map((price) => ({ label: price.name, amount: price.amount_cents / 100 }));
+  }
   const dayPrices = stage.stage_prices.filter((price) => price.day).map((price) => price.amount_cents);
   const multiDay = stage.days.length > 1;
   const oneDay = dayPrices.length
@@ -49,11 +53,11 @@ export function StagesCatalog({ stages }: { stages: ReturnType<typeof useUpcomin
             key={stage.id}
             date={dates.date}
             title={stage.title}
-            time={[dates.time, stage.location].filter(Boolean).join(' · ')}
+            time={[stage.kind === 'meal' ? eventKindLabels.meal : null, dates.time, stage.location].filter(Boolean).join(' · ')}
             capacity={stage.capacity}
             registered={stage.capacity - stage.placesLeft}
             prices={summaryPrices(stage)}
-            perDay={stage.days.length > 1}
+            perDay={stage.kind === 'stage' && stage.days.length > 1}
             registerLabel={stage.placesLeft > 0 ? "Voir et s'inscrire" : 'Complet · voir l’événement'}
             onRegister={() => router.push(`/stage/${stage.id}`)}
           />

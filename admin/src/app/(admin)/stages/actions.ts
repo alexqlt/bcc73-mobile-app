@@ -4,7 +4,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { toActionState, type ActionState } from "@/lib/action-state";
-import { dayPriceName, parisLocalToISO, parseEuros, stageDays } from "@/lib/shop";
+import { dayPriceName, parisLocalToISO, parseEuros, stageDays, type EventKind } from "@/lib/shop";
 import { createClient } from "@/lib/supabase/server";
 
 // STAGE_CREATE / STAGE_UPDATE / STAGE_DELETE sont vérifiés par la RLS.
@@ -16,6 +16,7 @@ function readStage(formData: FormData) {
   const startAt = parisLocalToISO(formData.get("startAt"));
   const endAt = parisLocalToISO(formData.get("endAt"));
   const capacity = Number(formData.get("capacity"));
+  const kind: EventKind = formData.get("kind") === "meal" ? "meal" : "stage";
 
   if (!title) return { error: "Donnez un titre à l'événement." };
   if (!startAt || !endAt) return { error: "Indiquez le début et la fin de l'événement." };
@@ -31,15 +32,28 @@ function readStage(formData: FormData) {
       end_at: endAt,
       capacity,
       is_published: formData.get("isPublished") === "on",
+      kind,
     },
   };
 }
 
 /**
- * Tarifs générés à la création : un par jour (même montant) et un pour tous les jours. Pour un
- * stage d'une journée, un seul tarif.
+ * Tarifs générés à la création. Stage : un par jour (même montant) et un pour tous les jours (un
+ * seul tarif pour une journée). Repas du club : Adulte et Enfant.
  */
-function initialPrices(formData: FormData, days: string[]) {
+function initialPrices(formData: FormData, days: string[], kind: EventKind) {
+  if (kind === "meal") {
+    const adult = parseEuros(formData.get("adultPrice"));
+    const child = parseEuros(formData.get("childPrice"));
+    if (String(formData.get("adultPrice") ?? "").trim() && !adult) return { error: "Tarif adulte invalide (ex. 25 ou 25,50)." };
+    if (String(formData.get("childPrice") ?? "").trim() && !child) return { error: "Tarif enfant invalide (ex. 12 ou 12,50)." };
+    return {
+      prices: [
+        ...(adult ? [{ name: "Adulte", day: null, amount_cents: adult, position: 0 }] : []),
+        ...(child ? [{ name: "Enfant", day: null, amount_cents: child, position: 1 }] : []),
+      ],
+    };
+  }
   const dayPrice = parseEuros(formData.get("dayPrice"));
   const allDaysPrice = parseEuros(formData.get("allDaysPrice"));
   if (String(formData.get("dayPrice") ?? "").trim() && !dayPrice) return { error: "Tarif par jour invalide (ex. 35 ou 35,50)." };
@@ -62,7 +76,7 @@ function initialPrices(formData: FormData, days: string[]) {
 export async function createStage(_state: ActionState, formData: FormData): Promise<ActionState> {
   const stage = readStage(formData);
   if ("error" in stage) return stage;
-  const generated = initialPrices(formData, stageDays(stage.values.start_at, stage.values.end_at));
+  const generated = initialPrices(formData, stageDays(stage.values.start_at, stage.values.end_at), stage.values.kind);
   if ("error" in generated) return generated;
 
   const supabase = await createClient();

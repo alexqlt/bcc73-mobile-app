@@ -7,11 +7,19 @@ import { supabase } from '@/lib/supabase';
 export type RegistrationStatus = Database['public']['Enums']['registration_status'];
 
 const STAGE_COLUMNS =
-  'id, title, description, location, start_at, end_at, capacity, stage_prices (id, name, amount_cents, position, day)';
+  'id, title, kind, description, location, start_at, end_at, capacity, stage_prices (id, name, amount_cents, position, day)';
+
+export type EventKind = Database['public']['Enums']['event_kind'];
+
+export const eventKindLabels: Record<EventKind, string> = {
+  stage: 'Stage',
+  meal: 'Repas du club',
+};
 
 type StageRow = {
   id: string;
   title: string;
+  kind: EventKind;
   description: string | null;
   location: string | null;
   start_at: string;
