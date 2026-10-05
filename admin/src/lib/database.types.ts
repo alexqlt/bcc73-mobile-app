@@ -138,6 +138,36 @@ export type Database = {
           },
         ]
       }
+      email_log: {
+        Row: {
+          created_at: string
+          id: number
+          kind: string
+          provider_message_id: string | null
+          ref_id: string
+          subject: string
+          to_email: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          kind: string
+          provider_message_id?: string | null
+          ref_id: string
+          subject: string
+          to_email: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          kind?: string
+          provider_message_id?: string | null
+          ref_id?: string
+          subject?: string
+          to_email?: string
+        }
+        Relationships: []
+      }
       members: {
         Row: {
           account_id: string

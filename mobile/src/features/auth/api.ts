@@ -32,6 +32,10 @@ export function useVerifyEmail() {
   return useMutation({
     mutationFn: async ({ email, code }: { email: string; code: string }) =>
       throwOnError(supabase.auth.verifyOtp({ email, token: code, type: 'email' })),
+    // P7-10 : email de bienvenue (envoyé une seule fois par le serveur, sans bloquer l'inscription).
+    onSuccess: () => {
+      supabase.functions.invoke('send-email', { body: { kind: 'welcome' } }).catch(() => undefined);
+    },
   });
 }
 

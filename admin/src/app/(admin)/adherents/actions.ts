@@ -9,8 +9,14 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function approveMember(_state: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
-  const { error } = await supabase.rpc("approve_member", { member_id: String(formData.get("memberId")) });
+  const memberId = String(formData.get("memberId"));
+  const { error } = await supabase.rpc("approve_member", { member_id: memberId });
   if (error) return toActionState(error);
+  // P7-10 : prévenir l'adhérent par email (une seule fois ; un échec ne bloque pas la validation).
+  const { error: emailError } = await supabase.functions.invoke("send-email", {
+    body: { kind: "member_approved", id: memberId },
+  });
+  if (emailError) console.error("Email de licence validée non envoyé", emailError);
   refresh();
   return null;
 }

@@ -134,3 +134,31 @@ est aussitôt annulée (la place de stage est libérée).
 Le retour dans l'app passe par le lien `bcc73://paiement` : il faut une build de développement ou
 de production (dans Expo Go, le lien `exp://…` fonctionne aussi pendant le développement).
 
+## Notifications push (phase 7)
+
+Les push partent de l'Edge Function `send-push` (Expo Push Service). Le back-office l'appelle à la
+publication d'une actualité ou d'un stage et à l'annulation d'un créneau (case « Envoyer une
+notification ») ; la confirmation d'un paiement prévient l'adhérent automatiquement. Chaque
+notification n'est envoyée qu'une fois par élément (`notification_log`) et respecte les préférences
+de l'adhérent (`notification_preferences`, écran Plus > Paramètres de l'app).
+
+Pour recevoir les push, il faut une **build** (pas Expo Go sur Android) et les identifiants d'envoi
+sur EAS : clé APNs pour iOS, compte de service FCM v1 pour Android
+(`npx eas-cli@latest credentials`, voir <https://docs.expo.dev/push-notifications/push-notifications-setup/>).
+Secret facultatif : `EXPO_ACCESS_TOKEN`, si la sécurité renforcée des push est activée sur expo.dev.
+
+## Emails transactionnels (phase 7)
+
+Bienvenue, licence validée, paiement reçu et inscription au stage partent par l'**API** Brevo
+(les ports SMTP 25 et 587 sont fermés dans les Edge Functions). Un email n'est envoyé qu'une fois
+par élément (`email_log`).
+
+```bash
+# Brevo > SMTP & API > Clés API (xkeysib-…), différente de la clé SMTP des emails de connexion
+npx supabase@latest secrets set BREVO_API_KEY=xkeysib-...
+# Facultatif : expéditeur (validé dans Brevo), info@bcc73.com par défaut
+npx supabase@latest secrets set EMAIL_SENDER=info@bcc73.com
+```
+
+Sans `BREVO_API_KEY`, les emails sont simplement ignorés (message dans les logs de la fonction).
+

@@ -10,6 +10,7 @@
 
 import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2';
 
+import { euros, sendEmail } from './email.ts';
 import { sendPush } from './push.ts';
 
 export class PaymentNotConfiguredError extends Error {}
@@ -129,7 +130,10 @@ export async function syncOrder(
       provider_order: String(intent.order.id),
     });
     if (error) throw error;
-    if (justConfirmed) await notifyPayment(supabase, order);
+    if (justConfirmed) {
+      await notifyPayment(supabase, order);
+      await emailPayment(supabase, order.id);
+    }
     return 'paid';
   }
   if (options.cancelIfUnpaid && order.status === 'pending') {
@@ -160,6 +164,73 @@ async function notifyPayment(
     });
   } catch (cause) {
     console.error('Notification de paiement non envoyée', cause);
+  }
+}
+
+/** P7-10 : email « paiement reçu » (boutique) ou « inscription confirmée » (stage), une seule fois. */
+async function emailPayment(supabase: SupabaseClient, orderId: string) {
+  try {
+    const { data: order } = await supabase
+      .from('orders')
+      .select(
+        `id, type, total_cents, payer_name, payer_email, order_items (label, quantity),
+         stage_registrations (member_name, price_name, stages (title, start_at, end_at, location))`
+      )
+      .eq('id', orderId)
+      .single();
+    if (!order?.payer_email) return;
+
+    if (order.type === 'stage') {
+      const registration = order.stage_registrations[0];
+      const stage = registration?.stages as { title: string; start_at: string; end_at: string; location: string | null } | null;
+      if (!registration || !stage) return;
+      const when = new Intl.DateTimeFormat('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/Paris',
+      }).format(new Date(stage.start_at));
+      await sendEmail(supabase, {
+        kind: 'stage_registration',
+        refId: order.id,
+        to: order.payer_email,
+        toName: order.payer_name,
+        subject: `Inscription confirmée : ${stage.title}`,
+        heading: 'Inscription confirmée !',
+        paragraphs: [
+          `Nous avons bien reçu le paiement : ${registration.member_name} est inscrit(e) au stage « ${stage.title} ».`,
+          'Retrouvez vos inscriptions dans l’onglet Stages de l’application du club.',
+        ],
+        details: [
+          `Stage : ${stage.title}`,
+          `Début : ${when}`,
+          ...(stage.location ? [`Lieu : ${stage.location}`] : []),
+          `Participant : ${registration.member_name}`,
+          `Tarif : ${registration.price_name} (${euros(order.total_cents)})`,
+        ],
+      });
+    } else {
+      await sendEmail(supabase, {
+        kind: 'payment_received',
+        refId: order.id,
+        to: order.payer_email,
+        toName: order.payer_name,
+        subject: 'Paiement reçu – boutique du BCC73',
+        heading: 'Merci pour votre achat !',
+        paragraphs: [
+          'Nous avons bien reçu votre paiement. Vos articles sont à récupérer au club, lors d’un créneau.',
+          'Le détail de vos achats est dans l’application, onglet Plus > Mes achats.',
+        ],
+        details: [
+          ...order.order_items.map((item: { label: string; quantity: number }) => `${item.quantity} × ${item.label}`),
+          `Total payé : ${euros(order.total_cents)}`,
+        ],
+      });
+    }
+  } catch (cause) {
+    console.error('Email de paiement non envoyé', cause);
   }
 }
 
