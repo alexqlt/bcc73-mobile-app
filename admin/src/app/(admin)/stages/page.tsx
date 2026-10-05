@@ -5,7 +5,7 @@ import { requireAnyPermission, STAGE_PERMISSIONS } from "@/lib/auth";
 import { formatStageDates } from "@/lib/shop";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Stages — BCC73 Administration" };
+export const metadata = { title: "Événements — BCC73 Administration" };
 
 /** P6-10 : stages à venir puis passés, avec le remplissage. */
 export default async function StagesPage() {
@@ -31,19 +31,19 @@ export default async function StagesPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Club" title="Stages">
+      <PageHeader eyebrow="Club" title="Événements">
         {viewer.permissions.has("STAGE_CREATE") && (
           <Link
             href="/stages/nouveau"
             className="border-2 border-accent bg-accent px-4 py-2 font-heading text-sm uppercase tracking-wider text-on-accent transition hover:opacity-85"
           >
-            Nouveau stage
+            Nouvel événement
           </Link>
         )}
       </PageHeader>
 
       <h2 className="mb-3 text-xl">À venir</h2>
-      <StageList stages={upcoming} placesLeft={placesLeft} empty="Aucun stage à venir." />
+      <StageList stages={upcoming} placesLeft={placesLeft} empty="Aucun événement à venir." />
       {past.length > 0 && (
         <>
           <h2 className="mt-10 mb-3 text-xl">Passés</h2>

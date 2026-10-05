@@ -49,7 +49,7 @@ export function BoutiqueScreen() {
 
         <View style={styles.catalog}>
           <View style={styles.chips}>
-            <Chip label="Stages" selected={catalog === 'stages'} onPress={() => setCatalog('stages')} />
+            <Chip label="Événements" selected={catalog === 'stages'} onPress={() => setCatalog('stages')} />
             <Chip label="Volants" selected={catalog === 'volants'} onPress={() => setCatalog('volants')} />
           </View>
           {catalog === 'stages' ? <StagesCatalog stages={stages} /> : <VolantsCatalog />}

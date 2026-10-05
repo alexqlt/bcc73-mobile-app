@@ -34,7 +34,7 @@ export default async function DashboardPage() {
 
   const salesSeries: ChartSeries[] = [
     ...(showShop ? [{ key: "shop", label: "Volants", color: "--series-1" }] : []),
-    ...(showStages ? [{ key: "stages", label: "Stages", color: "--series-2" }] : []),
+    ...(showStages ? [{ key: "stages", label: "Événements", color: "--series-2" }] : []),
   ];
 
   return (
@@ -81,7 +81,7 @@ export default async function DashboardPage() {
             )}
             {showStages && (
               <Stat
-                label="Stages"
+                label="Événements"
                 value={formatEuros(sales.totals.stages)}
                 detail={[
                   `${sales.totals.registrations} inscription(s)`,

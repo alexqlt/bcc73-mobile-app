@@ -41,7 +41,7 @@ export function SignInScreen() {
   );
 
   return (
-    <AuthScreen intro={intro} title="Connexion" description="Retrouvez l'actualité, le planning et les stages du club.">
+    <AuthScreen intro={intro} title="Connexion" description="Retrouvez l'actualité, le planning et les événements du club.">
       <View style={styles.form}>
         <FormTextField
           control={control}

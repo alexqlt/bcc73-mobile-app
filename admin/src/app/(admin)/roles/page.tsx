@@ -11,7 +11,7 @@ export const metadata = { title: "Rôles — BCC73 Administration" };
 const domains: Record<string, string> = {
   NEWS: "Actualités",
   SCHEDULE: "Planning",
-  STAGE: "Stages",
+  STAGE: "Événements",
   VOLANT: "Boutique",
   MEMBER: "Adhérents",
   PAYMENT: "Paiements",

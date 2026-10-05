@@ -5,7 +5,7 @@ import { useDS } from '../theme-context';
 import { Space } from '../tokens';
 import { Text } from './text';
 
-const tabs = ['Accueil', 'Planning', 'Stages', 'Mon profil', 'Plus'];
+const tabs = ['Accueil', 'Planning', 'Boutique', 'Mon profil'];
 
 /** Aperçu de la future barre d'onglets : onglet actif marqué d'une barre jaune. */
 export function TabBarPreview() {

@@ -17,7 +17,7 @@ import { createClient } from "@/lib/supabase/server";
 import { addPrice, cancelTestOrder, deletePrice, deleteStage, updatePrice, updateStage } from "../actions";
 import { BackLink, StageForm } from "../stage-form";
 
-export const metadata = { title: "Stage — BCC73 Administration" };
+export const metadata = { title: "Événement — BCC73 Administration" };
 
 /** P6-10 et P6-15 : un stage, ses places par jour, ses tarifs et ses inscrits. */
 export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
@@ -52,7 +52,7 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
 
   return (
     <>
-      <PageHeader eyebrow="Stages" title={stage.title}>
+      <PageHeader eyebrow="Événements" title={stage.title}>
         <BackLink />
       </PageHeader>
       <p className="mb-4 text-muted">
@@ -90,7 +90,7 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
           est passé ou complet.
         </p>
         {stage.stage_prices.length === 0 && (
-          <EmptyState>Aucun tarif : le stage ne peut pas recevoir d&apos;inscriptions.</EmptyState>
+          <EmptyState>Aucun tarif : l&apos;événement ne peut pas recevoir d&apos;inscriptions.</EmptyState>
         )}
         <ul className="flex flex-col gap-2">
           {stage.stage_prices.map((price) => (
@@ -128,7 +128,7 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
               )}
               {price.day && !days.includes(price.day) && (
                 <p className="mt-1 text-sm text-red-700 dark:text-red-400">
-                  Ce jour ne fait plus partie du stage (dates modifiées) : ce tarif n&apos;est plus proposé.
+                  Ce jour ne fait plus partie de l&apos;événement (dates modifiées) : ce tarif n&apos;est plus proposé.
                 </p>
               )}
             </li>
@@ -200,8 +200,8 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
       {viewer.permissions.has("STAGE_DELETE") && (
         <ActionForm action={deleteStage}>
           <input type="hidden" name="stageId" value={stage.id} />
-          <ConfirmButton variant="danger" message="Supprimer définitivement ce stage ?">
-            Supprimer le stage
+          <ConfirmButton variant="danger" message="Supprimer définitivement cet événement ?">
+            Supprimer l&apos;événement
           </ConfirmButton>
         </ActionForm>
       )}

@@ -16,7 +16,7 @@ const navigation: (NavItem & { permissions?: Permission[]; adminOnly?: boolean }
   { href: "/", label: "Tableau de bord" },
   { href: "/actualites", label: "Actualités", permissions: NEWS_PERMISSIONS },
   { href: "/planning", label: "Planning", permissions: SCHEDULE_PERMISSIONS },
-  { href: "/stages", label: "Stages", permissions: STAGE_PERMISSIONS },
+  { href: "/stages", label: "Événements", permissions: STAGE_PERMISSIONS },
   { href: "/boutique", label: "Boutique", permissions: SHOP_PERMISSIONS },
   { href: "/paiements", label: "Paiements", permissions: ["PAYMENT_VIEW"] },
   { href: "/adherents", label: "Adhérents", permissions: ["MEMBER_VIEW"] },

@@ -62,7 +62,7 @@ export function StageDetailScreen({ id }: { id: string }) {
           <ErrorState onRetry={() => stage.refetch()} />
         ) : !stage.data ? (
           <Card>
-            <Text color="textMuted">Ce stage n’existe pas ou n’est plus proposé.</Text>
+            <Text color="textMuted">Cet événement n’existe pas ou n’est plus proposé.</Text>
           </Card>
         ) : (
           <>
@@ -97,7 +97,7 @@ export function StageDetailScreen({ id }: { id: string }) {
             {approved.length === 0 ? (
               <AlertBanner
                 title="Inscription impossible pour le moment"
-                message="Les inscriptions aux stages sont ouvertes une fois une licence du compte validée par le club."
+                message="Les inscriptions aux événements sont ouvertes une fois une licence du compte validée par le club."
               />
             ) : (
               <Card highlighted>

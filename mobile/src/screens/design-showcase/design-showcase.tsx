@@ -105,7 +105,7 @@ export function DesignShowcase() {
             />
           </Section>
 
-          <Section eyebrow="À venir" title="Stages">
+          <Section eyebrow="À venir" title="Événements">
             <StageCard
               date="12 novembre 2026"
               title="Stage perfectionnement"

@@ -17,9 +17,9 @@ function readStage(formData: FormData) {
   const endAt = parisLocalToISO(formData.get("endAt"));
   const capacity = Number(formData.get("capacity"));
 
-  if (!title) return { error: "Donnez un titre au stage." };
-  if (!startAt || !endAt) return { error: "Indiquez le début et la fin du stage." };
-  if (endAt <= startAt) return { error: "La fin du stage doit être après son début." };
+  if (!title) return { error: "Donnez un titre à l'événement." };
+  if (!startAt || !endAt) return { error: "Indiquez le début et la fin de l'événement." };
+  if (endAt <= startAt) return { error: "La fin de l'événement doit être après son début." };
   if (!Number.isInteger(capacity) || capacity < 1) return { error: "Indiquez le nombre de places par jour (au moins 1)." };
 
   return {
@@ -73,7 +73,7 @@ export async function createStage(_state: ActionState, formData: FormData): Prom
       .from("stage_prices")
       .insert(generated.prices.map((price) => ({ ...price, stage_id: data.id })));
     // Le stage existe : les tarifs manquants pourront être ajoutés depuis sa page.
-    if (pricesError) console.error("Tarifs du stage non créés", pricesError);
+    if (pricesError) console.error("Tarifs de l'événement non créés", pricesError);
   }
   redirect(`/stages/${data.id}`);
 }
@@ -97,7 +97,7 @@ export async function deleteStage(_state: ActionState, formData: FormData): Prom
   const supabase = await createClient();
   const { data, error } = await supabase.from("stages").delete().eq("id", String(formData.get("stageId"))).select("id");
   if (error?.code === "23503") {
-    return { error: "Ce stage a des inscriptions : il ne peut plus être supprimé. Retirez-le de l'app en le dépubliant." };
+    return { error: "Cet événement a des inscriptions : il ne peut plus être supprimé. Retirez-le de l'app en le dépubliant." };
   }
   if (error) return toActionState(error);
   if (data.length === 0) return noRightError;
@@ -118,7 +118,7 @@ async function readPrice(formData: FormData, supabase: Awaited<ReturnType<typeof
       .eq("id", String(formData.get("stageId")))
       .maybeSingle();
     if (!stage || !stageDays(stage.start_at, stage.end_at).includes(day)) {
-      return { error: "Ce jour ne fait pas partie du stage." };
+      return { error: "Ce jour ne fait pas partie de l'événement." };
     }
   }
   return { values: { name, amount_cents: amount, day } };

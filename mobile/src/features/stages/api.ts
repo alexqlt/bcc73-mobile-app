@@ -122,7 +122,7 @@ export function priceAvailability(stage: Stage, price: StagePrice, people: numbe
   if (days.length === 0 || !days.every((day) => stage.days.some((row) => row.day === day))) {
     return { available: false, reason: 'Indisponible' };
   }
-  if (days[0] < today) return { available: false, reason: price.day ? 'Jour passé' : 'Stage commencé' };
+  if (days[0] < today) return { available: false, reason: price.day ? 'Jour passé' : 'Événement commencé' };
   const places = Math.min(...days.map((day) => stage.days.find((row) => row.day === day)!.placesLeft));
   if (places <= 0) return { available: false, reason: 'Complet' };
   if (places < people) return { available: false, reason: `${places} place(s) seulement` };

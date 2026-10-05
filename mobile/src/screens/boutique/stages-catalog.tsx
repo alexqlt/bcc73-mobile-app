@@ -36,7 +36,7 @@ export function StagesCatalog({ stages }: { stages: ReturnType<typeof useUpcomin
   if (stages.data.length === 0) {
     return (
       <Card>
-        <Text color="textMuted">Aucun stage prévu pour le moment.</Text>
+        <Text color="textMuted">Aucun événement prévu pour le moment.</Text>
       </Card>
     );
   }
@@ -54,7 +54,7 @@ export function StagesCatalog({ stages }: { stages: ReturnType<typeof useUpcomin
             registered={stage.capacity - stage.placesLeft}
             prices={summaryPrices(stage)}
             perDay={stage.days.length > 1}
-            registerLabel={stage.placesLeft > 0 ? "Voir et s'inscrire" : 'Complet · voir le stage'}
+            registerLabel={stage.placesLeft > 0 ? "Voir et s'inscrire" : 'Complet · voir l’événement'}
             onRegister={() => router.push(`/stage/${stage.id}`)}
           />
         );

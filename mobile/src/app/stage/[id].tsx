@@ -9,7 +9,7 @@ export default function StageScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ ...headerOptions, title: 'Stage' }} />
+      <Stack.Screen options={{ ...headerOptions, title: 'Événement' }} />
       <StageDetailScreen id={id} />
     </>
   );

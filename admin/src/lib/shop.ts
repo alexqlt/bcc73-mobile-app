@@ -12,7 +12,7 @@ export const orderStatusLabels: Record<OrderStatus, { label: string; tone: "warn
 
 export const orderTypeLabels: Record<OrderType, string> = {
   shop: "Boutique",
-  stage: "Stage",
+  stage: "Événement",
 };
 
 export const registrationStatusLabels: Record<RegistrationStatus, { label: string; tone: "warning" | "success" | "neutral" }> = {

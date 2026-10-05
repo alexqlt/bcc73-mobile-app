@@ -37,7 +37,7 @@ Deno.serve(async (request) => {
         subject: 'Bienvenue dans l’application du BCC73',
         heading: 'Bienvenue au club !',
         paragraphs: [
-          'Votre compte est créé. Vous y retrouvez les actualités, le planning des créneaux, les stages et la boutique de volants du club.',
+          'Votre compte est créé. Vous y retrouvez les actualités, le planning des créneaux, les événements et la boutique de volants du club.',
           'Si vous avez indiqué une licence (la vôtre ou celle d’un enfant), un responsable va la vérifier : nous vous prévenons par email dès qu’elle est validée.',
         ],
       });
@@ -65,7 +65,7 @@ Deno.serve(async (request) => {
         subject: `${who} est validée`,
         heading: 'Licence validée !',
         paragraphs: [
-          `${who} a été vérifiée par le club. Les stages et la boutique de volants sont maintenant ouverts dans l’application.`,
+          `${who} a été vérifiée par le club. Les événements et la boutique de volants sont maintenant ouverts dans l’application.`,
         ],
         details: [`${member.first_name} ${member.last_name}`, `Licence ${member.license_number}`],
       });

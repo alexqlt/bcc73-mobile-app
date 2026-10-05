@@ -47,7 +47,7 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1 sm:col-span-2">
             <Label htmlFor="title">Titre</Label>
-            <Input id="title" name="title" defaultValue={stage?.title} placeholder="Ex. Stage perfectionnement" maxLength={150} required />
+            <Input id="title" name="title" defaultValue={stage?.title} placeholder="Ex. Stage perfectionnement, tournoi interne" maxLength={150} required />
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="startAt">Début</Label>
@@ -104,7 +104,7 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
               {days.length > 1
                 ? `Un tarif par jour (${days.length} tarifs au même montant) et un tarif pour les ${days.length} jours, proposé à ${days.length} × le tarif du jour : modifiez-le pour accorder une réduction.`
                 : "Un tarif pour la journée."}{" "}
-              D&apos;autres tarifs peuvent être ajoutés ensuite sur la page du stage.
+              D&apos;autres tarifs peuvent être ajoutés ensuite sur la page de l&apos;événement.
             </p>
           </fieldset>
         )}
@@ -116,7 +116,7 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
         {!readOnly && (
           <div>
             <Button type="submit" variant="accent">
-              {stage ? "Enregistrer" : "Créer le stage"}
+              {stage ? "Enregistrer" : "Créer l'événement"}
             </Button>
           </div>
         )}
@@ -128,7 +128,7 @@ export function StageForm({ action, stage, readOnly }: { action: Action; stage?:
 export function BackLink() {
   return (
     <Link href="/stages" className="text-sm underline decoration-accent decoration-2 underline-offset-4">
-      Retour aux stages
+      Retour aux événements
     </Link>
   );
 }

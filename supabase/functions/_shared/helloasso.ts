@@ -175,11 +175,11 @@ async function emailPayment(supabase: SupabaseClient, orderId: string) {
         subject: `Inscription confirmée : ${stage.title}`,
         heading: 'Inscription confirmée !',
         paragraphs: [
-          `Nous avons bien reçu le paiement : ${names.join(', ')} ${names.length > 1 ? 'sont inscrits' : 'est inscrit(e)'} au stage « ${stage.title} ».`,
+          `Nous avons bien reçu le paiement : ${names.join(', ')} ${names.length > 1 ? 'sont inscrits' : 'est inscrit(e)'} à l’événement « ${stage.title} ».`,
           'Retrouvez vos inscriptions dans l’onglet Boutique de l’application du club.',
         ],
         details: [
-          `Stage : ${stage.title}`,
+          `Événement : ${stage.title}`,
           `Jour(s) : ${registrations[0].days.map(day).join(', ')}`,
           ...(stage.location ? [`Lieu : ${stage.location}`] : []),
           `Participant(s) : ${names.join(', ')}`,

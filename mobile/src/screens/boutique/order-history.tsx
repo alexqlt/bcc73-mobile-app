@@ -13,7 +13,7 @@ function statusOf(order: HistoryOrder): { label: string; tone: BadgeTone } {
   if (order.type === 'stage') {
     const stage = order.stage_registrations[0]?.stages;
     return stage && stage.end_at < new Date().toISOString()
-      ? { label: 'Stage terminé', tone: 'neutral' }
+      ? { label: 'Événement terminé', tone: 'neutral' }
       : { label: 'Inscription confirmée', tone: 'success' };
   }
   if (order.picked_up_at) return { label: `Récupéré le ${formatOrderDate(order.picked_up_at)}`, tone: 'neutral' };
@@ -60,7 +60,7 @@ function HistoryItem({ order }: { order: HistoryOrder }) {
   const content = (
     <Card highlighted={actionNeeded}>
       <Text variant="label" color="textMuted">
-        {order.type === 'stage' ? 'Stage' : 'Volants'} · {formatOrderDate(order.paid_at ?? order.created_at)}
+        {order.type === 'stage' ? 'Événement' : 'Volants'} · {formatOrderDate(order.paid_at ?? order.created_at)}
       </Text>
       {order.type === 'stage' && stage ? (
         <>

@@ -12,7 +12,7 @@ export function PendingValidationBanner() {
   return (
     <AlertBanner
       title="Validation en cours"
-      message="Un responsable du club va vérifier les licences de votre compte. Les stages et la boutique seront disponibles une fois la validation faite."
+      message="Un responsable du club va vérifier les licences de votre compte. Les événements et la boutique seront disponibles une fois la validation faite."
     />
   );
 }
