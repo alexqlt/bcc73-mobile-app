@@ -455,6 +455,7 @@ export type Database = {
       }
       approve_member: { Args: { member_id: string }; Returns: undefined }
       can_edit_news: { Args: never; Returns: boolean }
+      clear_audit_logs: { Args: never; Returns: number }
       has_permission: { Args: { permission: string }; Returns: boolean }
       import_planning: { Args: { payload: Json }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }

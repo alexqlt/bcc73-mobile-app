@@ -1,7 +1,7 @@
 import { signOut } from "@/app/connexion/actions";
 import { Sidebar, type NavItem } from "@/components/sidebar";
 import { Card } from "@/components/ui";
-import { getViewer, NEWS_PERMISSIONS, SCHEDULE_PERMISSIONS, type Permission } from "@/lib/auth";
+import { getViewer, JOURNAL_PERMISSIONS, NEWS_PERMISSIONS, SCHEDULE_PERMISSIONS, type Permission } from "@/lib/auth";
 
 const navigation: (NavItem & { permissions?: Permission[] })[] = [
   { href: "/", label: "Tableau de bord" },
@@ -10,7 +10,7 @@ const navigation: (NavItem & { permissions?: Permission[] })[] = [
   { href: "/adherents", label: "Adhérents", permissions: ["MEMBER_VIEW"] },
   { href: "/utilisateurs", label: "Utilisateurs", permissions: ["USER_MANAGE"] },
   { href: "/roles", label: "Rôles", permissions: ["ROLE_MANAGE"] },
-  { href: "/journal", label: "Journal", permissions: ["USER_MANAGE", "ROLE_MANAGE"] },
+  { href: "/journal", label: "Journal", permissions: JOURNAL_PERMISSIONS },
 ];
 
 export default async function AdminLayout({ children }: LayoutProps<"/">) {

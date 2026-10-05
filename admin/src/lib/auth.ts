@@ -69,3 +69,13 @@ export async function requireAnyPermission(permissions: Permission[]) {
 export const NEWS_PERMISSIONS: Permission[] = ["NEWS_CREATE", "NEWS_UPDATE", "NEWS_DELETE"];
 
 export const SCHEDULE_PERMISSIONS: Permission[] = ["SCHEDULE_CREATE", "SCHEDULE_UPDATE", "SCHEDULE_DELETE"];
+
+/** Lecture du journal : gestion des utilisateurs ou des rôles. */
+export const JOURNAL_PERMISSIONS: Permission[] = ["USER_MANAGE", "ROLE_MANAGE"];
+
+/** Rôle Administrateur (affichage seulement : la base vérifie de son côté). */
+export const isAdmin = cache(async () => {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("is_admin");
+  return data === true;
+});

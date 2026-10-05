@@ -1,89 +1,105 @@
-import { EmptyState, formatDate, PageHeader } from "@/components/ui";
-import { getViewer } from "@/lib/auth";
-import type { Json } from "@/lib/database.types";
+import Link from "next/link";
+
+import { ActionForm } from "@/components/action-form";
+import { ConfirmButton } from "@/components/confirm-button";
+import { Button, EmptyState, formatDate, PageHeader, Select } from "@/components/ui";
+import { isAdmin, JOURNAL_PERMISSIONS, requireAnyPermission } from "@/lib/auth";
+import { eventGroups, loadJournalContext, parseEventType } from "@/lib/journal";
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+
+import { clearJournal } from "./actions";
 
 export const metadata = { title: "Journal — BCC73 Administration" };
 
-const actionLabels: Record<string, string> = {
-  "approve:members": "a validé une licence",
-  "reject:members": "a refusé une licence",
-  "insert:roles": "a créé un rôle",
-  "update:roles": "a modifié un rôle",
-  "delete:roles": "a supprimé un rôle",
-  "insert:role_permissions": "a ajouté une permission à un rôle",
-  "delete:role_permissions": "a retiré une permission d'un rôle",
-  "insert:account_roles": "a attribué un rôle",
-  "delete:account_roles": "a retiré un rôle",
-  "insert:news": "a créé une actualité",
-  "update:news": "a modifié une actualité",
-  "delete:news": "a supprimé une actualité",
-  "insert:schedule_periods": "a créé une période du planning",
-  "update:schedule_periods": "a modifié une période du planning",
-  "delete:schedule_periods": "a supprimé une période du planning",
-  "insert:schedules": "a ajouté un créneau",
-  "update:schedules": "a modifié un créneau",
-  "delete:schedules": "a supprimé un créneau",
-  "insert:schedule_cancellations": "a annulé un créneau",
-  "delete:schedule_cancellations": "a rétabli un créneau",
-};
+const PAGE_SIZE = 100;
 
-/** P2-11 : journal des actions administratives (100 dernières). */
-export default async function JournalPage() {
-  const viewer = await getViewer();
-  if (!viewer.permissions.has("USER_MANAGE") && !viewer.permissions.has("ROLE_MANAGE")) {
-    redirect("/");
-  }
+/** P2-11 : journal des actions administratives (100 dernières), filtre par type, export et effacement. */
+export default async function JournalPage({ searchParams }: PageProps<"/journal">) {
+  const viewer = await requireAnyPermission(JOURNAL_PERMISSIONS);
+  const params = await searchParams;
+  const eventType = parseEventType(params.type);
   const supabase = await createClient();
 
-  const [{ data: logs, error }, { data: roles }, { data: permissions }, users] = await Promise.all([
-    supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(100),
-    supabase.from("roles").select("id, name"),
-    supabase.from("permissions").select("code, description"),
-    viewer.permissions.has("USER_MANAGE") ? supabase.rpc("admin_list_users") : Promise.resolve({ data: null }),
+  let query = supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(PAGE_SIZE);
+  if (eventType) query = query.eq("action", eventType.action).eq("target_type", eventType.targetType);
+
+  const [{ data: logs, error }, journal, admin] = await Promise.all([
+    query,
+    loadJournalContext(supabase, viewer.permissions.has("USER_MANAGE")),
+    isAdmin(),
   ]);
   if (error) throw error;
 
-  const emailById = new Map((users.data ?? []).map((user) => [user.id, user.email]));
-  const roleNameById = new Map((roles ?? []).map((role) => [role.id, role.name]));
-  const permissionById = new Map((permissions ?? []).map((p) => [p.code, p.description]));
-
-  /** Détail lisible de l'élément concerné, à partir de la ligne enregistrée. */
-  function describe(details: Json) {
-    const row = (details as { new?: Record<string, string>; old?: Record<string, string>; reason?: string }) ?? {};
-    const data = row.new ?? row.old ?? {};
-    const parts = [
-      data.name,
-      data.title,
-      data.date,
-      data.start_date && (data.start_date === data.end_date ? data.start_date : `${data.start_date} → ${data.end_date}`),
-      data.role_id && roleNameById.get(data.role_id),
-      data.permission_code && (permissionById.get(data.permission_code) ?? data.permission_code),
-      data.account_id && (emailById.get(data.account_id) ?? "un utilisateur"),
-      row.reason && `motif : ${row.reason}`,
-    ];
-    return parts.filter(Boolean).join(" · ");
-  }
+  const exportHref = eventType ? `/journal/export?type=${encodeURIComponent(eventType.value)}` : "/journal/export";
 
   return (
     <>
-      <PageHeader eyebrow="Sécurité" title="Journal" />
-      {logs.length === 0 ? (
-        <EmptyState>Aucune action enregistrée pour l&apos;instant.</EmptyState>
-      ) : (
-        <ol className="flex flex-col divide-y divide-border bg-surface">
-          {logs.map((log) => (
-            <li key={log.id} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-4">
-              <time className="w-36 shrink-0 text-sm text-muted">{formatDate(log.created_at)}</time>
-              <p>
-                <strong>{log.actor_id ? (emailById.get(log.actor_id) ?? "Un responsable") : "Supabase (SQL)"}</strong>{" "}
-                {actionLabels[`${log.action}:${log.target_type}`] ?? `${log.action} ${log.target_type}`}
-                <span className="text-muted"> {describe(log.details)}</span>
-              </p>
-            </li>
+      <PageHeader eyebrow="Sécurité" title="Journal">
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={exportHref}
+            download
+            className="border-2 border-foreground px-4 py-2 font-heading text-sm uppercase tracking-wider transition hover:bg-surface"
+          >
+            Télécharger (CSV)
+          </a>
+          {admin && (
+            <ActionForm action={clearJournal}>
+              <ConfirmButton
+                variant="danger"
+                message="Effacer définitivement tout le journal ? Pensez à le télécharger avant. Une ligne indiquera que vous l'avez vidé."
+              >
+                Tout effacer
+              </ConfirmButton>
+            </ActionForm>
+          )}
+        </div>
+      </PageHeader>
+
+      <form action="/journal" className="mb-6 flex flex-wrap items-center gap-2">
+        <Select name="type" defaultValue={eventType?.value ?? ""} aria-label="Type d'événement" className="min-w-0 sm:w-80">
+          <option value="">Tous les événements</option>
+          {eventGroups.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {Object.entries(group.events).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label.replace(/^a /, "").replace(/^./, (letter) => letter.toUpperCase())}
+                </option>
+              ))}
+            </optgroup>
           ))}
-        </ol>
+        </Select>
+        <Button type="submit">Filtrer</Button>
+        {eventType && (
+          <Link href="/journal" className="text-sm underline decoration-accent decoration-2 underline-offset-4">
+            Effacer le filtre
+          </Link>
+        )}
+      </form>
+
+      {logs.length === 0 ? (
+        <EmptyState>
+          {eventType ? "Aucun événement de ce type." : "Aucune action enregistrée pour l'instant."}
+        </EmptyState>
+      ) : (
+        <>
+          <ol className="flex flex-col divide-y divide-border bg-surface">
+            {logs.map((log) => (
+              <li key={log.id} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-4">
+                <time className="w-36 shrink-0 text-sm text-muted">{formatDate(log.created_at)}</time>
+                <p>
+                  <strong>{journal.actor(log)}</strong> {journal.action(log)}
+                  <span className="text-muted"> {journal.describe(log.details)}</span>
+                </p>
+              </li>
+            ))}
+          </ol>
+          {logs.length === PAGE_SIZE && (
+            <p className="mt-3 text-sm text-muted">
+              Seuls les {PAGE_SIZE} derniers événements sont affichés : le fichier téléchargé les contient tous.
+            </p>
+          )}
+        </>
       )}
     </>
   );
