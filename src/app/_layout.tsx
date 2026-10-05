@@ -3,9 +3,9 @@ import { Gelasio_400Regular, Gelasio_700Bold } from '@expo-google-fonts/gelasio'
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
 import { DesignSystemProvider } from '@/design-system';
 
@@ -18,16 +18,22 @@ export default function TabLayout() {
     Gelasio_400Regular,
     Gelasio_700Bold,
   });
+  const ready = fontsLoaded || !!fontError;
+
+  useEffect(() => {
+    if (ready) {
+      SplashScreen.hideAsync();
+    }
+  }, [ready]);
 
   // Le splash reste affiché tant que les polices ne sont pas prêtes.
-  if (!fontsLoaded && !fontError) {
+  if (!ready) {
     return null;
   }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <DesignSystemProvider>
-        <AnimatedSplashOverlay />
         <AppTabs />
       </DesignSystemProvider>
     </ThemeProvider>
