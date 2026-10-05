@@ -4,7 +4,7 @@ import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Button, EmptyState, formatDate, PageHeader, Select } from "@/components/ui";
 import { isAdmin, JOURNAL_PERMISSIONS, requireAnyPermission } from "@/lib/auth";
-import { eventCategories, loadJournalContext, parseCategory } from "@/lib/journal";
+import { loadJournalContext, parseCategory, readableCategories } from "@/lib/journal";
 import { createClient } from "@/lib/supabase/server";
 
 import { clearJournal } from "./actions";
@@ -13,10 +13,11 @@ export const metadata = { title: "Journal — BCC73 Administration" };
 
 const PAGE_SIZE = 100;
 
-/** P2-11 : journal des actions administratives (100 dernières), filtre par catégorie, export et effacement. */
+/** P2-11 : journal des actions administratives de son domaine (100 dernières), filtre, export, effacement. */
 export default async function JournalPage({ searchParams }: PageProps<"/journal">) {
   const viewer = await requireAnyPermission(JOURNAL_PERMISSIONS);
   const params = await searchParams;
+  const categories = readableCategories(viewer.permissions);
   const category = parseCategory(params.categorie);
   const supabase = await createClient();
 
@@ -59,7 +60,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
       <form action="/journal" className="mb-6 flex flex-wrap items-center gap-2">
         <Select name="categorie" defaultValue={category?.value ?? ""} aria-label="Catégorie" className="min-w-0 sm:w-64">
           <option value="">Toutes les catégories</option>
-          {eventCategories.map((item) => (
+          {categories.map((item) => (
             <option key={item.value} value={item.value}>
               {item.label}
             </option>

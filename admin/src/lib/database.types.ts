@@ -783,6 +783,13 @@ export type Database = {
       import_planning: { Args: { payload: Json }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
       is_system_role: { Args: { role: string }; Returns: boolean }
+      journal_actor_emails: {
+        Args: never
+        Returns: {
+          email: string
+          id: string
+        }[]
+      }
       my_permissions: { Args: never; Returns: string[] }
       order_hold_interval: { Args: never; Returns: string }
       planning: {
@@ -805,6 +812,7 @@ export type Database = {
           type: Database["public"]["Enums"]["schedule_type"]
         }[]
       }
+      readable_audit_targets: { Args: never; Returns: string[] }
       reject_member: {
         Args: { member_id: string; reason: string }
         Returns: undefined

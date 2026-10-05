@@ -1,3 +1,4 @@
+import type { Permission } from "@/lib/auth";
 import type { Json, Tables } from "@/lib/database.types";
 import type { createClient } from "@/lib/supabase/server";
 
@@ -5,11 +6,22 @@ type Supabase = Awaited<ReturnType<typeof createClient>>;
 export type AuditLog = Tables<"audit_logs">;
 
 /** Catégories d'événements du journal (filtre), avec les tables concernées et le libellé de chaque action. */
-export const eventCategories: { value: string; label: string; targetTypes: string[]; events: Record<string, string> }[] = [
+/**
+ * Catégories d'événements du journal : tables concernées, permissions qui donnent accès (même
+ * correspondance que la fonction SQL readable_audit_targets, seule à faire foi) et libellés.
+ */
+export const eventCategories: {
+  value: string;
+  label: string;
+  targetTypes: string[];
+  permissions: Permission[];
+  events: Record<string, string>;
+}[] = [
   {
     value: "licences",
     label: "Licences",
     targetTypes: ["members"],
+    permissions: ["MEMBER_VIEW", "MEMBER_MANAGE"],
     events: {
       "approve:members": "a validé une licence",
       "reject:members": "a refusé une licence",
@@ -19,6 +31,7 @@ export const eventCategories: { value: string; label: string; targetTypes: strin
     value: "roles",
     label: "Rôles et accès",
     targetTypes: ["roles", "role_permissions", "account_roles", "accounts"],
+    permissions: ["USER_MANAGE", "ROLE_MANAGE"],
     events: {
       "create_account:accounts": "a créé un compte",
       "insert:roles": "a créé un rôle",
@@ -34,6 +47,7 @@ export const eventCategories: { value: string; label: string; targetTypes: strin
     value: "actualites",
     label: "Actualités",
     targetTypes: ["news"],
+    permissions: ["NEWS_CREATE", "NEWS_UPDATE", "NEWS_DELETE"],
     events: {
       "insert:news": "a créé une actualité",
       "update:news": "a modifié une actualité",
@@ -44,6 +58,7 @@ export const eventCategories: { value: string; label: string; targetTypes: strin
     value: "planning",
     label: "Planning",
     targetTypes: ["schedule_periods", "schedules", "schedule_cancellations"],
+    permissions: ["SCHEDULE_CREATE", "SCHEDULE_UPDATE", "SCHEDULE_DELETE"],
     events: {
       "insert:schedule_periods": "a créé une période du planning",
       "update:schedule_periods": "a modifié une période du planning",
@@ -59,6 +74,7 @@ export const eventCategories: { value: string; label: string; targetTypes: strin
     value: "boutique-stages",
     label: "Boutique et stages",
     targetTypes: ["products", "stages", "stage_prices"],
+    permissions: ["VOLANT_MANAGE", "VOLANT_VIEW_SALES", "STAGE_CREATE", "STAGE_UPDATE", "STAGE_DELETE", "STAGE_VIEW_REGISTRATIONS"],
     events: {
       "insert:products": "a ajouté un article à la boutique",
       "update:products": "a modifié un article de la boutique",
@@ -75,6 +91,7 @@ export const eventCategories: { value: string; label: string; targetTypes: strin
     value: "journal",
     label: "Journal",
     targetTypes: ["audit_logs"],
+    permissions: ["USER_MANAGE", "ROLE_MANAGE"],
     events: {
       "clear:audit_logs": "a vidé le journal",
     },
@@ -82,6 +99,11 @@ export const eventCategories: { value: string; label: string; targetTypes: strin
 ];
 
 const eventLabels: Record<string, string> = Object.assign({}, ...eventCategories.map((category) => category.events));
+
+/** Catégories que le lecteur peut consulter, d'après ses permissions. */
+export function readableCategories(permissions: Set<Permission>) {
+  return eventCategories.filter((category) => category.permissions.some((permission) => permissions.has(permission)));
+}
 
 /** Filtre `?categorie=…` → la catégorie choisie, ou null si absente ou inconnue. */
 export function parseCategory(value: unknown) {
@@ -93,12 +115,14 @@ export function parseCategory(value: unknown) {
  * noms des rôles et des permissions.
  */
 export async function loadJournalContext(supabase: Supabase, canListUsers: boolean) {
-  const [{ data: roles }, { data: permissions }, users] = await Promise.all([
+  const [{ data: roles }, { data: permissions }, users, actors] = await Promise.all([
     supabase.from("roles").select("id, name"),
     supabase.from("permissions").select("code, description"),
     canListUsers ? supabase.rpc("admin_list_users") : Promise.resolve({ data: null }),
+    // Auteurs des lignes visibles par le lecteur, même sans accès à la liste des comptes.
+    supabase.rpc("journal_actor_emails"),
   ]);
-  const emailById = new Map((users.data ?? []).map((user) => [user.id, user.email]));
+  const emailById = new Map([...(actors.data ?? []), ...(users.data ?? [])].map((user) => [user.id, user.email]));
   const roleNameById = new Map((roles ?? []).map((role) => [role.id, role.name]));
   const permissionById = new Map((permissions ?? []).map((p) => [p.code, p.description]));
 

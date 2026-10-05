@@ -70,8 +70,28 @@ export const NEWS_PERMISSIONS: Permission[] = ["NEWS_CREATE", "NEWS_UPDATE", "NE
 
 export const SCHEDULE_PERMISSIONS: Permission[] = ["SCHEDULE_CREATE", "SCHEDULE_UPDATE", "SCHEDULE_DELETE"];
 
-/** Lecture du journal : gestion des utilisateurs ou des rôles. */
-export const JOURNAL_PERMISSIONS: Permission[] = ["USER_MANAGE", "ROLE_MANAGE"];
+/**
+ * Lecture du journal : chaque responsable y voit les événements de son domaine (licences,
+ * actualités, planning, boutique, stages, rôles), filtrés par la base.
+ */
+export const JOURNAL_PERMISSIONS: Permission[] = [
+  "MEMBER_VIEW",
+  "MEMBER_MANAGE",
+  "USER_MANAGE",
+  "ROLE_MANAGE",
+  "NEWS_CREATE",
+  "NEWS_UPDATE",
+  "NEWS_DELETE",
+  "SCHEDULE_CREATE",
+  "SCHEDULE_UPDATE",
+  "SCHEDULE_DELETE",
+  "VOLANT_MANAGE",
+  "VOLANT_VIEW_SALES",
+  "STAGE_CREATE",
+  "STAGE_UPDATE",
+  "STAGE_DELETE",
+  "STAGE_VIEW_REGISTRATIONS",
+];
 
 /** Rôle Administrateur (affichage seulement : la base vérifie de son côté). */
 export const isAdmin = cache(async () => {
