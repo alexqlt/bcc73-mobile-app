@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { FormError } from '@/components/form/form-error';
 import { MemberFormFields } from '@/components/form/member-form';
 import { PendingValidationBanner } from '@/components/pending-validation-banner';
 import { BottomTabInset, MaxContentWidth, WebTopInset } from '@/constants/theme';
 import {
+  Avatar,
   Badge,
   Button,
   Card,
@@ -16,6 +18,7 @@ import {
   Text,
   useDesignSystem,
 } from '@/design-system';
+import { avatarUrl, useAccount, useChangeAvatar, useRemoveAvatar } from '@/features/account/api';
 import { useSignOut } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/auth-provider';
 import {
@@ -51,7 +54,7 @@ export function ProfileScreen() {
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <View style={styles.inner}>
         <SectionTitle title="Mon profil" />
-        <Text color="textMuted">{session?.user.email}</Text>
+        <ProfilePhoto email={session?.user.email ?? ''} holder={selectAccountHolder(members.data)} />
         {!!roles.data?.length && <RolesSection roles={roles.data} />}
 
         <PendingValidationBanner />
@@ -64,8 +67,6 @@ export function ProfileScreen() {
           {!selectAccountHolder(members.data) && <AddMemberSection kind="self" />}
         </View>
 
-
-
         <Button
           title="Se déconnecter"
           variant="secondary"
@@ -75,6 +76,40 @@ export function ProfileScreen() {
         />
       </View>
     </ScrollView>
+  );
+}
+
+/** Photo de profil facultative (ou initiales) et email du compte. */
+function ProfilePhoto({ email, holder }: { email: string; holder: Member | undefined }) {
+  const account = useAccount();
+  const changeAvatar = useChangeAvatar();
+  const removeAvatar = useRemoveAvatar();
+  const uri = avatarUrl(account.data?.avatar_path);
+  const initials = holder ? `${holder.first_name[0]}${holder.last_name[0]}` : (email[0] ?? '?');
+  const busy = changeAvatar.isPending || removeAvatar.isPending;
+
+  return (
+    <View style={styles.photo}>
+      <Avatar uri={uri} initials={initials.toUpperCase()} size={84} />
+      <View style={styles.photoText}>
+        {holder && (
+          <Text variant="bodyStrong">
+            {holder.first_name} {holder.last_name}
+          </Text>
+        )}
+        <Text color="textMuted">{email}</Text>
+        <View style={styles.photoActions}>
+          <Button
+            title={uri ? 'Changer la photo' : 'Ajouter une photo'}
+            variant="ghost"
+            disabled={busy}
+            onPress={() => changeAvatar.mutate()}
+          />
+          {uri && <Button title="Retirer" variant="ghost" disabled={busy} onPress={() => removeAvatar.mutate()} />}
+        </View>
+        <FormError error={changeAvatar.error ?? removeAvatar.error} />
+      </View>
+    </View>
   );
 }
 
@@ -186,6 +221,20 @@ const styles = StyleSheet.create({
   },
   roles: {
     gap: Space.md,
+  },
+  photo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Space.lg,
+  },
+  photoText: {
+    flex: 1,
+    gap: Space.xs,
+  },
+  photoActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    columnGap: Space.lg,
   },
   badges: {
     flexDirection: 'row',

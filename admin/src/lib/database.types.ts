@@ -84,16 +84,19 @@ export type Database = {
       }
       accounts: {
         Row: {
+          avatar_path: string | null
           created_at: string
           id: string
           phone: string | null
         }
         Insert: {
+          avatar_path?: string | null
           created_at?: string
           id: string
           phone?: string | null
         }
         Update: {
+          avatar_path?: string | null
           created_at?: string
           id?: string
           phone?: string | null
