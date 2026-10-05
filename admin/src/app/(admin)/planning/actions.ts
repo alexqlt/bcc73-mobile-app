@@ -153,24 +153,27 @@ export async function deleteSlot(_state: ActionState, formData: FormData): Promi
 // Annulations (P4-07)
 // ---------------------------------------------------------------------------
 
-/** Annule un créneau récurrent pour une date. */
-export async function cancelSlotOnDate(_state: ActionState, formData: FormData): Promise<ActionState> {
-  const date = text(formData, "date");
-  if (!ISO_DATE.test(date)) return { error: "Choisissez la date à annuler." };
+/** Annule un créneau récurrent pendant une période (un seul jour si la date de fin est vide). */
+export async function cancelSlotForPeriod(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const startDate = text(formData, "startDate");
+  const endDate = text(formData, "endDate") || startDate;
+  if (!ISO_DATE.test(startDate) || !ISO_DATE.test(endDate)) return { error: "Choisissez la période d'annulation." };
+  if (endDate < startDate) return { error: "La date de fin doit être après la date de début." };
 
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("schedule_cancellations")
-    .insert({ schedule_id: text(formData, "scheduleId"), date, reason: text(formData, "reason") || null });
-  if (error) {
-    return error.code === "23505" ? { error: "Ce créneau est déjà annulé à cette date." } : toActionState(error);
-  }
+  const { error } = await supabase.from("schedule_cancellations").insert({
+    schedule_id: text(formData, "scheduleId"),
+    start_date: startDate,
+    end_date: endDate,
+    reason: text(formData, "reason") || null,
+  });
+  if (error) return toActionState(error);
   refresh();
   return null;
 }
 
-/** Rétablit un créneau récurrent annulé. */
-export async function restoreSlotOnDate(_state: ActionState, formData: FormData): Promise<ActionState> {
+/** Rétablit un créneau récurrent annulé (supprime l'annulation). */
+export async function restoreSlot(_state: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("schedule_cancellations")

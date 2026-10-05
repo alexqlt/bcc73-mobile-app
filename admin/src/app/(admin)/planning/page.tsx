@@ -4,13 +4,13 @@ import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Badge, Button, Card, EmptyState, Input, PageHeader } from "@/components/ui";
 import { requireAnyPermission, SCHEDULE_PERMISSIONS } from "@/lib/auth";
-import { addDays, formatDay, formatShortDate, periodKindLabels, todayInParis } from "@/lib/planning";
+import { addDays, formatDateRange, formatDay, formatShortDate, periodKindLabels, todayInParis } from "@/lib/planning";
 import { createClient } from "@/lib/supabase/server";
 
 import {
   createSlot,
   deleteSlot,
-  restoreSlotOnDate,
+  restoreSlot,
   setExceptionalSlotCancelled,
   updateSlot,
 } from "./actions";
@@ -43,9 +43,9 @@ export default async function PlanningPage() {
       .order("start_time"),
     supabase
       .from("schedule_cancellations")
-      .select("id, date, reason, schedules (start_time, end_time, type, title, location)")
-      .gte("date", today)
-      .order("date"),
+      .select("id, start_date, end_date, reason, schedules (start_time, end_time, type, title, location)")
+      .gte("end_date", today)
+      .order("start_date"),
   ]);
   for (const result of [periods, week, exceptional, cancellations]) {
     if (result.error) throw result.error;
@@ -210,21 +210,23 @@ export default async function PlanningPage() {
 
       <section>
         <h2 className="mb-3 text-xl">Annulations à venir</h2>
-        <p className="mb-4 text-sm text-muted">Créneaux habituels annulés pour une date (à faire depuis la page de la période).</p>
+        <p className="mb-4 text-sm text-muted">Créneaux habituels annulés pendant une période (à faire depuis la page de la période).</p>
         {cancellations.data!.length === 0 ? (
           <EmptyState>Aucune annulation à venir.</EmptyState>
         ) : (
           <ul className="flex flex-col gap-3">
             {cancellations.data!.map((cancellation) => (
               <li key={cancellation.id} className="flex flex-col gap-3 bg-surface p-4 lg:flex-row lg:items-center">
-                <p className="w-56 shrink-0 font-heading text-sm uppercase tracking-wider">{formatDay(cancellation.date)}</p>
+                <p className="w-64 shrink-0 font-heading text-sm uppercase tracking-wider">
+                  {formatDateRange(cancellation.start_date, cancellation.end_date)}
+                </p>
                 <div className="flex-1">
                   {cancellation.schedules && (
                     <SlotLine slot={cancellation.schedules} cancelled reason={cancellation.reason} />
                   )}
                 </div>
                 {canUpdate && (
-                  <ActionForm action={restoreSlotOnDate}>
+                  <ActionForm action={restoreSlot}>
                     <input type="hidden" name="cancellationId" value={cancellation.id} />
                     <Button type="submit" variant="secondary">
                       Rétablir

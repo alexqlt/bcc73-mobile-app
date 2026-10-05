@@ -147,16 +147,25 @@ export function SlotForm({
   );
 }
 
-/** Annule un créneau récurrent pour une date (gymnase fermé, compétition…). */
-export function CancelDateForm({ action, scheduleId }: { action: Action; scheduleId: string }) {
+/** Annule un créneau récurrent pendant une période (gymnase fermé, compétition…). Sans date de fin : un seul jour. */
+export function CancelPeriodForm({ action, scheduleId }: { action: Action; scheduleId: string }) {
   return (
-    <ActionForm action={action} className="flex flex-wrap items-center gap-2">
+    <ActionForm action={action} className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <input type="hidden" name="scheduleId" value={scheduleId} />
-      <Input name="date" type="date" aria-label="Date à annuler" required />
-      <Input name="reason" placeholder="Motif (facultatif)" aria-label="Motif de l'annulation" maxLength={200} className="min-w-0 flex-1" />
-      <Button type="submit" variant="danger">
-        Annuler ce jour-là
-      </Button>
+      <Field label="Annulé du" htmlFor={`cancel-start-${scheduleId}`}>
+        <Input id={`cancel-start-${scheduleId}`} name="startDate" type="date" required />
+      </Field>
+      <Field label="Au (facultatif)" htmlFor={`cancel-end-${scheduleId}`}>
+        <Input id={`cancel-end-${scheduleId}`} name="endDate" type="date" />
+      </Field>
+      <Field label="Motif" htmlFor={`cancel-reason-${scheduleId}`}>
+        <Input id={`cancel-reason-${scheduleId}`} name="reason" placeholder="Ex. Gymnase fermé" maxLength={200} />
+      </Field>
+      <div>
+        <Button type="submit" variant="danger">
+          Annuler le créneau
+        </Button>
+      </div>
     </ActionForm>
   );
 }

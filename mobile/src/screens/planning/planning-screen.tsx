@@ -7,6 +7,7 @@ import { ErrorState, LoadingState } from '@/components/query-status';
 import { BottomTabInset, MaxContentWidth, WebTopInset } from '@/constants/theme';
 import { Card, Chip, ScheduleSlot, SectionTitle, Space, Text, useDesignSystem } from '@/design-system';
 import {
+  formatCancellation,
   formatShortDay,
   formatTime,
   parseISODate,
@@ -15,6 +16,7 @@ import {
   useHolidayPeriods,
   usePeriodOn,
   usePlanningWeek,
+  useUpcomingCancellations,
   weekdayLabels,
   type ScheduleType,
 } from '@/features/schedule/api';
@@ -50,8 +52,9 @@ function isoWeekday(date: Date) {
 
 /**
  * P4-03 et P4-04 : le planning est le même chaque semaine ; il est présenté jour par jour, en liste.
- * Les changements de la semaine en cours (annulations, créneaux
- * exceptionnels) y apparaissent ; pendant les vacances, le planning des vacances remplace l'habituel.
+ * Une annulation s'affiche sur le créneau lui-même, avec sa période et son motif : barré si elle
+ * touche cette semaine, en avertissement si elle est à venir. Pendant les vacances, le planning des
+ * vacances remplace l'habituel.
  */
 export function PlanningScreen() {
   const insets = useSafeAreaInsets();
@@ -66,6 +69,16 @@ export function PlanningScreen() {
   const week = usePlanningWeek(startOfWeek(today));
   const currentPeriod = usePeriodOn(today);
   const holidays = useHolidayPeriods(today);
+  const cancellations = useUpcomingCancellations(today);
+
+  /** Annulation à venir d'un créneau récurrent, hors celle qui touche déjà le jour affiché. */
+  const upcomingNote = (scheduleId: string, day?: string) => {
+    const next = cancellations.data?.find(
+      (cancellation) =>
+        cancellation.schedule_id === scheduleId && !(day && cancellation.start_date <= day && day <= cancellation.end_date)
+    );
+    return next ? formatCancellation(next.start_date, next.end_date, next.reason) : null;
+  };
   // Prochaines vacances (pas celles en cours : elles sont déjà le planning de la semaine).
   const nextHolidays = holidays.data?.find((period) => period.start_date > toISODate(today));
 
@@ -82,7 +95,9 @@ export function PlanningScreen() {
           cancelled: slot.is_cancelled,
           exceptional: slot.is_exceptional,
           location: slot.location,
-          note: slot.cancellation_reason,
+          note: slot.is_cancelled
+            ? formatCancellation(slot.cancellation_start, slot.cancellation_end, slot.cancellation_reason)
+            : upcomingNote(slot.schedule_id, slot.day),
         }))
       : (nextHolidays?.schedules ?? []).flatMap((slot) =>
           slot.weekday
@@ -95,13 +110,12 @@ export function PlanningScreen() {
                   title: slot.title,
                   tone: slot.type,
                   location: slot.location,
-                  note: null,
+                  note: upcomingNote(slot.id),
                 },
               ]
             : []
         );
   const slots = allSlots.filter((slot) => typeFilter === 'all' || slot.tone === typeFilter);
-  const changes = source === 'week' ? allSlots.filter((slot) => slot.cancelled || slot.exceptional) : [];
 
   const period = source === 'holidays' ? nextHolidays : currentPeriod.data;
   const isHolidays = period?.kind === 'holidays' || source === 'holidays';
@@ -118,8 +132,12 @@ export function PlanningScreen() {
       ]}
       refreshControl={
         <RefreshControl
-          refreshing={week.isRefetching || currentPeriod.isRefetching || holidays.isRefetching}
-          onRefresh={() => Promise.all([week.refetch(), currentPeriod.refetch(), holidays.refetch()])}
+          refreshing={
+            week.isRefetching || currentPeriod.isRefetching || holidays.isRefetching || cancellations.isRefetching
+          }
+          onRefresh={() =>
+            Promise.all([week.refetch(), currentPeriod.refetch(), holidays.refetch(), cancellations.refetch()])
+          }
           tintColor={tokens.colors.text}
         />
       }>
@@ -183,19 +201,6 @@ export function PlanningScreen() {
           </>
         )}
 
-        {changes.length > 0 && (
-          <View style={styles.slots}>
-            <Text variant="subtitle">Changements cette semaine</Text>
-            {changes.map((slot) => (
-              <View key={slot.key} style={styles.slots}>
-                <Text variant="label" color="textMuted">
-                  {weekdayLabels[slot.weekday - 1]}
-                </Text>
-                <Slot slot={slot} />
-              </View>
-            ))}
-          </View>
-        )}
       </View>
     </ScrollView>
   );

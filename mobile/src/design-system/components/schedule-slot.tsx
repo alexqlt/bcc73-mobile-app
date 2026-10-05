@@ -11,7 +11,7 @@ export type ScheduleSlotProps = {
   title: string;
   location?: string | null;
   cancelled?: boolean;
-  /** Motif d'annulation, affiché sous le lieu. */
+  /** Annulation (période et motif), affichée sous le lieu : en rouge si le créneau est annulé, sinon pour prévenir. */
   note?: string | null;
   /** Créneau ponctuel, en plus du planning habituel. */
   exceptional?: boolean;
@@ -46,8 +46,8 @@ export function ScheduleSlot({ start, end, title, location, cancelled, note, exc
             {location}
           </Text>
         )}
-        {cancelled && !!note && (
-          <Text variant="small" color="danger">
+        {!!note && (
+          <Text variant="small" color={cancelled ? 'danger' : 'warning'}>
             {note}
           </Text>
         )}

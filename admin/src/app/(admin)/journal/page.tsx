@@ -57,6 +57,7 @@ export default async function JournalPage() {
       data.name,
       data.title,
       data.date,
+      data.start_date && (data.start_date === data.end_date ? data.start_date : `${data.start_date} → ${data.end_date}`),
       data.role_id && roleNameById.get(data.role_id),
       data.permission_code && (permissionById.get(data.permission_code) ?? data.permission_code),
       data.account_id && (emailById.get(data.account_id) ?? "un utilisateur"),

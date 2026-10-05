@@ -45,6 +45,11 @@ export function formatShortDate(isoDate: string) {
   return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeZone: "UTC" }).format(new Date(`${isoDate}T00:00:00Z`));
 }
 
+/** Période d'une annulation : « le lundi 12 octobre 2026 » ou « du lundi 12 octobre au dimanche 25 octobre 2026 ». */
+export function formatDateRange(start: string, end: string) {
+  return start === end ? `le ${formatDay(start)}` : `du ${formatDay(start, { year: false })} au ${formatDay(end)}`;
+}
+
 /** « 18:00:00 » → « 18:00 ». */
 export function formatTime(time: string) {
   return time.slice(0, 5);

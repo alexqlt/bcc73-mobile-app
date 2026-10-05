@@ -19,6 +19,9 @@ export type PlanningSlot = {
   is_exceptional: boolean;
   is_cancelled: boolean;
   cancellation_reason: string | null;
+  /** Période de l'annulation d'un créneau récurrent. */
+  cancellation_start: string | null;
+  cancellation_end: string | null;
   period_id: string | null;
   period_name: string | null;
   period_kind: PeriodKind | null;
@@ -135,3 +138,36 @@ export function useHolidayPeriods(today: Date) {
   });
 }
 
+export type UpcomingCancellation = Pick<
+  Tables<'schedule_cancellations'>,
+  'schedule_id' | 'start_date' | 'end_date' | 'reason'
+>;
+
+/** Annulations de créneaux récurrents en cours ou à venir, pour les signaler sur le créneau concerné. */
+export function useUpcomingCancellations(today: Date) {
+  const iso = toISODate(today);
+
+  return useQuery({
+    queryKey: ['planning', 'cancellations', iso],
+    queryFn: async (): Promise<UpcomingCancellation[]> => {
+      const { data, error } = await supabase
+        .from('schedule_cancellations')
+        .select('schedule_id, start_date, end_date, reason')
+        .gte('end_date', iso)
+        .order('start_date');
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+/** « Annulé le lundi 12 octobre : motif » ou « Annulé du 12 oct. au 25 oct. : motif ». */
+export function formatCancellation(start: string | null, end: string | null, reason: string | null) {
+  const period =
+    !start || !end
+      ? ''
+      : start === end
+        ? ` le ${formatDayLabel(parseISODate(start))}`
+        : ` du ${formatShortDay(parseISODate(start))} au ${formatShortDay(parseISODate(end))}`;
+  return `Annulé${period}${reason ? ` : ${reason}` : ''}`;
+}

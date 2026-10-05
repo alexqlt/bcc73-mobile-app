@@ -304,24 +304,27 @@ export type Database = {
       schedule_cancellations: {
         Row: {
           created_at: string
-          date: string
+          end_date: string
           id: string
           reason: string | null
           schedule_id: string
+          start_date: string
         }
         Insert: {
           created_at?: string
-          date: string
+          end_date: string
           id?: string
           reason?: string | null
           schedule_id: string
+          start_date: string
         }
         Update: {
           created_at?: string
-          date?: string
+          end_date?: string
           id?: string
           reason?: string | null
           schedule_id?: string
+          start_date?: string
         }
         Relationships: [
           {
@@ -460,7 +463,9 @@ export type Database = {
       planning: {
         Args: { from_date: string; to_date: string }
         Returns: {
+          cancellation_end: string
           cancellation_reason: string
+          cancellation_start: string
           day: string
           end_time: string
           is_cancelled: boolean

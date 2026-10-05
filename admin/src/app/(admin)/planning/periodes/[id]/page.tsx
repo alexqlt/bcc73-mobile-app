@@ -4,20 +4,20 @@ import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Button, Card, EmptyState, Input, PageHeader } from "@/components/ui";
 import { requireAnyPermission, SCHEDULE_PERMISSIONS } from "@/lib/auth";
-import { formatDay, todayInParis, weekdays } from "@/lib/planning";
+import { formatDateRange, formatDay, todayInParis, weekdays } from "@/lib/planning";
 import { createClient } from "@/lib/supabase/server";
 
 import {
-  cancelSlotOnDate,
+  cancelSlotForPeriod,
   createSlot,
   deletePeriod,
   deleteSlot,
-  restoreSlotOnDate,
+  restoreSlot,
   setExceptionalSlotCancelled,
   updatePeriod,
   updateSlot,
 } from "../../actions";
-import { BackLink, CancelDateForm, PeriodForm, SlotForm } from "../../planning-forms";
+import { BackLink, CancelPeriodForm, PeriodForm, SlotForm } from "../../planning-forms";
 import { SlotLine } from "../../slot-line";
 
 export const metadata = { title: "Période du planning — BCC73 Administration" };
@@ -37,7 +37,7 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
     .select(
       `id, name, kind, start_date, end_date,
        schedules (id, weekday, date, start_time, end_time, type, title, location, is_cancelled, cancellation_reason,
-                  schedule_cancellations (id, date, reason))`
+                  schedule_cancellations (id, start_date, end_date, reason))`
     )
     .eq("id", id)
     .order("date", { referencedTable: "schedules" })
@@ -102,8 +102,8 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
                 <ul className="flex flex-col gap-3">
                   {slots.map((slot) => {
                     const upcoming = slot.schedule_cancellations
-                      .filter((cancellation) => cancellation.date >= today)
-                      .sort((a, b) => a.date.localeCompare(b.date));
+                      .filter((cancellation) => cancellation.end_date >= today)
+                      .sort((a, b) => a.start_date.localeCompare(b.start_date));
                     return (
                       <li key={slot.id} className="flex flex-col gap-3 bg-surface p-4">
                         <SlotLine slot={slot}>
@@ -120,11 +120,11 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
                         {upcoming.map((cancellation) => (
                           <div key={cancellation.id} className="flex flex-wrap items-center gap-3 text-sm">
                             <span>
-                              Annulé le <strong>{formatDay(cancellation.date)}</strong>
+                              Annulé <strong>{formatDateRange(cancellation.start_date, cancellation.end_date)}</strong>
                               {cancellation.reason && <span className="text-muted"> · {cancellation.reason}</span>}
                             </span>
                             {canUpdate && (
-                              <ActionForm action={restoreSlotOnDate}>
+                              <ActionForm action={restoreSlot}>
                                 <input type="hidden" name="cancellationId" value={cancellation.id} />
                                 <Button type="submit" variant="secondary" className="py-1">
                                   Rétablir
@@ -137,11 +137,11 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
                         {canUpdate && (
                           <details>
                             <summary className="cursor-pointer text-sm underline decoration-accent decoration-2 underline-offset-4">
-                              Modifier ou annuler une date
+                              Modifier ou annuler
                             </summary>
                             <div className="mt-3 flex flex-col gap-4">
                               <SlotForm action={updateSlot} periodId={period.id} slot={slot} submitLabel="Enregistrer" />
-                              <CancelDateForm action={cancelSlotOnDate} scheduleId={slot.id} />
+                              <CancelPeriodForm action={cancelSlotForPeriod} scheduleId={slot.id} />
                             </div>
                           </details>
                         )}
