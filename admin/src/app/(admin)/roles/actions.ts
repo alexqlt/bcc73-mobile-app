@@ -22,6 +22,25 @@ export async function createRole(_state: ActionState, formData: FormData): Promi
   return null;
 }
 
+/** Renomme un rôle (et met à jour sa description). */
+export async function updateRole(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return { error: "Donnez un nom au rôle." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("roles")
+    .update({ name, description: String(formData.get("description") ?? "").trim() || null })
+    .eq("id", String(formData.get("roleId")))
+    .select("id");
+  if (error) {
+    return error.code === "23505" ? { error: `Le rôle « ${name} » existe déjà.` } : toActionState(error);
+  }
+  if (data.length === 0) return { error: "Ce rôle ne peut pas être modifié." };
+  refresh();
+  return null;
+}
+
 /** Enregistre les permissions cochées : ajoute les nouvelles, retire celles décochées. */
 export async function saveRolePermissions(_state: ActionState, formData: FormData): Promise<ActionState> {
   const roleId = String(formData.get("roleId"));

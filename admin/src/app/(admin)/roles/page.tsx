@@ -3,7 +3,7 @@ import { Badge, Button, Card, Input, Label, PageHeader } from "@/components/ui";
 import { requirePermission } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
-import { createRole, deleteRole, saveRolePermissions } from "./actions";
+import { createRole, deleteRole, saveRolePermissions, updateRole } from "./actions";
 
 export const metadata = { title: "Rôles — BCC73 Administration" };
 
@@ -75,6 +75,25 @@ export default async function RolesPage() {
                 </p>
               ) : (
                 <>
+                  <ActionForm action={updateRole} className="mt-4 flex flex-wrap items-end gap-2">
+                    <input type="hidden" name="roleId" value={role.id} />
+                    <div className="flex min-w-48 flex-1 flex-col gap-1">
+                      <Label htmlFor={`name-${role.id}`}>Nom</Label>
+                      <Input id={`name-${role.id}`} name="name" defaultValue={role.name} maxLength={60} required />
+                    </div>
+                    <div className="flex min-w-48 flex-[2] flex-col gap-1">
+                      <Label htmlFor={`description-${role.id}`}>Description</Label>
+                      <Input
+                        id={`description-${role.id}`}
+                        name="description"
+                        defaultValue={role.description ?? ""}
+                        placeholder="À quoi sert ce rôle ?"
+                      />
+                    </div>
+                    <Button type="submit" variant="secondary">
+                      Renommer
+                    </Button>
+                  </ActionForm>
                   <ActionForm action={saveRolePermissions} className="mt-4 flex flex-col gap-4">
                     <input type="hidden" name="roleId" value={role.id} />
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
