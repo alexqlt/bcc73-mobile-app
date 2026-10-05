@@ -16,7 +16,8 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 - [ ] **P1-18** Tester l'ajout d'un enfant (le reste du parcours mobile est validé)
 - [ ] **P2-13** Tester le back-office : connexion, validation de licence, création de rôle, attribution, journal
-- [ ] **P4-09** Tester le planning : saison + vacances, créneaux, annulation d'une date, créneau exceptionnel, image ; affichage jour / semaine / vacances sur téléphone
+- [ ] **P4-09** Tester le planning : saison + vacances, créneaux, annulation d'une date, créneau exceptionnel ; affichage jour / semaine / vacances sur téléphone
+- [ ] **P4-11** Supprimer le bucket `planning-images` dans le tableau de bord Supabase (Storage) : impossible en SQL
 - [ ] **P3-07** Tester les actualités : publication avec photo depuis le back-office, affichage accueil / liste / détail sur téléphone
 
 ---
@@ -175,4 +176,4 @@ _Toutes les cartes sont terminées (test en cours : P4-09)._
 | P4-05 | Back-office : ajouter / modifier / supprimer un créneau de la semaine | 2026-10-05 | `e3d1e7b` |
 | P4-06 | Back-office : périodes (normal, vacances, dates) et aperçu des 7 prochains jours | 2026-10-05 | `e3d1e7b` |
 | P4-07 | Créneaux exceptionnels, annulation d'un créneau pour une date et rétablissement | 2026-10-05 | `e3d1e7b` |
-| P4-08 | Image du planning par période (bucket `planning-images`), affichée en complément | 2026-10-05 | `e3d1e7b` |
+| P4-08 | ~~Image du planning~~ remplacée par l'import du fichier .xlsx du club (voir P4-10) | 2026-10-05 | `e3d1e7b` |

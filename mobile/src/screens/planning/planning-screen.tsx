@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
@@ -23,7 +22,6 @@ import {
   formatShortDay,
   formatTime,
   parseISODate,
-  planningImageUrl,
   startOfWeek,
   toISODate,
   useHolidayPeriods,
@@ -145,41 +143,17 @@ export function PlanningScreen() {
   );
 }
 
-/** Période en cours : rappel des vacances et image du planning (P4-08), affichée en complément. */
+/** Pendant les vacances, rappel de la période qui remplace le planning habituel. */
 function CurrentPeriod({ period }: { period: SchedulePeriod }) {
-  const [showImage, setShowImage] = useState(false);
-  const [aspectRatio, setAspectRatio] = useState(3 / 4);
-  const imageUrl = planningImageUrl(period.image_path);
-
-  if (period.kind !== 'holidays' && !imageUrl) {
+  if (period.kind !== 'holidays') {
     return null;
   }
   return (
-    <Card highlighted={period.kind === 'holidays'}>
-      {period.kind === 'holidays' && (
-        <>
-          <Text variant="subtitle">Planning des vacances</Text>
-          <Text color="textMuted">
-            {period.name} : jusqu’au {formatDayLabel(parseISODate(period.end_date))}.
-          </Text>
-        </>
-      )}
-      {imageUrl && (
-        <Button
-          title={showImage ? 'Masquer l’image du planning' : 'Voir le planning en image'}
-          variant="ghost"
-          onPress={() => setShowImage(!showImage)}
-        />
-      )}
-      {imageUrl && showImage && (
-        <Image
-          source={imageUrl}
-          contentFit="contain"
-          style={{ width: '100%', aspectRatio }}
-          onLoad={({ source }) => setAspectRatio(source.width / source.height)}
-          accessibilityLabel={`Planning ${period.name}`}
-        />
-      )}
+    <Card highlighted>
+      <Text variant="subtitle">Planning des vacances</Text>
+      <Text color="textMuted">
+        {period.name} : jusqu’au {formatDayLabel(parseISODate(period.end_date))}.
+      </Text>
     </Card>
   );
 }
@@ -270,19 +244,28 @@ function HolidaysView({ query }: { query: ReturnType<typeof useHolidayPeriods> }
           {period.schedules.length === 0 ? (
             <Text color="textMuted">Pas de créneau pendant ces vacances.</Text>
           ) : (
-            period.schedules.map((slot) => (
-              <View key={slot.id} style={styles.slots}>
-                <Text variant="label" color="textMuted">
-                  {slot.weekday ? weekdayLabels[slot.weekday - 1] : ''}
-                </Text>
-                <ScheduleSlot
-                  start={formatTime(slot.start_time)}
-                  end={formatTime(slot.end_time)}
-                  title={slot.title}
-                  location={slot.location}
-                />
-              </View>
-            ))
+            period.schedules
+              // Programme daté : seulement les jours à venir.
+              .filter((slot) => !slot.date || slot.date >= toISODate(new Date()))
+              .map((slot) => (
+                <View key={slot.id} style={styles.slots}>
+                  <Text variant="label" color="textMuted">
+                    {slot.date
+                      ? formatDayLabel(parseISODate(slot.date))
+                      : slot.weekday
+                        ? `Chaque ${weekdayLabels[slot.weekday - 1].toLowerCase()}`
+                        : ''}
+                  </Text>
+                  <ScheduleSlot
+                    start={formatTime(slot.start_time)}
+                    end={formatTime(slot.end_time)}
+                    title={slot.title}
+                    location={slot.location}
+                    cancelled={slot.is_cancelled}
+                    note={slot.cancellation_reason}
+                  />
+                </View>
+              ))
           )}
         </View>
       ))}

@@ -2,9 +2,9 @@ import { notFound } from "next/navigation";
 
 import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
-import { Button, Card, EmptyState, PageHeader } from "@/components/ui";
+import { Button, Card, EmptyState, Input, PageHeader } from "@/components/ui";
 import { requireAnyPermission, SCHEDULE_PERMISSIONS } from "@/lib/auth";
-import { formatDay, planningImageUrl, todayInParis, weekdays } from "@/lib/planning";
+import { formatDay, todayInParis, weekdays } from "@/lib/planning";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -13,6 +13,7 @@ import {
   deletePeriod,
   deleteSlot,
   restoreSlotOnDate,
+  setExceptionalSlotCancelled,
   updatePeriod,
   updateSlot,
 } from "../../actions";
@@ -34,16 +35,21 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
   const { data: period, error } = await supabase
     .from("schedule_periods")
     .select(
-      `id, name, kind, start_date, end_date, image_path,
-       schedules (id, weekday, date, start_time, end_time, type, title, location,
+      `id, name, kind, start_date, end_date,
+       schedules (id, weekday, date, start_time, end_time, type, title, location, is_cancelled, cancellation_reason,
                   schedule_cancellations (id, date, reason))`
     )
     .eq("id", id)
+    .order("date", { referencedTable: "schedules" })
     .order("weekday", { referencedTable: "schedules" })
     .order("start_time", { referencedTable: "schedules" })
     .maybeSingle();
   if (error && error.code !== "22P02") throw error; // 22P02 : identifiant mal formé
   if (!period) notFound();
+
+  const recurring = period.schedules.filter((slot) => slot.weekday !== null);
+  // Programme daté (vacances importées du fichier du club) : les créneaux à venir.
+  const dated = period.schedules.filter((slot) => slot.date !== null && slot.date >= today);
 
   return (
     <>
@@ -61,7 +67,6 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
             kind: period.kind,
             start_date: period.start_date,
             end_date: period.end_date,
-            imageUrl: period.image_path ? planningImageUrl(period.image_path) : null,
           }}
         />
       </Card>
@@ -84,12 +89,12 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
         </Card>
       )}
 
-      {period.schedules.length === 0 ? (
-        <EmptyState>Aucun créneau dans cette période.</EmptyState>
+      {recurring.length === 0 ? (
+        <EmptyState>Aucun créneau de la semaine dans cette période.</EmptyState>
       ) : (
         <div className="flex flex-col gap-6">
           {weekdays.map((label, index) => {
-            const slots = period.schedules.filter((slot) => slot.weekday === index + 1);
+            const slots = recurring.filter((slot) => slot.weekday === index + 1);
             if (slots.length === 0) return null;
             return (
               <section key={label}>
@@ -148,6 +153,55 @@ export default async function PeriodePage({ params }: PageProps<"/planning/perio
             );
           })}
         </div>
+      )}
+
+      {dated.length > 0 && (
+        <section className="mt-10">
+          <h2 className="mb-3 text-xl">Créneaux datés à venir</h2>
+          <p className="mb-4 text-sm text-muted">
+            Programme jour par jour, importé du fichier du club : il s&apos;ajoute aux créneaux de la semaine.
+          </p>
+          <ul className="flex flex-col gap-3">
+            {dated.map((slot) => (
+              <li key={slot.id} className="flex flex-col gap-3 bg-surface p-4">
+                <p className="font-heading text-sm uppercase tracking-wider">{formatDay(slot.date!)}</p>
+                <SlotLine slot={slot} cancelled={slot.is_cancelled} reason={slot.cancellation_reason} />
+                <div className="flex flex-wrap items-start gap-2">
+                  {canUpdate && (
+                    <ActionForm action={setExceptionalSlotCancelled} className="flex flex-wrap gap-2">
+                      <input type="hidden" name="scheduleId" value={slot.id} />
+                      <input type="hidden" name="cancelled" value={String(!slot.is_cancelled)} />
+                      {!slot.is_cancelled && (
+                        <Input name="reason" placeholder="Motif (facultatif)" aria-label="Motif de l'annulation" maxLength={200} />
+                      )}
+                      <Button type="submit" variant={slot.is_cancelled ? "secondary" : "danger"}>
+                        {slot.is_cancelled ? "Rétablir" : "Annuler"}
+                      </Button>
+                    </ActionForm>
+                  )}
+                  {canDelete && (
+                    <ActionForm action={deleteSlot}>
+                      <input type="hidden" name="scheduleId" value={slot.id} />
+                      <ConfirmButton variant="danger" message="Supprimer ce créneau ?">
+                        Supprimer
+                      </ConfirmButton>
+                    </ActionForm>
+                  )}
+                </div>
+                {canUpdate && (
+                  <details>
+                    <summary className="cursor-pointer text-sm underline decoration-accent decoration-2 underline-offset-4">
+                      Modifier
+                    </summary>
+                    <div className="mt-3">
+                      <SlotForm action={updateSlot} slot={slot} submitLabel="Enregistrer" />
+                    </div>
+                  </details>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </>
   );

@@ -1,13 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { ActionForm } from "@/components/action-form";
 import { Button, Input, Label, Select } from "@/components/ui";
 import type { ActionState } from "@/lib/action-state";
-import { IMAGE_ACCEPT } from "@/lib/images";
 import { periodKindLabels, scheduleTypeLabels, weekdays, type PeriodKind, type ScheduleType } from "@/lib/planning";
 
 type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
@@ -18,15 +16,10 @@ export type PeriodValues = {
   kind: PeriodKind;
   start_date: string;
   end_date: string;
-  imageUrl: string | null;
 };
 
-/** P4-06 : nom, type et dates d'une période ; P4-08 : image du planning, affichée en complément. */
+/** P4-06 : nom, type et dates d'une période. */
 export function PeriodForm({ action, period, readOnly }: { action: Action; period?: PeriodValues; readOnly?: boolean }) {
-  const [preview, setPreview] = useState<string | null>(null);
-  const [removeImage, setRemoveImage] = useState(false);
-  const imageUrl = preview ?? (removeImage ? null : (period?.imageUrl ?? null));
-
   return (
     <ActionForm action={action} className="flex flex-col gap-5">
       {period && <input type="hidden" name="periodId" value={period.id} />}
@@ -54,41 +47,6 @@ export function PeriodForm({ action, period, readOnly }: { action: Action; perio
         <p className="text-xs text-muted">
           Pendant une période de vacances, ses créneaux remplacent ceux du planning normal.
         </p>
-
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="image">Image du planning (facultatif)</Label>
-          {imageUrl && (
-            <div className="relative aspect-[4/3] w-full max-w-md overflow-hidden bg-surface">
-              <Image src={imageUrl} alt="" fill unoptimized className="object-contain" />
-            </div>
-          )}
-          <input
-            id="image"
-            name="image"
-            type="file"
-            accept={IMAGE_ACCEPT}
-            className="text-sm file:mr-3 file:cursor-pointer file:border-2 file:border-foreground file:bg-transparent file:px-3 file:py-1 file:font-heading file:text-xs file:uppercase file:tracking-wider"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              setPreview(file ? URL.createObjectURL(file) : null);
-            }}
-          />
-          <p className="text-xs text-muted">
-            Affichée dans l&apos;app en complément des créneaux (qui restent la référence). JPEG, PNG ou WebP, 5 Mo maximum.
-          </p>
-          {period?.imageUrl && !preview && (
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                name="removeImage"
-                checked={removeImage}
-                onChange={(event) => setRemoveImage(event.target.checked)}
-                className="accent-[var(--accent)]"
-              />
-              Retirer l&apos;image
-            </label>
-          )}
-        </div>
 
         {!readOnly && (
           <div>

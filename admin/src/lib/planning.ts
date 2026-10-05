@@ -1,11 +1,7 @@
 import type { Database } from "@/lib/database.types";
-import { publicImageUrl } from "@/lib/images";
 
 export type ScheduleType = Database["public"]["Enums"]["schedule_type"];
 export type PeriodKind = Database["public"]["Enums"]["schedule_period_kind"];
-
-/** Bucket Supabase Storage des images du planning (public, voir la migration planning). */
-export const PLANNING_BUCKET = "planning-images";
 
 export const scheduleTypeLabels: Record<ScheduleType, string> = {
   free_play: "Jeu libre",
@@ -20,10 +16,6 @@ export const periodKindLabels: Record<PeriodKind, string> = {
 
 /** Jours ISO : 1 = lundi … 7 = dimanche. */
 export const weekdays = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
-
-export function planningImageUrl(path: string) {
-  return publicImageUrl(PLANNING_BUCKET, path);
-}
 
 /** Date du jour à Chambéry, au format AAAA-MM-JJ. */
 export function todayInParis() {

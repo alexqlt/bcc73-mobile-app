@@ -31,13 +31,13 @@ export default async function PlanningPage() {
   const [periods, week, exceptional, cancellations] = await Promise.all([
     supabase
       .from("schedule_periods")
-      .select("id, name, kind, start_date, end_date, image_path, schedules (count)")
+      .select("id, name, kind, start_date, end_date, schedules (count)")
       .order("start_date", { ascending: false }),
     supabase.rpc("planning", { from_date: today, to_date: addDays(today, 6) }),
     supabase
       .from("schedules")
       .select("id, weekday, date, start_time, end_time, type, title, location, is_cancelled, cancellation_reason")
-      .not("date", "is", null)
+      .is("period_id", null)
       .gte("date", today)
       .order("date")
       .order("start_time"),
@@ -56,6 +56,14 @@ export default async function PlanningPage() {
   return (
     <>
       <PageHeader eyebrow="Club" title="Planning">
+        {canCreate && (
+          <Link
+            href="/planning/import"
+            className="border-2 border-foreground px-4 py-2 font-heading text-sm uppercase tracking-wider transition hover:bg-surface"
+          >
+            Importer un fichier .xlsx
+          </Link>
+        )}
         {canCreate && (
           <Link
             href="/planning/periodes/nouvelle"
@@ -115,6 +123,14 @@ export default async function PlanningPage() {
           <ul className="flex flex-col gap-3">
             {periods.data!.map((period) => {
               const current = period.start_date <= today && today <= period.end_date;
+              // Deux périodes du même type qui se chevauchent : seule la plus récente s'applique.
+              const overlapping = periods.data!.find(
+                (other) =>
+                  other.id !== period.id &&
+                  other.kind === period.kind &&
+                  other.start_date <= period.end_date &&
+                  period.start_date <= other.end_date
+              );
               const past = period.end_date < today;
               return (
                 <li key={period.id}>
@@ -125,10 +141,10 @@ export default async function PlanningPage() {
                     <span className="font-bold">{period.name}</span>
                     <Badge tone={period.kind === "holidays" ? "warning" : "neutral"}>{periodKindLabels[period.kind]}</Badge>
                     {current && <Badge tone="success">En cours</Badge>}
+                    {overlapping && <Badge tone="danger">Chevauche « {overlapping.name} »</Badge>}
                     <span className="text-sm text-muted">
                       du {formatShortDate(period.start_date)} au {formatShortDate(period.end_date)} ·{" "}
-                      {period.schedules[0]?.count ?? 0} créneau(x) par semaine
-                      {period.image_path ? " · image du planning" : ""}
+                      {period.schedules[0]?.count ?? 0} créneau(x)
                     </span>
                   </Link>
                 </li>

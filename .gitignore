@@ -14,3 +14,6 @@ npm-debug.*
 # Système
 .DS_Store
 Thumbs.db
+
+# Documents de travail locaux (exemples de fichiers du club), jamais versionnés
+/docs/

@@ -1,18 +1,14 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { toActionState, type ActionState } from "@/lib/action-state";
-import { IMAGE_TYPES, readImage, validateImage } from "@/lib/images";
-import { PLANNING_BUCKET, scheduleTypeLabels, type PeriodKind, type ScheduleType } from "@/lib/planning";
+import { scheduleTypeLabels, type PeriodKind, type ScheduleType } from "@/lib/planning";
 import { createClient } from "@/lib/supabase/server";
 
 // Les permissions SCHEDULE_CREATE / SCHEDULE_UPDATE / SCHEDULE_DELETE sont vérifiées par la RLS.
 // Les annulations sont contrôlées par la base (jour de la semaine, dates de la période).
-
-type Supabase = Awaited<ReturnType<typeof createClient>>;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME = /^\d{2}:\d{2}$/;
@@ -24,7 +20,7 @@ function text(formData: FormData, name: string) {
 const noRightError = { error: "Vous n'avez pas le droit d'effectuer cette action." };
 
 // ---------------------------------------------------------------------------
-// Périodes (P4-06) et image du planning (P4-08)
+// Périodes (P4-06)
 // ---------------------------------------------------------------------------
 
 function readPeriodForm(formData: FormData) {
@@ -32,31 +28,13 @@ function readPeriodForm(formData: FormData) {
   const kind = text(formData, "kind") as PeriodKind;
   const startDate = text(formData, "startDate");
   const endDate = text(formData, "endDate");
-  const image = readImage(formData, "image");
 
   if (!name) return { error: "Donnez un nom à la période (ex. Saison 2026-2027, Vacances de la Toussaint)." };
   if (kind !== "normal" && kind !== "holidays") return { error: "Choisissez le type de période." };
   if (!ISO_DATE.test(startDate) || !ISO_DATE.test(endDate)) return { error: "Indiquez les dates de début et de fin." };
   if (endDate < startDate) return { error: "La date de fin doit être après la date de début." };
-  const imageError = validateImage(image);
-  if (imageError) return { error: imageError };
 
-  return {
-    values: { name, kind, start_date: startDate, end_date: endDate },
-    image,
-    removeImage: formData.get("removeImage") === "on",
-  };
-}
-
-async function uploadImage(supabase: Supabase, periodId: string, image: File) {
-  const path = `${periodId}/${randomUUID()}.${IMAGE_TYPES[image.type]}`;
-  const { error } = await supabase.storage.from(PLANNING_BUCKET).upload(path, image, { contentType: image.type });
-  return { path, error };
-}
-
-/** Suppression au mieux : une image orpheline ne gêne pas l'affichage. */
-async function removeImage(supabase: Supabase, path: string | null) {
-  if (path) await supabase.storage.from(PLANNING_BUCKET).remove([path]);
+  return { values: { name, kind, start_date: startDate, end_date: endDate } };
 }
 
 export async function createPeriod(_state: ActionState, formData: FormData): Promise<ActionState> {
@@ -66,14 +44,6 @@ export async function createPeriod(_state: ActionState, formData: FormData): Pro
   const supabase = await createClient();
   const { data, error } = await supabase.from("schedule_periods").insert(form.values).select("id").single();
   if (error) return toActionState(error);
-
-  // La période est créée même si l'image échoue : elle pourra être ajoutée depuis la page de la période.
-  if (form.image) {
-    const upload = await uploadImage(supabase, data.id, form.image);
-    if (!upload.error) {
-      await supabase.from("schedule_periods").update({ image_path: upload.path }).eq("id", data.id);
-    }
-  }
   redirect(`/planning/periodes/${data.id}`);
 }
 
@@ -81,33 +51,14 @@ export async function updatePeriod(_state: ActionState, formData: FormData): Pro
   const form = readPeriodForm(formData);
   if ("error" in form) return form;
 
-  const periodId = text(formData, "periodId");
   const supabase = await createClient();
-  const { data: current, error: readError } = await supabase
-    .from("schedule_periods")
-    .select("image_path")
-    .eq("id", periodId)
-    .maybeSingle();
-  if (readError) return toActionState(readError);
-  if (!current) return { error: "Cette période n'existe plus." };
-
-  let imagePath = form.removeImage ? null : current.image_path;
-  if (form.image) {
-    const upload = await uploadImage(supabase, periodId, form.image);
-    if (upload.error) return { error: "L'image n'a pas pu être envoyée. Réessayez." };
-    imagePath = upload.path;
-  }
-
   const { data, error } = await supabase
     .from("schedule_periods")
-    .update({ ...form.values, image_path: imagePath })
-    .eq("id", periodId)
+    .update(form.values)
+    .eq("id", text(formData, "periodId"))
     .select("id");
-  if (error || data.length === 0) {
-    if (imagePath !== current.image_path) await removeImage(supabase, imagePath);
-    return error ? toActionState(error) : noRightError;
-  }
-  if (imagePath !== current.image_path) await removeImage(supabase, current.image_path);
+  if (error) return toActionState(error);
+  if (data.length === 0) return noRightError;
   refresh();
   return null;
 }
@@ -118,10 +69,9 @@ export async function deletePeriod(_state: ActionState, formData: FormData): Pro
     .from("schedule_periods")
     .delete()
     .eq("id", text(formData, "periodId"))
-    .select("image_path");
+    .select("id");
   if (error) return toActionState(error);
   if (data.length === 0) return noRightError;
-  await removeImage(supabase, data[0].image_path);
   redirect("/planning");
 }
 
@@ -233,7 +183,7 @@ export async function restoreSlotOnDate(_state: ActionState, formData: FormData)
   return null;
 }
 
-/** Annule ou rétablit un créneau exceptionnel. */
+/** Annule ou rétablit un créneau daté (exceptionnel ou du programme des vacances). */
 export async function setExceptionalSlotCancelled(_state: ActionState, formData: FormData): Promise<ActionState> {
   const cancelled = formData.get("cancelled") === "true";
   const supabase = await createClient();

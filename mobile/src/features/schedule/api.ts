@@ -24,8 +24,6 @@ export type PlanningSlot = {
   period_kind: PeriodKind | null;
 };
 
-const PLANNING_BUCKET = 'planning-images';
-
 export const scheduleTypeLabels: Record<ScheduleType, string> = {
   free_play: 'Jeu libre',
   training: 'Entraînement',
@@ -110,7 +108,10 @@ export function usePeriodOn(day: Date) {
   });
 }
 
-/** Périodes de vacances en cours ou à venir, avec leurs créneaux de la semaine. */
+/**
+ * Périodes de vacances en cours ou à venir, avec leurs créneaux : ceux de la semaine (weekday)
+ * et le programme jour par jour importé du fichier du club (date).
+ */
 export function useHolidayPeriods(today: Date) {
   const iso = toISODate(today);
 
@@ -119,10 +120,13 @@ export function useHolidayPeriods(today: Date) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('schedule_periods')
-        .select('id, name, start_date, end_date, schedules (id, weekday, start_time, end_time, type, title, location)')
+        .select(
+          'id, name, start_date, end_date, schedules (id, weekday, date, start_time, end_time, type, title, location, is_cancelled, cancellation_reason)'
+        )
         .eq('kind', 'holidays')
         .gte('end_date', iso)
         .order('start_date')
+        .order('date', { referencedTable: 'schedules' })
         .order('weekday', { referencedTable: 'schedules' })
         .order('start_time', { referencedTable: 'schedules' });
       if (error) throw error;
@@ -131,7 +135,3 @@ export function useHolidayPeriods(today: Date) {
   });
 }
 
-/** URL publique de l'image du planning (bucket public). */
-export function planningImageUrl(path: string | null) {
-  return path ? supabase.storage.from(PLANNING_BUCKET).getPublicUrl(path).data.publicUrl : undefined;
-}

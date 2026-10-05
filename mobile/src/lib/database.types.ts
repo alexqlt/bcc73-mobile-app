@@ -338,7 +338,6 @@ export type Database = {
           created_at: string
           end_date: string
           id: string
-          image_path: string | null
           kind: Database["public"]["Enums"]["schedule_period_kind"]
           name: string
           start_date: string
@@ -348,7 +347,6 @@ export type Database = {
           created_at?: string
           end_date: string
           id?: string
-          image_path?: string | null
           kind?: Database["public"]["Enums"]["schedule_period_kind"]
           name: string
           start_date: string
@@ -358,7 +356,6 @@ export type Database = {
           created_at?: string
           end_date?: string
           id?: string
-          image_path?: string | null
           kind?: Database["public"]["Enums"]["schedule_period_kind"]
           name?: string
           start_date?: string
@@ -456,6 +453,7 @@ export type Database = {
       approve_member: { Args: { member_id: string }; Returns: undefined }
       can_edit_news: { Args: never; Returns: boolean }
       has_permission: { Args: { permission: string }; Returns: boolean }
+      import_planning: { Args: { payload: Json }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
       is_system_role: { Args: { role: string }; Returns: boolean }
       my_permissions: { Args: never; Returns: string[] }
@@ -488,7 +486,6 @@ export type Database = {
           created_at: string
           end_date: string
           id: string
-          image_path: string | null
           kind: Database["public"]["Enums"]["schedule_period_kind"]
           name: string
           start_date: string
