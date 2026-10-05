@@ -185,3 +185,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P1-16 | Sélecteur du membre actif (parent → enfants) : validé | 2026-10-07 | — |
 | P6-17 | Paiements testés en sandbox (volants, stages, complet, abandon, remise, inscrits et paiements) | 2026-10-07 | — |
 | P2-23 | Rôles : modifier le nom et la description (hors Administrateur) | 2026-10-07 | — |
+| P4-13 | Planning : fin des créneaux exceptionnels ; les périodes de vacances remplacent le planning sur leurs dates et se consultent à l'avance dans l'app | 2026-10-08 | — |

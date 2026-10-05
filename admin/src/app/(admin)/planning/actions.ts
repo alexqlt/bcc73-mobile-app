@@ -76,7 +76,7 @@ export async function deletePeriod(_state: ActionState, formData: FormData): Pro
 }
 
 // ---------------------------------------------------------------------------
-// Créneaux récurrents (P4-05) et exceptionnels (P4-07)
+// Créneaux de la semaine (P4-05)
 // ---------------------------------------------------------------------------
 
 function readSlotForm(formData: FormData) {
@@ -94,17 +94,13 @@ function readSlotForm(formData: FormData) {
   };
 }
 
-/** Le créneau est récurrent (jour de la semaine) si le formulaire porte une période, exceptionnel sinon (date). */
+/** Période et jour de la semaine du créneau (il se répète chaque semaine de la période). */
 function readWhen(formData: FormData) {
   const periodId = text(formData, "periodId");
-  if (periodId) {
-    const weekday = Number(formData.get("weekday"));
-    if (!Number.isInteger(weekday) || weekday < 1 || weekday > 7) return { error: "Choisissez le jour de la semaine." };
-    return { values: { period_id: periodId, weekday } };
-  }
-  const date = text(formData, "date");
-  if (!ISO_DATE.test(date)) return { error: "Indiquez la date du créneau exceptionnel." };
-  return { values: { date } };
+  if (!periodId) return { error: "Le créneau doit appartenir à une période." };
+  const weekday = Number(formData.get("weekday"));
+  if (!Number.isInteger(weekday) || weekday < 1 || weekday > 7) return { error: "Choisissez le jour de la semaine." };
+  return { values: { period_id: periodId, weekday } };
 }
 
 export async function createSlot(_state: ActionState, formData: FormData): Promise<ActionState> {
@@ -125,8 +121,8 @@ export async function updateSlot(_state: ActionState, formData: FormData): Promi
   if ("error" in slot) return slot;
   const when = readWhen(formData);
   if ("error" in when) return when;
-  // La période d'un créneau récurrent ne change pas : seul le jour est modifiable.
-  const whenValues = "weekday" in when.values ? { weekday: when.values.weekday } : { date: when.values.date };
+  // La période d'un créneau ne change pas : seul le jour est modifiable.
+  const whenValues = { weekday: when.values.weekday };
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -179,22 +175,6 @@ export async function restoreSlot(_state: ActionState, formData: FormData): Prom
     .from("schedule_cancellations")
     .delete()
     .eq("id", text(formData, "cancellationId"))
-    .select("id");
-  if (error) return toActionState(error);
-  if (data.length === 0) return noRightError;
-  refresh();
-  return null;
-}
-
-/** Annule ou rétablit un créneau daté (exceptionnel ou du programme des vacances). */
-export async function setExceptionalSlotCancelled(_state: ActionState, formData: FormData): Promise<ActionState> {
-  const cancelled = formData.get("cancelled") === "true";
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("schedules")
-    .update({ is_cancelled: cancelled, cancellation_reason: cancelled ? text(formData, "reason") || null : null })
-    .eq("id", text(formData, "scheduleId"))
-    .is("weekday", null)
     .select("id");
   if (error) return toActionState(error);
   if (data.length === 0) return noRightError;

@@ -13,11 +13,9 @@ export type ScheduleSlotProps = {
   cancelled?: boolean;
   /** Annulation (période et motif), affichée sous le lieu : en rouge si le créneau est annulé, sinon pour prévenir. */
   note?: string | null;
-  /** Créneau ponctuel, en plus du planning habituel. */
-  exceptional?: boolean;
 };
 
-export function ScheduleSlot({ start, end, title, location, cancelled, note, exceptional }: ScheduleSlotProps) {
+export function ScheduleSlot({ start, end, title, location, cancelled, note }: ScheduleSlotProps) {
   const { colors, radii } = useDS();
   const lineThrough = cancelled ? styles.cancelled : undefined;
 
@@ -52,7 +50,7 @@ export function ScheduleSlot({ start, end, title, location, cancelled, note, exc
           </Text>
         )}
       </View>
-      {cancelled ? <Badge label="Annulé" tone="danger" /> : exceptional && <Badge label="Exceptionnel" tone="accent" />}
+      {cancelled && <Badge label="Annulé" tone="danger" />}
     </View>
   );
 }

@@ -589,49 +589,40 @@ export type Database = {
       }
       schedules: {
         Row: {
-          cancellation_reason: string | null
           created_at: string
-          date: string | null
           end_time: string
           id: string
-          is_cancelled: boolean
           location: string | null
-          period_id: string | null
+          period_id: string
           start_time: string
           title: string
           type: Database["public"]["Enums"]["schedule_type"]
           updated_at: string
-          weekday: number | null
+          weekday: number
         }
         Insert: {
-          cancellation_reason?: string | null
           created_at?: string
-          date?: string | null
           end_time: string
           id?: string
-          is_cancelled?: boolean
           location?: string | null
-          period_id?: string | null
+          period_id: string
           start_time: string
           title: string
           type: Database["public"]["Enums"]["schedule_type"]
           updated_at?: string
-          weekday?: number | null
+          weekday: number
         }
         Update: {
-          cancellation_reason?: string | null
           created_at?: string
-          date?: string | null
           end_time?: string
           id?: string
-          is_cancelled?: boolean
           location?: string | null
-          period_id?: string | null
+          period_id?: string
           start_time?: string
           title?: string
           type?: Database["public"]["Enums"]["schedule_type"]
           updated_at?: string
-          weekday?: number | null
+          weekday?: number
         }
         Relationships: [
           {
@@ -886,7 +877,6 @@ export type Database = {
           day: string
           end_time: string
           is_cancelled: boolean
-          is_exceptional: boolean
           location: string
           period_id: string
           period_kind: Database["public"]["Enums"]["schedule_period_kind"]

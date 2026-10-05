@@ -45,7 +45,8 @@ export function PeriodForm({ action, period, readOnly }: { action: Action; perio
           </Field>
         </div>
         <p className="text-xs text-muted">
-          Pendant une période de vacances, ses créneaux remplacent ceux du planning normal.
+          Pendant une période de vacances, ses créneaux remplacent ceux du planning normal. Les adhérents peuvent
+          aussi la consulter à l&apos;avance dans l&apos;application.
         </p>
 
         {!readOnly && (
@@ -62,8 +63,7 @@ export function PeriodForm({ action, period, readOnly }: { action: Action; perio
 
 export type SlotValues = {
   id: string;
-  weekday: number | null;
-  date: string | null;
+  weekday: number;
   start_time: string;
   end_time: string;
   type: ScheduleType;
@@ -71,10 +71,7 @@ export type SlotValues = {
   location: string | null;
 };
 
-/**
- * P4-05 / P4-07 : un créneau. Avec `periodId`, il est récurrent (jour de la semaine) ;
- * sans, il est exceptionnel (une date).
- */
+/** P4-05 : un créneau de la semaine d'une période. */
 export function SlotForm({
   action,
   periodId,
@@ -82,7 +79,7 @@ export function SlotForm({
   submitLabel,
 }: {
   action: Action;
-  periodId?: string;
+  periodId: string;
   slot?: SlotValues;
   submitLabel: string;
 }) {
@@ -91,22 +88,16 @@ export function SlotForm({
   return (
     <ActionForm action={action} className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-6">
       {slot && <input type="hidden" name="scheduleId" value={slot.id} />}
-      {periodId && <input type="hidden" name="periodId" value={periodId} />}
-      {periodId ? (
-        <Field label="Jour" htmlFor={`weekday-${id}`}>
-          <Select id={`weekday-${id}`} name="weekday" defaultValue={slot?.weekday ?? 1}>
-            {weekdays.map((label, index) => (
-              <option key={label} value={index + 1}>
-                {label}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      ) : (
-        <Field label="Date" htmlFor={`date-${id}`}>
-          <Input id={`date-${id}`} name="date" type="date" defaultValue={slot?.date ?? undefined} required />
-        </Field>
-      )}
+      <input type="hidden" name="periodId" value={periodId} />
+      <Field label="Jour" htmlFor={`weekday-${id}`}>
+        <Select id={`weekday-${id}`} name="weekday" defaultValue={slot?.weekday ?? 1}>
+          {weekdays.map((label, index) => (
+            <option key={label} value={index + 1}>
+              {label}
+            </option>
+          ))}
+        </Select>
+      </Field>
       <Field label="Début" htmlFor={`start-${id}`}>
         <Input id={`start-${id}`} name="startTime" type="time" defaultValue={slot?.start_time.slice(0, 5)} required />
       </Field>

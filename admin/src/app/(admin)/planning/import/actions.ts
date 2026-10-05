@@ -13,9 +13,8 @@ import { createClient } from "@/lib/supabase/server";
 /** Créneau déjà en base, pour repérer les doublons dans l'aperçu. */
 export type ExistingSlot = {
   id: string;
-  period_id: string | null;
-  weekday: number | null;
-  date: string | null;
+  period_id: string;
+  weekday: number;
   start_time: string;
   end_time: string;
   title: string;
@@ -24,8 +23,6 @@ export type ExistingSlot = {
 /** Créneau existant qu'une ligne de l'onglet « Annulations » vise (même jour, horaires qui se chevauchent, même gymnase). */
 export type CancellationMatch = {
   schedule_id: string;
-  /** Créneau récurrent : annulé pour la date. Créneau daté : marqué annulé. */
-  recurring: boolean;
   label: string;
   already_cancelled: boolean;
 };
@@ -71,12 +68,11 @@ export async function analyzePlanningFile(formData: FormData): Promise<{ error: 
   const supabase = await createClient();
   const [periods, schedules] = await Promise.all([
     supabase.from("schedule_periods").select("id, name, kind, start_date, end_date").order("start_date", { ascending: false }),
-    supabase.from("schedules").select("id, period_id, weekday, date, start_time, end_time, title"),
+    supabase.from("schedules").select("id, period_id, weekday, start_time, end_time, title"),
   ]);
   if (periods.error || schedules.error) return { error: toErrorMessage(periods.error ?? schedules.error) };
 
   // Annulations : on cherche, pour chaque ligne, les créneaux qui ont lieu ce jour-là dans la base.
-  const recurringIds = new Set(schedules.data.filter((slot) => slot.weekday !== null).map((slot) => slot.id));
   const planningByDate = new Map<string, Awaited<ReturnType<typeof fetchDay>>>();
   async function fetchDay(date: string) {
     const { data, error } = await supabase.rpc("planning", { from_date: date, to_date: date });
@@ -103,7 +99,6 @@ export async function analyzePlanningFile(formData: FormData): Promise<{ error: 
           )
           .map((slot) => ({
             schedule_id: slot.schedule_id,
-            recurring: recurringIds.has(slot.schedule_id),
             label: `${slot.start_time.slice(0, 5)} → ${slot.end_time.slice(0, 5)} · ${slot.title}${slot.location ? ` · ${slot.location}` : ""}`,
             already_cancelled: slot.is_cancelled,
           }))
@@ -133,16 +128,15 @@ export type ImportPayload = {
     | { ref: string; name: string; kind: PeriodKind; start_date: string; end_date: string }
   )[];
   slots: {
-    period_ref: string | null;
-    weekday: number | null;
-    date: string | null;
+    period_ref: string;
+    weekday: number;
     start_time: string;
     end_time: string;
     type: string;
     title: string;
     location: string | null;
   }[];
-  cancellations: { schedule_id: string; date: string | null; reason: string | null }[];
+  cancellations: { schedule_id: string; date: string; reason: string | null }[];
 };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -165,21 +159,22 @@ function invalidPayload(payload: ImportPayload): string | null {
     }
   }
   for (const slot of payload.slots ?? []) {
-    const recurring = slot.weekday !== null;
     if (
       !TIME.test(slot.start_time) ||
       !TIME.test(slot.end_time) ||
       slot.end_time <= slot.start_time ||
       !(slot.type in scheduleTypeLabels) ||
       !slot.title?.trim() ||
-      (recurring ? !slot.period_ref || !refs.has(slot.period_ref) : !ISO_DATE.test(slot.date ?? "")) ||
-      (slot.period_ref !== null && !refs.has(slot.period_ref))
+      !Number.isInteger(slot.weekday) ||
+      slot.weekday < 1 ||
+      slot.weekday > 7 ||
+      !refs.has(slot.period_ref)
     ) {
       return `Créneau invalide : ${slot.title || "sans intitulé"}.`;
     }
   }
   for (const cancellation of payload.cancellations ?? []) {
-    if (!UUID.test(cancellation.schedule_id) || (cancellation.date !== null && !ISO_DATE.test(cancellation.date))) {
+    if (!UUID.test(cancellation.schedule_id) || !ISO_DATE.test(cancellation.date)) {
       return "Annulation invalide.";
     }
   }

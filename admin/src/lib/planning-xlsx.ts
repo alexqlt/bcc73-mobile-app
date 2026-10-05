@@ -11,14 +11,14 @@ import { normalize } from "@/lib/text";
  *   « Lieu » puis « 20h00 - 22h00 » (plusieurs lieux possibles). Avec une ligne de dates sous
  *   l'en-tête, c'est une période de vacances : les dates donnent seulement le début et la fin de la
  *   période, les créneaux restent par jour de la semaine (le planning est le même chaque semaine) ;
- * - liste : une ligne d'en-tête Jour / début / fin. Le jour est soit un jour de la semaine
- *   (créneaux récurrents), soit une date (événements) ; un onglet « Annulations » donne des annulations.
+ * - liste : une ligne d'en-tête Jour / début / fin, le jour étant un jour de la semaine (les lignes
+ *   datées sont ignorées : un programme particulier se crée en période de vacances) ; un onglet
+ *   « Annulations » donne des annulations.
  * Dans un onglet qui a une grille, la liste en dessous (demandes à la ville) est ignorée.
  */
 
 export type ParsedSlot = {
-  weekday: number | null;
-  date: string | null;
+  weekday: number;
   start_time: string;
   end_time: string;
   type: ScheduleType;
@@ -39,7 +39,6 @@ export type SuggestedPeriod = { name: string; start_date: string; end_date: stri
 export type ParsedSheet =
   | { kind: "weekly"; sheet: string; title: string; period: SuggestedPeriod; slots: ParsedSlot[]; ignored: string[] }
   | { kind: "holidays"; sheet: string; title: string; period: SuggestedPeriod; slots: ParsedSlot[]; ignored: string[] }
-  | { kind: "events"; sheet: string; title: string; slots: ParsedSlot[]; ignored: string[] }
   | { kind: "cancellations"; sheet: string; title: string; rows: ParsedCancellation[]; ignored: string[] }
   | { kind: "unknown"; sheet: string; title: string };
 
@@ -195,7 +194,7 @@ function parseGrid(sheet: string, title: string, rows: Row[], headers: ReturnTyp
           // Une grille de vacances répète souvent la même semaine : chaque créneau n'est gardé qu'une fois.
           if (seen.has(key)) continue;
           seen.add(key);
-          slots.push({ ...slot, weekday, date: null, type: inferType(activity), title: activity });
+          slots.push({ ...slot, weekday, type: inferType(activity), title: activity });
         }
       }
     }
@@ -255,17 +254,18 @@ function parseList(sheet: string, title: string, rows: Row[]): ParsedSheet {
       else ignored.push(`${label} : date illisible`);
       continue;
     }
-    if (!date && !weekday) {
+    if (date) {
+      ignored.push(`${label} (${date}) : créneau daté ignoré (créez plutôt une période de vacances)`);
+    } else if (!weekday) {
       ignored.push(`${label} : jour illisible`);
     } else if (!startTime || !endTime || endTime <= startTime) {
-      ignored.push(`${label}${date ? ` (${date})` : ""} : horaires manquants ou illisibles`);
+      ignored.push(`${label} : horaires manquants ou illisibles`);
     } else {
       slots.push({
         weekday,
-        date,
         start_time: startTime,
         end_time: endTime,
-        type: date ? "other" : inferType(label, cell(code)),
+        type: inferType(label, cell(code)),
         title: label,
         location: place,
       });
@@ -273,8 +273,7 @@ function parseList(sheet: string, title: string, rows: Row[]): ParsedSheet {
   }
 
   if (isCancellations) return { kind: "cancellations", sheet, title, rows: rowsOut, ignored };
-  if (slots.length > 0 && slots.every((slot) => slot.date)) return { kind: "events", sheet, title, slots, ignored };
-  if (slots.length > 0 && slots.every((slot) => slot.weekday)) {
+  if (slots.length > 0) {
     return { kind: "weekly", sheet, title, period: seasonPeriod(title, sheet), slots, ignored };
   }
   return { kind: "unknown", sheet, title };

@@ -28,7 +28,6 @@ type SheetConfig = {
 const kindLabels: Record<AnalyzedSheet["kind"], string> = {
   weekly: "Créneaux de la semaine",
   holidays: "Programme de vacances",
-  events: "Événements (créneaux exceptionnels)",
   cancellations: "Annulations",
   unknown: "Onglet non reconnu",
 };
@@ -346,7 +345,7 @@ function ItemList({
                 onChange={(event) => onSelect({ [key]: event.target.checked })}
                 className="accent-[var(--accent)]"
               />
-              <span className="w-32 font-heading">{slot.weekday ? weekdays[slot.weekday - 1] : formatShortDate(slot.date!)}</span>
+              <span className="w-32 font-heading">{weekdays[slot.weekday - 1]}</span>
               <span className="w-28 font-heading">
                 {slot.start_time} → {slot.end_time}
               </span>
@@ -354,7 +353,6 @@ function ItemList({
               <Badge tone={slot.type === "training" ? "accent" : "neutral"}>{scheduleTypeLabels[slot.type]}</Badge>
               {slot.location && <span className="text-muted">{slot.location}</span>}
               {isDuplicate(analysis, sheet, slot, config) && <Badge tone="warning">Déjà présent</Badge>}
-              {isPast(analysis, slot) && <Badge>Passé</Badge>}
             </label>
           </li>
         );
@@ -367,18 +365,13 @@ function ItemList({
 // Sélection par défaut et construction de l'import
 // ---------------------------------------------------------------------------
 
-function isPast(analysis: Analysis, slot: ParsedSlot) {
-  return !!slot.date && slot.date < analysis.today;
-}
-
 function isDuplicate(analysis: Analysis, sheet: AnalyzedSheet, slot: ParsedSlot, config: SheetConfig) {
-  const periodId = sheet.kind === "events" ? null : config.target === NEW ? undefined : config.target;
+  const periodId = config.target === NEW ? undefined : config.target;
   if (periodId === undefined) return false;
   return analysis.existing.some(
     (existing) =>
       existing.period_id === periodId &&
       existing.weekday === slot.weekday &&
-      existing.date === slot.date &&
       existing.start_time.slice(0, 5) === slot.start_time &&
       existing.end_time.slice(0, 5) === slot.end_time &&
       normalize(existing.title) === normalize(slot.title)
@@ -438,7 +431,7 @@ function defaultSelection(analysis: Analysis, configs: SheetConfig[], only?: num
       );
     } else if ("slots" in sheet) {
       sheet.slots.forEach((slot, slotIndex) => {
-        selection[`${index}:${slotIndex}`] = !isPast(analysis, slot) && !isDuplicate(analysis, sheet, slot, configs[index]);
+        selection[`${index}:${slotIndex}`] = !isDuplicate(analysis, sheet, slot, configs[index]);
       });
     }
   });
@@ -458,7 +451,7 @@ function buildPayload(analysis: Analysis, configs: SheetConfig[], selected: Reco
           if (!selected[`${index}:${rowIndex}:${matchIndex}`]) return;
           payload.cancellations.push({
             schedule_id: match.schedule_id,
-            date: match.recurring ? row.date : null,
+            date: row.date,
             reason: row.reason,
           });
         })
@@ -470,15 +463,12 @@ function buildPayload(analysis: Analysis, configs: SheetConfig[], selected: Reco
     const slots = sheet.slots.filter((_, slotIndex) => selected[`${index}:${slotIndex}`]);
     if (slots.length === 0) return;
 
-    let periodRef: string | null = null;
-    if (sheet.kind === "weekly" || sheet.kind === "holidays") {
-      periodRef = `sheet-${index}`;
-      payload.periods.push(
-        config.target === NEW
-          ? { ref: periodRef, kind: sheet.kind === "weekly" ? "normal" : "holidays", ...config.period }
-          : { ref: periodRef, id: config.target }
-      );
-    }
+    const periodRef = `sheet-${index}`;
+    payload.periods.push(
+      config.target === NEW
+        ? { ref: periodRef, kind: sheet.kind === "weekly" ? "normal" : "holidays", ...config.period }
+        : { ref: periodRef, id: config.target }
+    );
     for (const slot of slots) {
       payload.slots.push({ ...slot, period_ref: periodRef });
     }

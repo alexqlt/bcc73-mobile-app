@@ -21,7 +21,8 @@ import {
   type ScheduleType,
 } from '@/features/schedule/api';
 
-type Source = 'week' | 'holidays';
+/** « Cette semaine », ou l'identifiant d'une période de vacances consultée à l'avance. */
+type Source = 'week' | string;
 type TypeFilter = 'all' | 'free_play' | 'training';
 
 /** Un créneau de la semaine, rattaché à son jour (sans date). */
@@ -34,7 +35,6 @@ type WeekSlot = {
   title: string;
   tone: ScheduleType;
   cancelled?: boolean;
-  exceptional?: boolean;
   location: string | null;
   note: string | null;
 };
@@ -53,8 +53,8 @@ function isoWeekday(date: Date) {
 /**
  * P4-03 et P4-04 : le planning est le même chaque semaine ; il est présenté jour par jour, en liste.
  * Une annulation s'affiche sur le créneau lui-même, avec sa période et son motif : barré si elle
- * touche cette semaine, en avertissement si elle est à venir. Pendant les vacances, le planning des
- * vacances remplace l'habituel.
+ * touche cette semaine, en avertissement si elle est à venir. Pendant une période de vacances, son
+ * planning remplace l'habituel ; les vacances à venir se consultent à l'avance (une puce chacune).
  */
 export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } = {}) {
   const insets = useSafeAreaInsets();
@@ -79,8 +79,9 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
     );
     return next ? formatCancellation(next.start_date, next.end_date, next.reason) : null;
   };
-  // Prochaines vacances (pas celles en cours : elles sont déjà le planning de la semaine).
-  const nextHolidays = holidays.data?.find((period) => period.start_date > toISODate(today));
+  // Vacances à venir (pas celles en cours : elles sont déjà le planning de la semaine).
+  const upcomingHolidays = (holidays.data ?? []).filter((period) => period.start_date > toISODate(today));
+  const shownHolidays = source === 'week' ? undefined : upcomingHolidays.find((period) => period.id === source);
 
   const query = source === 'week' ? week : holidays;
   const allSlots: WeekSlot[] =
@@ -93,32 +94,25 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
           title: slot.title,
           tone: slot.type,
           cancelled: slot.is_cancelled,
-          exceptional: slot.is_exceptional,
           location: slot.location,
           note: slot.is_cancelled
             ? formatCancellation(slot.cancellation_start, slot.cancellation_end, slot.cancellation_reason)
             : upcomingNote(slot.schedule_id, slot.day),
         }))
-      : (nextHolidays?.schedules ?? []).flatMap((slot) =>
-          slot.weekday
-            ? [
-                {
-                  key: slot.id,
-                  weekday: slot.weekday,
-                  start: formatTime(slot.start_time),
-                  end: formatTime(slot.end_time),
-                  title: slot.title,
-                  tone: slot.type,
-                  location: slot.location,
-                  note: upcomingNote(slot.id),
-                },
-              ]
-            : []
-        );
+      : (shownHolidays?.schedules ?? []).map((slot) => ({
+          key: slot.id,
+          weekday: slot.weekday,
+          start: formatTime(slot.start_time),
+          end: formatTime(slot.end_time),
+          title: slot.title,
+          tone: slot.type,
+          location: slot.location,
+          note: upcomingNote(slot.id),
+        }));
   const slots = allSlots.filter((slot) => typeFilter === 'all' || slot.tone === typeFilter);
 
-  const period = source === 'holidays' ? nextHolidays : currentPeriod.data;
-  const isHolidays = period?.kind === 'holidays' || source === 'holidays';
+  const period = source === 'week' ? currentPeriod.data : shownHolidays;
+  const isHolidays = period?.kind === 'holidays';
 
   return (
     <ScrollView
@@ -155,10 +149,12 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
           </Card>
         )}
 
-        {nextHolidays && (
+        {upcomingHolidays.length > 0 && (
           <View style={styles.chips}>
             <Chip label="Cette semaine" selected={source === 'week'} onPress={() => setSource('week')} />
-            <Chip label={nextHolidays.name} selected={source === 'holidays'} onPress={() => setSource('holidays')} />
+            {upcomingHolidays.map((item) => (
+              <Chip key={item.id} label={item.name} selected={source === item.id} onPress={() => setSource(item.id)} />
+            ))}
           </View>
         )}
 
@@ -215,7 +211,6 @@ function Slot({ slot }: { slot: WeekSlot }) {
       location={slot.location}
       cancelled={slot.cancelled}
       note={slot.note}
-      exceptional={slot.exceptional}
     />
   );
 }
