@@ -183,6 +183,17 @@ const ENUM_LABELS: Record<string, string> = {
   rejected: "Refusée",
 };
 
+/** Archivage (« archive ») ou désarchivage (« unarchive ») d'une actualité ou d'un événement, sinon null. */
+function archiveChange(log: AuditLog) {
+  if (log.action !== "update" || (log.target_type !== "news" && log.target_type !== "stages")) return null;
+  const row = (log.details as { new?: Record<string, unknown>; old?: Record<string, unknown> }) ?? {};
+  const before = row.old?.archived_at ?? null;
+  const after = row.new?.archived_at ?? null;
+  if (!before && after) return "archive";
+  if (before && !after) return "unarchive";
+  return null;
+}
+
 export type FieldChange = { field: string; before: string; after: string };
 
 /**
@@ -240,7 +251,8 @@ export async function loadJournalContext(supabase: Supabase) {
           licence.license_number && { field: "Licence", before: "", after: licence.license_number },
         ].filter((change): change is FieldChange => !!change);
       }
-      if (!row.new && !row.old) return [];
+      // Archivage / désarchivage : la ligne se suffit à elle-même.
+      if ((!row.new && !row.old) || archiveChange(log)) return [];
       const fields = [...new Set([...Object.keys(row.old ?? {}), ...Object.keys(row.new ?? {})])].filter(
         (field) => !HIDDEN_FIELDS.has(field)
       );
@@ -259,13 +271,10 @@ export async function loadJournalContext(supabase: Supabase) {
     /** Libellé de l'action. */
     action(log: AuditLog) {
       // Archivage / désarchivage d'une actualité ou d'un événement : une modification de archived_at.
-      if (log.action === "update" && (log.target_type === "news" || log.target_type === "stages")) {
-        const row = (log.details as { new?: Record<string, unknown>; old?: Record<string, unknown> }) ?? {};
-        const before = row.old?.archived_at ?? null;
-        const after = row.new?.archived_at ?? null;
+      const archive = archiveChange(log);
+      if (archive) {
         const what = log.target_type === "news" ? "une actualité" : "un événement";
-        if (!before && after) return `a archivé ${what}`;
-        if (before && !after) return `a désarchivé ${what}`;
+        return `${archive === "archive" ? "a archivé" : "a désarchivé"} ${what}`;
       }
       return eventLabels[`${log.action}:${log.target_type}`] ?? `${log.action} ${log.target_type}`;
     },
