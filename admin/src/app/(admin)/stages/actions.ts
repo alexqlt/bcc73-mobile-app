@@ -159,3 +159,13 @@ export async function deletePrice(_state: ActionState, formData: FormData): Prom
   refresh();
   return null;
 }
+
+/** Annule une inscription du mode test (administrateurs, vérifié par la base) et libère ses places. */
+export async function cancelTestOrder(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_cancel_test_order", { order_id: String(formData.get("orderId")) });
+  if (error) return toActionState(error);
+  refresh();
+  return null;
+}
+

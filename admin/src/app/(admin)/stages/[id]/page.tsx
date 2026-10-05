@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Badge, Button, Card, EmptyState, formatDate, Input, Label, PageHeader, Select } from "@/components/ui";
-import { requireAnyPermission, STAGE_PERMISSIONS } from "@/lib/auth";
+import { isAdmin, requireAnyPermission, STAGE_PERMISSIONS } from "@/lib/auth";
 import {
   eurosInputValue,
   formatEuros,
@@ -14,7 +14,7 @@ import {
 } from "@/lib/shop";
 import { createClient } from "@/lib/supabase/server";
 
-import { addPrice, deletePrice, deleteStage, updatePrice, updateStage } from "../actions";
+import { addPrice, cancelTestOrder, deletePrice, deleteStage, updatePrice, updateStage } from "../actions";
 import { BackLink, StageForm } from "../stage-form";
 
 export const metadata = { title: "Stage — BCC73 Administration" };
@@ -25,6 +25,7 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
   const canUpdate = viewer.permissions.has("STAGE_UPDATE");
   const canCreate = viewer.permissions.has("STAGE_CREATE");
   const canSeeRegistrations = viewer.permissions.has("STAGE_VIEW_REGISTRATIONS");
+  const admin = await isAdmin();
   const { id } = await params;
   const supabase = await createClient();
 
@@ -34,7 +35,7 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
       `id, title, description, location, start_at, end_at, capacity, is_published,
        stage_prices (id, name, amount_cents, position, day),
        stage_registrations (id, status, price_name, amount_cents, created_at, confirmed_at, days,
-                            member_name, member_license, orders (payer_email))`
+                            member_name, member_license, orders (id, payer_email, provider))`
     )
     .eq("id", id)
     .order("position", { referencedTable: "stage_prices" })
@@ -177,6 +178,15 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
                     <Badge tone={registrationStatusLabels[registration.status].tone}>
                       {registrationStatusLabels[registration.status].label}
                     </Badge>
+                    {registration.orders?.provider === "test" && <Badge tone="accent">Test</Badge>}
+                    {admin && registration.orders?.provider === "test" && (
+                      <ActionForm action={cancelTestOrder}>
+                        <input type="hidden" name="orderId" value={registration.orders.id} />
+                        <Button type="submit" variant="secondary" className="py-1">
+                          Annuler le test
+                        </Button>
+                      </ActionForm>
+                    )}
                     <span className="ml-auto text-xs text-muted">
                       {registration.orders?.payer_email} · {formatDate(registration.confirmed_at ?? registration.created_at)}
                     </span>

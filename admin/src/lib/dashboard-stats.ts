@@ -58,6 +58,8 @@ export async function loadSalesStats(supabase: Supabase, now = new Date()): Prom
     .from("orders")
     .select("type, total_cents, paid_at, order_items (quantity)")
     .eq("status", "paid")
+    // Les inscriptions du mode test (administrateurs) ne sont pas des ventes.
+    .neq("provider", "test")
     .gte("paid_at", from);
   if (error) throw error;
 

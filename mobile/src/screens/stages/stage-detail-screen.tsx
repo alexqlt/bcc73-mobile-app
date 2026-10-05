@@ -14,8 +14,10 @@ import {
   formatStageDay,
   priceAvailability,
   priceDays,
+  useIsAdmin,
   useMyRegistrations,
   useStage,
+  useTestRegistration,
 } from '@/features/stages/api';
 
 /**
@@ -29,6 +31,8 @@ export function StageDetailScreen({ id }: { id: string }) {
   const members = useMembers();
   const registrations = useMyRegistrations();
   const checkout = useCheckout();
+  const isAdmin = useIsAdmin();
+  const testRegistration = useTestRegistration();
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [priceId, setPriceId] = useState<string>();
   const today = toISODate(new Date());
@@ -166,6 +170,28 @@ export function StageDetailScreen({ id }: { id: string }) {
                   Les places sont réservées pendant le paiement (45 minutes au plus). L’inscription est confirmée dès que
                   HelloAsso a validé le paiement.
                 </Text>
+
+                {isAdmin && (
+                  <View style={[styles.test, { borderColor: colors.border }]}>
+                    <Text variant="label" color="textMuted">
+                      Mode test · administrateurs
+                    </Text>
+                    <FormError error={testRegistration.error} />
+                    <Button
+                      title="Inscrire sans payer (test)"
+                      variant="secondary"
+                      fullWidth
+                      disabled={!canPay || testRegistration.isPending}
+                      onPress={() =>
+                        testRegistration.mutate({ stageId: stage.data!.id, memberIds: people, priceId: priceId! })
+                      }
+                    />
+                    <Text variant="caption" color="textMuted">
+                      Mêmes contrôles qu’une vraie inscription (places, tarif, doublons), sans HelloAsso ni email. Marquée
+                      « Test », exclue des ventes ; annulable depuis l’historique.
+                    </Text>
+                  </View>
+                )}
               </Card>
             )}
           </>
@@ -201,6 +227,11 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: Space.sm,
+  },
+  test: {
+    gap: Space.sm,
+    borderTopWidth: 1,
+    paddingTop: Space.md,
   },
   dayRow: {
     flexDirection: 'row',

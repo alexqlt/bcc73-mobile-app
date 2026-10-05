@@ -745,6 +745,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_cancel_test_order: {
+        Args: { order_id: string }
+        Returns: undefined
+      }
       admin_list_members: {
         Args: never
         Returns: {
@@ -772,6 +776,10 @@ export type Database = {
           last_sign_in_at: string
           role_ids: string[]
         }[]
+      }
+      admin_test_stage_registration: {
+        Args: { member_ids: string[]; price: string; stage: string }
+        Returns: string
       }
       approve_member: { Args: { member_id: string }; Returns: undefined }
       can_edit_news: { Args: never; Returns: boolean }

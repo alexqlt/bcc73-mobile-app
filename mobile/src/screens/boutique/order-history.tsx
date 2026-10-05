@@ -2,9 +2,9 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ErrorState, LoadingState } from '@/components/query-status';
-import { Badge, Card, Space, Text, type BadgeTone } from '@/design-system';
+import { Badge, Button, Card, Space, Text, type BadgeTone } from '@/design-system';
 import { formatEuros, formatOrderDate, useMyOrders, type HistoryOrder } from '@/features/payments/api';
-import { formatStageDates, formatStageDay } from '@/features/stages/api';
+import { formatStageDates, formatStageDay, useCancelTestOrder, useIsAdmin } from '@/features/stages/api';
 
 /** Statut affiché à l'adhérent, pour un achat de volants ou une inscription à un stage. */
 function statusOf(order: HistoryOrder): { label: string; tone: BadgeTone } {
@@ -43,6 +43,9 @@ export function OrderHistory() {
 
 function HistoryItem({ order }: { order: HistoryOrder }) {
   const status = statusOf(order);
+  const isAdmin = useIsAdmin();
+  const cancelTest = useCancelTestOrder();
+  const isTest = order.provider === 'test';
   const registration = order.stage_registrations[0];
   const stage = registration?.stages;
   // Une commande de stage peut inscrire plusieurs membres du compte, pour un jour ou tous les jours.
@@ -74,9 +77,20 @@ function HistoryItem({ order }: { order: HistoryOrder }) {
         ))
       )}
       <View style={styles.footer}>
-        <Badge label={status.label} tone={status.tone} />
+        <View style={styles.badges}>
+          <Badge label={status.label} tone={status.tone} />
+          {isTest && <Badge label="Test" tone="accent" />}
+        </View>
         <Text variant="bodyStrong">{formatEuros(order.total_cents)}</Text>
       </View>
+      {isTest && isAdmin && (
+        <Button
+          title="Annuler l’inscription de test"
+          variant="ghost"
+          disabled={cancelTest.isPending}
+          onPress={() => cancelTest.mutate(order.id)}
+        />
+      )}
     </Card>
   );
 
@@ -101,6 +115,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: Space.sm,
+  },
+  badges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Space.xs,
   },
   pressed: {
     opacity: 0.8,

@@ -98,7 +98,7 @@ export function useMyOrders() {
       const { data, error } = await supabase
         .from('orders')
         .select(
-          `id, type, status, total_cents, created_at, paid_at, picked_up_at,
+          `id, type, status, provider, total_cents, created_at, paid_at, picked_up_at,
            order_items (label, quantity),
            stage_registrations (status, member_name, price_name, days, stages (id, title, start_at, end_at, location))`
         )

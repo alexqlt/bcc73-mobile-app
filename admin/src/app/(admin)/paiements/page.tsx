@@ -23,14 +23,19 @@ export default async function PaiementsPage({ searchParams }: PageProps<"/paieme
 
   let query = supabase
     .from("orders")
-    .select("id, type, status, total_cents, payer_name, payer_email, provider_order_id, created_at, paid_at, order_items (label, quantity)")
+    .select(
+      "id, type, status, provider, total_cents, payer_name, payer_email, provider_order_id, created_at, paid_at, order_items (label, quantity)"
+    )
     .order("created_at", { ascending: false })
     .limit(300);
   if (filter !== "all") query = query.eq("status", filter);
   const { data: orders, error } = await query;
   if (error) throw error;
 
-  const paidTotal = orders.filter((order) => order.status === "paid").reduce((sum, order) => sum + order.total_cents, 0);
+  // Les commandes du mode test (administrateurs) ne sont pas encaissées.
+  const paidTotal = orders
+    .filter((order) => order.status === "paid" && order.provider !== "test")
+    .reduce((sum, order) => sum + order.total_cents, 0);
 
   return (
     <>
@@ -75,10 +80,11 @@ export default async function PaiementsPage({ searchParams }: PageProps<"/paieme
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge>{orderTypeLabels[order.type]}</Badge>
+                {order.provider === "test" && <Badge tone="accent">Test</Badge>}
                 <Badge tone={orderStatusLabels[order.status].tone}>{orderStatusLabels[order.status].label}</Badge>
                 <span className="w-24 text-right font-heading">{formatEuros(order.total_cents)}</span>
               </div>
-              {order.provider_order_id && (
+              {order.provider_order_id && order.provider !== "test" && (
                 <span className="text-xs text-muted md:w-32 md:text-right">HelloAsso n° {order.provider_order_id}</span>
               )}
             </li>
