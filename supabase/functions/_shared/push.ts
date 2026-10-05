@@ -23,11 +23,24 @@ export type PushMessage = {
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 const BATCH = 100;
 
+export type PushResult =
+  | { status: 'disabled' } // notifications coupées dans les paramètres généraux
+  | { status: 'duplicate' } // déjà envoyée pour cet élément
+  | { status: 'sent'; recipients: number };
+
 /**
  * Envoie la notification aux appareils des comptes qui ne l'ont pas désactivée, puis la note au
- * journal. Renvoie le nombre d'appareils visés, ou null si elle avait déjà été envoyée.
+ * journal. Rien ne part tant que l'administrateur n'a pas activé les notifications (back-office >
+ * Paramètres).
  */
-export async function sendPush(supabase: SupabaseClient, message: PushMessage): Promise<number | null> {
+export async function sendPush(supabase: SupabaseClient, message: PushMessage): Promise<PushResult> {
+  const { data: settings, error: settingsError } = await supabase
+    .from('app_settings')
+    .select('push_notifications_enabled')
+    .maybeSingle();
+  if (settingsError) throw settingsError;
+  if (!settings?.push_notifications_enabled) return { status: 'disabled' };
+
   // Le journal (unique par catégorie et élément) sert de verrou contre les doubles envois.
   const { data: logged, error: logError } = await supabase
     .from('notification_log')
@@ -41,7 +54,7 @@ export async function sendPush(supabase: SupabaseClient, message: PushMessage): 
     })
     .select('id')
     .single();
-  if (logError?.code === '23505') return null;
+  if (logError?.code === '23505') return { status: 'duplicate' };
   if (logError) throw logError;
 
   let query = supabase.from('push_tokens').select('token, account_id');
@@ -96,5 +109,5 @@ export async function sendPush(supabase: SupabaseClient, message: PushMessage): 
   }
 
   await supabase.from('notification_log').update({ recipients: recipients.length }).eq('id', logged.id);
-  return recipients.length;
+  return { status: 'sent', recipients: recipients.length };
 }

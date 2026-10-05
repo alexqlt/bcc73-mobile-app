@@ -72,10 +72,11 @@ export const eventCategories: { value: string; label: string; targetTypes: strin
   },
   {
     value: "journal",
-    label: "Journal",
-    targetTypes: ["audit_logs"],
+    label: "Journal et paramètres",
+    targetTypes: ["audit_logs", "app_settings"],
     events: {
       "clear:audit_logs": "a vidé le journal",
+      "update:app_settings": "a modifié les paramètres généraux",
     },
   },
 ];

@@ -7,7 +7,9 @@ import { MaxContentWidth } from '@/constants/theme';
 import { AlertBanner, Button, Card, Space, Text, useDS } from '@/design-system';
 import {
   preferenceLabels,
+  pushSupportedOnDevice,
   registerForPushNotifications,
+  useAppSettings,
   useNotificationPermission,
   useNotificationPreferences,
   useUpdateNotificationPreferences,
@@ -21,6 +23,7 @@ export function NotificationSettingsScreen() {
   const preferences = useNotificationPreferences();
   const update = useUpdateNotificationPreferences();
   const permission = useNotificationPermission();
+  const settings = useAppSettings();
 
   const toggle = (key: keyof NotificationPreferences, value: boolean) =>
     preferences.data && update.mutate({ ...preferences.data, [key]: value });
@@ -32,8 +35,18 @@ export function NotificationSettingsScreen() {
       <View style={styles.inner}>
         <Text variant="subtitle">Notifications</Text>
 
-        {Platform.OS === 'web' ? (
+        {settings.data && !settings.data.pushEnabled ? (
+          <AlertBanner
+            title="Bientôt disponibles"
+            message="Les notifications ne sont pas encore activées par le club. Vos choix ci-dessous seront appliqués dès leur ouverture."
+          />
+        ) : Platform.OS === 'web' ? (
           <AlertBanner title="Sur téléphone uniquement" message="Les notifications sont envoyées à l’application mobile." />
+        ) : !pushSupportedOnDevice ? (
+          <AlertBanner
+            title="Non disponibles ici"
+            message="Les notifications nécessitent l’application installée depuis le store (ou une build de test), pas Expo Go."
+          />
         ) : (
           permission.data &&
           permission.data !== 'granted' && (

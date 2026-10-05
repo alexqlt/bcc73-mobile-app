@@ -5,6 +5,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { Badge, Button, Card, EmptyState, Input, PageHeader } from "@/components/ui";
 import { requireAnyPermission, SCHEDULE_PERMISSIONS } from "@/lib/auth";
 import { addDays, formatDateRange, formatDay, formatShortDate, periodKindLabels, todayInParis } from "@/lib/planning";
+import { getAppSettings } from "@/lib/settings";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -27,6 +28,7 @@ export default async function PlanningPage() {
   const canDelete = viewer.permissions.has("SCHEDULE_DELETE");
   const today = todayInParis();
   const supabase = await createClient();
+  const { pushEnabled } = await getAppSettings();
 
   const [periods, week, exceptional, cancellations] = await Promise.all([
     supabase
@@ -178,7 +180,7 @@ export default async function PlanningPage() {
                       {!slot.is_cancelled && (
                         <Input name="reason" placeholder="Motif (facultatif)" aria-label="Motif de l'annulation" maxLength={200} />
                       )}
-                      {!slot.is_cancelled && (
+                      {pushEnabled && !slot.is_cancelled && (
                         <label className="flex items-center gap-2 text-sm">
                           <input type="checkbox" name="notify" defaultChecked className="accent-[var(--accent)]" />
                           Prévenir

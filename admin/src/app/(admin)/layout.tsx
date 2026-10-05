@@ -3,6 +3,7 @@ import { Sidebar, type NavItem } from "@/components/sidebar";
 import { Card } from "@/components/ui";
 import {
   getViewer,
+  isAdmin,
   JOURNAL_PERMISSIONS,
   NEWS_PERMISSIONS,
   SCHEDULE_PERMISSIONS,
@@ -11,7 +12,7 @@ import {
   type Permission,
 } from "@/lib/auth";
 
-const navigation: (NavItem & { permissions?: Permission[] })[] = [
+const navigation: (NavItem & { permissions?: Permission[]; adminOnly?: boolean })[] = [
   { href: "/", label: "Tableau de bord" },
   { href: "/actualites", label: "Actualités", permissions: NEWS_PERMISSIONS },
   { href: "/planning", label: "Planning", permissions: SCHEDULE_PERMISSIONS },
@@ -22,6 +23,7 @@ const navigation: (NavItem & { permissions?: Permission[] })[] = [
   { href: "/utilisateurs", label: "Utilisateurs", permissions: ["USER_MANAGE"] },
   { href: "/roles", label: "Rôles", permissions: ["ROLE_MANAGE"] },
   { href: "/journal", label: "Journal", permissions: JOURNAL_PERMISSIONS },
+  { href: "/parametres", label: "Paramètres", adminOnly: true },
 ];
 
 export default async function AdminLayout({ children }: LayoutProps<"/">) {
@@ -47,8 +49,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/">) {
     );
   }
 
+  const admin = await isAdmin();
   const items = navigation.filter(
-    (item) => !item.permissions || item.permissions.some((permission) => viewer.permissions.has(permission))
+    (item) =>
+      (!item.adminOnly || admin) &&
+      (!item.permissions || item.permissions.some((permission) => viewer.permissions.has(permission)))
   );
 
   return (

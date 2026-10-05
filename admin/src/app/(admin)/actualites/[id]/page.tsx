@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Badge, Card, formatDate, PageHeader } from "@/components/ui";
 import { NEWS_PERMISSIONS, requireAnyPermission } from "@/lib/auth";
 import { newsPhotoUrl } from "@/lib/news";
+import { getAppSettings } from "@/lib/settings";
 import { createClient } from "@/lib/supabase/server";
 
 import { deleteNews, updateNews } from "../actions";
@@ -41,6 +42,7 @@ export default async function ActualitePage({ params }: PageProps<"/actualites/[
       <Card className="max-w-3xl">
         <NewsForm
           action={updateNews}
+          pushEnabled={(await getAppSettings()).pushEnabled}
           readOnly={!canUpdate}
           news={{
             id: news.id,

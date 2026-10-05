@@ -115,8 +115,7 @@ Deno.serve(async (request) => {
   if (!message) return json({ error: 'Rien à annoncer : élément introuvable, non publié ou passé.' }, 400);
 
   try {
-    const recipients = await sendPush(supabase, { ...message, sentBy: auth.user.id });
-    return json(recipients === null ? { alreadySent: true } : { recipients });
+    return json(await sendPush(supabase, { ...message, sentBy: auth.user.id }));
   } catch (cause) {
     console.error(cause);
     return json({ error: "La notification n'a pas pu être envoyée." }, 500);

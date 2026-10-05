@@ -5,6 +5,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { Badge, Button, Card, EmptyState, formatDate, Input, Label, PageHeader } from "@/components/ui";
 import { requireAnyPermission, STAGE_PERMISSIONS } from "@/lib/auth";
 import { eurosInputValue, formatEuros, formatStageDates, registrationStatusLabels } from "@/lib/shop";
+import { getAppSettings } from "@/lib/settings";
 import { createClient } from "@/lib/supabase/server";
 
 import { addPrice, deletePrice, deleteStage, updatePrice, updateStage } from "../actions";
@@ -50,7 +51,12 @@ export default async function StagePage({ params }: PageProps<"/stages/[id]">) {
       </p>
 
       <Card className="mb-6 max-w-3xl">
-        <StageForm action={updateStage} readOnly={!canUpdate} stage={stage} />
+        <StageForm
+          action={updateStage}
+          readOnly={!canUpdate}
+          stage={stage}
+          pushEnabled={(await getAppSettings()).pushEnabled}
+        />
       </Card>
 
       <section className="mb-10 max-w-3xl">

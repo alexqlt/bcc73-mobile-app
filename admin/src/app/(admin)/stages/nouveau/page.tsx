@@ -1,5 +1,6 @@
 import { Card, PageHeader } from "@/components/ui";
 import { requirePermission } from "@/lib/auth";
+import { getAppSettings } from "@/lib/settings";
 
 import { createStage } from "../actions";
 import { BackLink, StageForm } from "../stage-form";
@@ -15,7 +16,7 @@ export default async function NouveauStagePage() {
         <BackLink />
       </PageHeader>
       <Card className="max-w-3xl">
-        <StageForm action={createStage} />
+        <StageForm action={createStage} pushEnabled={(await getAppSettings()).pushEnabled} />
       </Card>
     </>
   );

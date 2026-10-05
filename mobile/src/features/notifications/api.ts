@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import Constants from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { router, type Href } from 'expo-router';
@@ -33,15 +33,36 @@ if (Platform.OS !== 'web') {
   });
 }
 
+/**
+ * Les push ne fonctionnent pas sur le web, sur simulateur, ni dans Expo Go sur Android (depuis le
+ * SDK 53) : il faut une build de l'app.
+ */
+export const pushSupportedOnDevice =
+  Platform.OS !== 'web' &&
+  Device.isDevice &&
+  !(Platform.OS === 'android' && Constants.executionEnvironment === ExecutionEnvironment.StoreClient);
+
+/** Paramètres généraux du club : les notifications restent coupées tant que l'administrateur ne les a pas activées. */
+export function useAppSettings() {
+  return useQuery({
+    queryKey: ['app-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('app_settings').select('push_notifications_enabled').maybeSingle();
+      if (error) throw error;
+      return { pushEnabled: data?.push_notifications_enabled ?? false };
+    },
+  });
+}
+
 /** Jeton de cet appareil, gardé pour le retirer à la déconnexion. */
 let currentToken: string | null = null;
 
 /**
  * P7-01 : demande l'autorisation, récupère le jeton Expo de l'appareil et le rattache au compte.
- * Sans effet sur le web, sur simulateur et dans Expo Go sur Android (une build est nécessaire).
+ * Sans effet là où les push ne fonctionnent pas (voir pushSupportedOnDevice).
  */
 export async function registerForPushNotifications() {
-  if (Platform.OS === 'web' || !Device.isDevice) return null;
+  if (!pushSupportedOnDevice) return null;
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
@@ -74,8 +95,14 @@ export async function unregisterPushToken() {
   currentToken = null;
 }
 
-/** Enregistre l'appareil une fois l'adhérent connecté à l'application. */
-export function usePushRegistration(enabled: boolean) {
+/**
+ * Enregistre l'appareil une fois l'adhérent connecté, si l'administrateur a activé les notifications
+ * (back-office > Paramètres) : sinon, l'autorisation n'est même pas demandée.
+ */
+export function usePushRegistration(signedIn: boolean) {
+  const settings = useAppSettings();
+  const enabled = signedIn && settings.data?.pushEnabled === true;
+
   useEffect(() => {
     if (!enabled) return;
     registerForPushNotifications().catch((error) => console.warn('Notifications push indisponibles', error));
