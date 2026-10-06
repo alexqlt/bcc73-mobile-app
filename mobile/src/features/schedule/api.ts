@@ -79,7 +79,7 @@ export function formatTime(time: string) {
 // Requêtes
 // ---------------------------------------------------------------------------
 
-/** P4-02 : créneaux réels de la semaine qui commence le lundi `weekStart` (vacances, annulations). */
+/** P4-02 : créneaux réels des 7 jours à partir de `weekStart` (vacances, annulations). */
 export function usePlanningWeek(weekStart: Date) {
   const from = toISODate(weekStart);
 

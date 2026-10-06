@@ -13,7 +13,6 @@ import {
   formatShortDay,
   formatTime,
   parseISODate,
-  startOfWeek,
   toISODate,
   usePeriodOn,
   usePlanningWeek,
@@ -23,7 +22,7 @@ import {
   type ScheduleType,
 } from '@/features/schedule/api';
 
-/** Cette semaine (dates réelles), ou l'horaire type d'une période : normal ou vacances. */
+/** Les 7 prochains jours (semaine glissante, dates réelles), ou l'horaire type d'une période. */
 type ViewMode = 'week' | 'normal' | 'holidays';
 type TypeFilter = 'all' | 'free_play' | 'training';
 
@@ -58,7 +57,8 @@ function capitalize(value: string) {
 
 /**
  * P4-03 et P4-04 : planning jour par jour, en liste, avec trois vues :
- * - Cette semaine (par défaut) : les jours datés, vacances et annulations comprises ;
+ * - 7 prochains jours (par défaut, semaine glissante à partir d'aujourd'hui) : les jours datés,
+ *   vacances et annulations comprises ;
  * - Horaire normal : la semaine type de la saison ;
  * - Horaire vacances : la semaine type d'une période de vacances (une puce par période).
  * Une annulation s'affiche sur le créneau : barré si elle touche le jour affiché, en avertissement
@@ -70,14 +70,13 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
   const today = parseISODate(toISODate(new Date()));
   const todayIso = toISODate(today);
   const todayWeekday = isoWeekday(today);
-  const weekStart = startOfWeek(today);
 
   const [view, setView] = useState<ViewMode>('week');
   const [holidayId, setHolidayId] = useState<string>();
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [listWeekday, setListWeekday] = useState(initialWeekday ?? todayWeekday);
 
-  const week = usePlanningWeek(weekStart);
+  const week = usePlanningWeek(today);
   const currentPeriod = usePeriodOn(today);
   const periods = useUpcomingPeriods(today);
   const cancellations = useUpcomingCancellations(today);
@@ -128,7 +127,11 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
   const slots = allSlots.filter((slot) => typeFilter === 'all' || slot.tone === typeFilter);
 
   const weekHolidays = view === 'week' && currentPeriod.data?.kind === 'holidays' ? currentPeriod.data : undefined;
-  const dayOf = (weekday: number) => addDays(weekStart, weekday - 1);
+  // Semaine glissante : chaque jour de la semaine y apparaît une fois, à partir d'aujourd'hui.
+  const dayOf = (weekday: number) => addDays(today, (weekday - todayWeekday + 7) % 7);
+  const weekdayOrder = Array.from({ length: 7 }, (_, index) =>
+    view === 'week' ? ((todayWeekday - 1 + index) % 7) + 1 : index + 1
+  );
 
   return (
     <ScrollView
@@ -150,12 +153,12 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <View style={styles.inner}>
         <SectionTitle
-          eyebrow={view === 'week' ? (weekHolidays?.name ?? 'Cette semaine') : (shownPeriod?.name ?? 'Horaire')}
+          eyebrow={view === 'week' ? (weekHolidays?.name ?? '7 prochains jours') : (shownPeriod?.name ?? 'Horaire')}
           title="Planning"
         />
 
         <View style={styles.chips}>
-          <Chip label="Cette semaine" selected={view === 'week'} onPress={() => setView('week')} />
+          <Chip label="7 prochains jours" selected={view === 'week'} onPress={() => setView('week')} />
           {normalPeriod && <Chip label="Horaire normal" selected={view === 'normal'} onPress={() => setView('normal')} />}
           {holidayPeriods.length > 0 && (
             <Chip label="Horaire vacances" selected={view === 'holidays'} onPress={() => setView('holidays')} />
@@ -214,15 +217,18 @@ export function PlanningScreen({ initialWeekday }: { initialWeekday?: number } =
         ) : (
           <>
             <View style={styles.chips}>
-              {weekdayLabels.map((label, index) => (
-                <Chip
-                  key={label}
-                  // Cette semaine : jours datés (« Lun 12 ») ; horaire type : jours de la semaine.
-                  label={view === 'week' ? `${label.slice(0, 3)} ${dayOf(index + 1).getDate()}` : label.slice(0, 3)}
-                  selected={listWeekday === index + 1}
-                  onPress={() => setListWeekday(index + 1)}
-                />
-              ))}
+              {weekdayOrder.map((weekday) => {
+                const label = weekdayLabels[weekday - 1].slice(0, 3);
+                return (
+                  <Chip
+                    key={weekday}
+                    // 7 prochains jours : jours datés (« Lun 12 ») ; horaire type : jours de la semaine.
+                    label={view === 'week' ? `${label} ${dayOf(weekday).getDate()}` : label}
+                    selected={listWeekday === weekday}
+                    onPress={() => setListWeekday(weekday)}
+                  />
+                );
+              })}
             </View>
             <Text variant="subtitle">
               {view === 'week'
