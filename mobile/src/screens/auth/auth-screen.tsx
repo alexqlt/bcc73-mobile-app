@@ -85,7 +85,10 @@ const styles = StyleSheet.create({
     borderTopWidth: DIAGONAL_HEIGHT,
     borderRightColor: 'transparent',
   },
+  // Centré horizontalement (480 px au plus) et verticalement dans l'espace sous le bandeau.
   inner: {
+    flexGrow: 1,
+    justifyContent: 'center',
     width: '100%',
     maxWidth: 480,
     alignSelf: 'center',

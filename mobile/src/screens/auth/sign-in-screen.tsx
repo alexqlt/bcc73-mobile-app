@@ -71,6 +71,14 @@ export function SignInScreen() {
           }
         />
         <Button title="Se connecter" fullWidth disabled={signIn.isPending} onPress={onSubmit} />
+      </View>
+      <View style={styles.links}>
+        <Button
+          title="Créer un compte"
+          variant="secondary"
+          fullWidth
+          onPress={() => router.push('/inscription')}
+        />
         <Button
           title="Mot de passe oublié ?"
           variant="ghost"
@@ -78,12 +86,6 @@ export function SignInScreen() {
           onPress={() => router.push('/mot-de-passe-oublie')}
         />
       </View>
-      <Button
-        title="Créer un compte"
-        variant="secondary"
-        fullWidth
-        onPress={() => router.push('/inscription')}
-      />
     </AuthScreen>
   );
 }
@@ -91,5 +93,8 @@ export function SignInScreen() {
 const styles = StyleSheet.create({
   form: {
     gap: Space.lg,
+  },
+  links: {
+    gap: Space.sm,
   },
 });
