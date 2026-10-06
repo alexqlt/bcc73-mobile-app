@@ -1,0 +1,58 @@
+# Déploiement du back-office sur le VPS OVH à chaque push sur main touchant admin/ ou deploy/.
+# L'image est construite ici puis envoyée au VPS par SSH (pas de registre). Configuration : deploy/README.md.
+name: Déploiement back-office
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "admin/**"
+      - "deploy/**"
+      - ".github/workflows/deploy-admin.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-admin
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build et déploiement
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build de l'image
+        run: |
+          docker build -t bcc73-admin:latest \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL="${{ vars.NEXT_PUBLIC_SUPABASE_URL }}" \
+            --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}" \
+            admin
+          docker save bcc73-admin:latest | gzip > bcc73-admin.tar.gz
+
+      - name: Accès SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Envoi et redémarrage
+        env:
+          TARGET: ${{ vars.VPS_USER }}@${{ vars.VPS_HOST }}
+        run: |
+          scp bcc73-admin.tar.gz deploy/compose.yml deploy/Caddyfile "$TARGET:/opt/bcc73-admin/"
+          ssh "$TARGET" '
+            set -e
+            cd /opt/bcc73-admin
+            gunzip -c bcc73-admin.tar.gz | docker load
+            rm bcc73-admin.tar.gz
+            docker compose up -d --remove-orphans
+            docker compose restart caddy
+            docker image prune -f
+          '
+
+      - name: Vérification
+        run: |
+          sleep 5
+          curl -fsS -o /dev/null -w "%{http_code}\n" "https://${{ vars.ADMIN_URL_HOST }}/connexion"

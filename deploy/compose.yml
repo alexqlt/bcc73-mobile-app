@@ -1,0 +1,29 @@
+# Back-office sur le VPS OVH (dossier /opt/bcc73-admin) : Caddy (HTTPS automatique) devant Next.js.
+# Le domaine vient du fichier .env du serveur (ADMIN_DOMAIN), voir deploy/README.md.
+services:
+  admin:
+    image: bcc73-admin:latest
+    restart: unless-stopped
+    # Pas de port publié : seul Caddy est exposé (le pare-feu ufw ne filtre pas les ports Docker).
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - admin
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN:?ADMIN_DOMAIN manquant dans .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

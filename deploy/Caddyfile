@@ -1,0 +1,20 @@
+# Certificat Let's Encrypt obtenu et renouvelé automatiquement pour ADMIN_DOMAIN.
+# Plusieurs domaines possibles, séparés par des virgules (ex. admin.bcc73.com, vps-xxx.vps.ovh.net).
+{$ADMIN_DOMAIN} {
+	encode zstd gzip
+
+	# Photos d'actualités jusqu'à 5 Mo (bodySizeLimit de next.config.ts : 6 Mo)
+	request_body {
+		max_size 8MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	reverse_proxy admin:3000
+}
