@@ -23,7 +23,7 @@ une carte part du **Backlog**, passe dans **En cours**, puis arrive dans **Termi
 
 ### Phase 0 — Fondation
 
-- [ ] **P0-06** Créer l'environnement Supabase de prod (projet `bcc73-prod`) — avant la publication
+_Toutes les cartes sont terminées._
 
 ### Phase 1 — Authentification et comptes
 
@@ -186,3 +186,4 @@ _Notifications push retirées le 2026-10-06 (voir Idées / V2) ; reste le test d
 | P6-17 | Paiements testés en sandbox (volants, stages, complet, abandon, remise, inscrits et paiements) | 2026-10-07 | — |
 | P2-23 | Rôles : modifier le nom et la description (hors Administrateur) | 2026-10-07 | — |
 | P4-13 | Planning : fin des créneaux exceptionnels ; les périodes de vacances remplacent le planning sur leurs dates et se consultent à l'avance dans l'app | 2026-10-08 | — |
+| P0-06 | Supabase prod `bcc73-prod` (ref `nkjnowrgmkjopotjqohl`, Paris, plan gratuit) : migrations, auth, Edge Functions, premier administrateur ; back-office du VPS et builds EAS `preview` / `production` branchés dessus (secrets Brevo et HelloAsso : P7-11, P6-01) | 2026-10-06 | — |

@@ -12,8 +12,24 @@ Base de données PostgreSQL, authentification, stockage et Edge Functions.
 
 | Environnement | Projet Supabase | Usage |
 |---------------|-----------------|-------|
-| dev | `bcc73-dev` | développement et tests |
-| prod | `bcc73-prod` | application publiée |
+| dev | `BCC73` (ref `avqfxxepxieugwgiidqa`, Francfort) | développement et tests — projet relié à `supabase/` |
+| prod | `bcc73-prod` (ref `nkjnowrgmkjopotjqohl`, Paris) | application publiée, back-office du VPS, builds EAS `preview` / `production` |
+
+Le mot de passe de la base prod est dans `supabase/.env` (`SUPABASE_PROD_DB_PASSWORD`).
+
+### Mettre la prod à jour
+
+Le dossier `supabase/` reste relié au projet **dev**. Pour la prod, on travaille sur une copie reliée
+à part (`--workdir`), pour ne jamais viser la prod par erreur :
+
+```bash
+W=$(mktemp -d) && cp -r supabase "$W/" && rm -rf "$W/supabase/.temp"
+npx supabase@latest link --project-ref nkjnowrgmkjopotjqohl --workdir "$W" -p "$SUPABASE_PROD_DB_PASSWORD"
+npx supabase@latest db push --workdir "$W" -p "$SUPABASE_PROD_DB_PASSWORD"   # migrations
+npx supabase@latest config push --workdir "$W"                                # auth, emails
+npx supabase@latest functions deploy --workdir "$W" --use-api                 # Edge Functions
+npx supabase@latest secrets set --project-ref nkjnowrgmkjopotjqohl NOM=valeur # secrets
+```
 
 Docker n'étant pas installé, on ne lance pas Supabase en local : on travaille directement
 sur le projet **dev** hébergé.

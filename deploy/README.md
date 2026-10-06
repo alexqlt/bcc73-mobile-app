@@ -37,7 +37,7 @@ Configuration une fois pour toutes, dans GitHub → Settings → Environments �
 | Variable | `VPS_HOST` | `vps-9a6368a1.vps.ovh.net` |
 | Variable | `VPS_USER` | `ubuntu` |
 | Variable | `ADMIN_URL_HOST` | `vps-9a6368a1.vps.ovh.net` (puis `admin.bcc73.com`) |
-| Variable | `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase (dev pour l'instant) |
+| Variable | `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase prod |
 | Variable | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | clé publishable du même projet |
 
 Clé de déploiement (sur ton poste) :
