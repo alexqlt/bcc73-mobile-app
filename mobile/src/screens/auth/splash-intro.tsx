@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Dimensions, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Easing,
   interpolate,
@@ -31,8 +31,8 @@ const LOGO_RATIO = 752 / 568;
 /** Largeur du logo sur l'écran de démarrage natif : app.json > expo-splash-screen > imageWidth. */
 const SPLASH_LOGO_WIDTH = 220;
 
-/** Le logo reste affiché en plein écran, puis rejoint le bandeau. */
-const HOLD_DURATION = 2000;
+/** Une seconde en tout : le logo reste affiché en plein écran, puis rejoint le bandeau. */
+const HOLD_DURATION = 300;
 const MOVE_DURATION = 700;
 
 /** Courbe « déplacement à l'écran » du skill expo-animation. */
@@ -40,21 +40,26 @@ const EASE_IN_OUT = Easing.bezier(0.77, 0, 0.175, 1);
 
 /**
  * Introduction au lancement de l'app : prend le relais de l'écran de démarrage natif (même fond
- * jaune, même logo, même taille), puis après 2 secondes le jaune remonte et le logo rétrécit jusqu'à
- * sa place dans le bandeau, révélant le formulaire de connexion.
+ * jaune, même logo, même taille), puis le jaune remonte et le logo rétrécit jusqu'à sa place dans le
+ * bandeau, révélant le formulaire de connexion (une seconde en tout). Le jaune couvre tout l'écran
+ * au départ, quelle que soit sa taille : le calque est mesuré et coupe ce qui dépasse (le biseau).
  *
  * Seuls des transforms et l'opacité sont animés (thread UI). Avec « Réduire les animations »,
  * le calque disparaît en fondu, sans déplacement.
  */
 export function SplashIntro() {
   const insets = useSafeAreaInsets();
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const { width: windowWidth } = useWindowDimensions();
+  // Hauteur réelle du calque (mesurée) ; en attendant, celle de l'écran entier, la plus grande possible.
+  const [measuredHeight, setMeasuredHeight] = useState(0);
+  const height = measuredHeight || Dimensions.get('screen').height;
   const { colors } = useDS();
   const reduceMotion = useReducedMotion();
   const [isDone, setIsDone] = useState(false);
   const progress = useSharedValue(0);
 
   useEffect(() => {
+    if (!measuredHeight) return;
     progress.set(
       withDelay(
         HOLD_DURATION,
@@ -65,12 +70,12 @@ export function SplashIntro() {
         })
       )
     );
-  }, [progress, reduceMotion]);
+  }, [progress, reduceMotion, measuredHeight]);
 
   const heroHeight = insets.top + HERO_PADDING_TOP + HERO_LOGO_HEIGHT + HERO_PADDING_BOTTOM;
   const logoTop = insets.top + HERO_PADDING_TOP;
   // Au départ, le logo est centré à l'écran, à la taille de l'écran de démarrage natif.
-  const startOffset = windowHeight / 2 - (logoTop + HERO_LOGO_HEIGHT / 2);
+  const startOffset = height / 2 - (logoTop + HERO_LOGO_HEIGHT / 2);
   const startScale = SPLASH_LOGO_WIDTH / (HERO_LOGO_HEIGHT * LOGO_RATIO);
 
   const overlayStyle = useAnimatedStyle(() => ({
@@ -79,7 +84,7 @@ export function SplashIntro() {
 
   const panelStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateY: reduceMotion ? 0 : interpolate(progress.get(), [0, 1], [0, heroHeight - windowHeight]) },
+      { translateY: reduceMotion ? 0 : interpolate(progress.get(), [0, 1], [0, heroHeight - height]) },
     ],
   }));
 
@@ -97,9 +102,11 @@ export function SplashIntro() {
   }
 
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, overlayStyle]}>
+    <Animated.View
+      style={[StyleSheet.absoluteFill, styles.clip, overlayStyle]}
+      onLayout={(event) => setMeasuredHeight(event.nativeEvent.layout.height)}>
       <Animated.View style={[styles.panel, panelStyle]}>
-        <View style={{ height: windowHeight, backgroundColor: colors.accent }} />
+        <View style={{ height, backgroundColor: colors.accent }} />
         {/* Même biseau que le bandeau : la forme reste continue pendant la remontée. */}
         <View
           style={[
@@ -119,6 +126,10 @@ export function SplashIntro() {
 }
 
 const styles = StyleSheet.create({
+  // Le biseau sous le bloc jaune reste hors de l'écran tant que le jaune n'a pas remonté.
+  clip: {
+    overflow: 'hidden',
+  },
   panel: {
     position: 'absolute',
     top: 0,
