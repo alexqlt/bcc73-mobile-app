@@ -7,10 +7,9 @@
     "icon": "./assets/images/icon.png",
     "scheme": "bcc73",
     "userInterfaceStyle": "automatic",
-    "ios": {
-      "icon": "./assets/expo.icon"
-    },
+    "ios": {},
     "android": {
+      "package": "com.bcc73.app",
       "adaptiveIcon": {
         "backgroundColor": "#FFDB06",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

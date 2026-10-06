@@ -1,0 +1,47 @@
+# Fichiers exclus de l'archive envoyée à EAS Build (remplace les .gitignore pour EAS).
+# Seul mobile/ est nécessaire à la build.
+
+# Hors app mobile
+/admin/
+/supabase/
+/docs/
+/.agents/
+/.claude/
+/.github/
+/.vscode/
+skills-lock.json
+
+# Dépendances
+node_modules/
+
+# Variables d'environnement (les EXPO_PUBLIC_* viennent des environnements EAS)
+.env
+.env*.local
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+
+# Natif généré (CNG) et secrets de signature
+/mobile/ios
+/mobile/android
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Divers
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
